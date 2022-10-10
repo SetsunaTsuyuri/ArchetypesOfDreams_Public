@@ -28,10 +28,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             SaveDataManager.SaveAuto();
 
             // BGMを再生する
-            AudioManager.PlayBGM("自室");
+            AudioManager.PlayBgm("自室");
 
             // メニューをセットアップし、選択する
-            menu.SetUpButtons();
+            menu.SetUp();
             menu.Select();
         }
     }

@@ -11,6 +11,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class DungeonData : DataWithIdAndName
     {
         /// <summary>
+        /// マップJson
+        /// </summary>
+        [field: SerializeField]
+        public TextAsset MapJson { get; private set; } = null;
+
+        /// <summary>
         /// 敵の基本レベル
         /// </summary>
         [field: SerializeField]
@@ -33,11 +39,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public int[] OpenDungeonsId { get; private set; } = { };
-
-        /// <summary>
-        /// ダンジョンセクションデータ配列
-        /// </summary>
-        [field: SerializeField]
-        public DungeonSectionData[] DungeonSections { get; private set; } = { };
     }
 }

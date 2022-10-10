@@ -14,13 +14,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// スプライト
         /// </summary>
         [field: SerializeField]
-        public Sprite Sprite { get; private set; }
+        public Sprite Sprite { get; private set; } = null;
 
         /// <summary>
         /// 顔スプライト
         /// </summary>
         [field: SerializeField]
-        public Sprite FaceSprite { get; private set; }
+        public Sprite FaceSprite { get; private set; } = null;
 
         /// <summary>
         /// スプライトの拡大倍率
@@ -38,31 +38,55 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ステータス
         /// </summary>
         [field: SerializeField]
-        public BasicStatusData Status { get; private set; }
+        public BasicStatusData Status { get; private set; } = null;
 
         /// <summary>
-        /// 近接武器スキル
+        /// STR依存スキル
         /// </summary>
         [field: SerializeField]
-        public int[] MeleeWeaponSkills { get; private set; }
+        public int[] StrengthSkills { get; private set; } = null;
 
         /// <summary>
-        /// 遠隔武器スキル
+        /// TEC依存スキル
         /// </summary>
         [field: SerializeField]
-        public int[] RangedWeaponSkills { get; private set; }
+        public int[] TechniqueSkills { get; private set; } = null;
 
         /// <summary>
         /// 特殊スキル
         /// </summary>
         [field: SerializeField]
-        public int[] SpecialSkills { get; private set; }
+        public int[] SpecialSkills { get; private set; } = null;
 
         /// <summary>
         /// 精神
         /// </summary>
         [field: SerializeField]
-        public SoulData[] Souls { get; private set; }
+        public SoulData[] Souls { get; private set; } = null;
+
+        /// <summary>
+        /// STR依存武器の属性
+        /// </summary>
+        [field: SerializeField]
+        public Attribute.StrengthWeapon StrengthWeapon { get; private set; }
+
+        /// <summary>
+        /// TEC依存武器の属性
+        /// </summary>
+        [field: SerializeField]
+        public Attribute.TechniqueWeapon TechniqueWeapon { get; private set; }
+
+        /// <summary>
+        /// 通常攻撃の属性
+        /// </summary>
+        [field: SerializeField]
+        public Attribute.Skill NormalAttack { get; private set; }
+
+        /// <summary>
+        /// 敵として倒したときに得られる経験値
+        /// </summary>
+        [field: SerializeField]
+        public int RewardExperience { get; private set; } = 0;
 
         /// <summary>
         /// 顔スプライトまたはスプライトを取得する

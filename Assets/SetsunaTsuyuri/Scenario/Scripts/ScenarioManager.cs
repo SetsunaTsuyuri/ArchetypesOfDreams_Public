@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -561,15 +561,15 @@ namespace SetsunaTsuyuri.Scenario
             {
                 // 再生
                 case Attribute.CommandOfBGM.Play:
-                    
+
                     if (command.Duration.HasValue)
                     {
                         float duration = (float)command.Duration;
-                        AudioManager.PlayBGM(command.BGMName, duration);
+                        AudioManager.PlayBgm(command.BGMName, duration);
                     }
                     else
                     {
-                        AudioManager.PlayBGM(command.BGMName);
+                        AudioManager.PlayBgm(command.BGMName);
                     }
                     break;
 
@@ -580,11 +580,11 @@ namespace SetsunaTsuyuri.Scenario
                     if (command.Duration.HasValue)
                     {
                         float duration = (float)command.Duration;
-                        AudioManager.StopBGM(duration);
+                        AudioManager.StopBgm(duration);
                     }
                     else
                     {
-                        AudioManager.StopBGM();
+                        AudioManager.StopBgm();
                     }
                     break;
 
@@ -631,7 +631,7 @@ namespace SetsunaTsuyuri.Scenario
                         // ジャンプ先設定 選択肢分岐点の次へ
                         int local = commandsIndex;
                         jumpTo = () => IEnumerableUtility.IndexOf(currentCommands, command => command.IsSelectionCase(requestedCaseIndex), local) + 1;
-                        
+
                         // いずれかのボタンが押されるのを待つ
                         tasks.Add(selectionButtons.WaitUntilAnyButtonPressed(token));
                     }

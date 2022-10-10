@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
+using Cysharp.Threading.Tasks;
+using System.Threading;
+using DG.Tweening;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -18,10 +20,30 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Image image = null;
 
         /// <summary>
-        /// 行動者のスプライトの表示オフセット
+        /// 行動者の表示位置オフセット
         /// </summary>
         [SerializeField]
-        float performerSpriteOffset = 0.25f;
+        float performerPositionOffset = 0.25f;
+
+        /// <summary>
+        /// 行動者がスライドする距離
+        /// </summary>
+        [SerializeField]
+        float performerSlideDistance = 25.0f;
+
+        /// <summary>
+        /// 行動者がスライドする時間
+        /// </summary>
+        [SerializeField]
+        float performerSlideDuration = 0.2f;
+
+        [SerializeField]
+        float perfomerFadeDuration = 0.2f;
+
+        /// <summary>
+        /// 行動者のアニメーションシーケンス
+        /// </summary>
+        Sequence actorSpriteSequence = null;
 
         /// <summary>
         /// 解放ボタンの管理者
@@ -39,7 +61,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.Start();
 
-            ReleaseButtons.SetUpButtons();
+            ReleaseButtons.SetUp();
             ReleaseButtons.Hide();
         }
 
@@ -50,26 +72,37 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnPlayerControlledCombatantCommandSelection(BattleManager battle)
         {
             // スプライトを表示する
-            DisplayPerformerSprite(battle.Performer.Combatant.GetData().Sprite);
+            Sprite sprite = battle.Actor.Combatant.Data.Sprite;
+            DisplayActorSprite(sprite);
         }
 
         /// <summary>
         /// 行動者のスプライトを表示する
         /// </summary>
         /// <param name="sprite">スプライト</param>
-        private void DisplayPerformerSprite(Sprite sprite)
+        private void DisplayActorSprite(Sprite sprite)
         {
             // Imageにスプライトを設定する
             image.sprite = sprite;
             image.SetNativeSize();
 
-            // Imageの座標を調整する
+            // Imageの位置を調整する
             Vector3 newPosition = image.rectTransform.anchoredPosition;
-            newPosition.y = -image.sprite.rect.height * performerSpriteOffset;
+            newPosition.x = performerSlideDistance;
+            newPosition.y = -image.sprite.rect.height * performerPositionOffset;
             image.rectTransform.anchoredPosition = newPosition;
 
             // Imageを有効化する
             image.enabled = true;
+
+            // Imageを透明にする
+            image.ChangeAlpha(0.0f);
+
+            // シーケンス開始
+            actorSpriteSequence = DOTween.Sequence()
+                .Join(image.DOFade(1.0f, perfomerFadeDuration))
+                .Join(image.rectTransform.DOAnchorPosX(0.0f, performerSlideDuration))
+                .SetLink(image.gameObject);
         }
 
         /// <summary>
@@ -77,6 +110,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void OnCommandSelectionExit()
         {
+            // シーケンス終了
+            if (actorSpriteSequence.IsActive())
+            {
+                actorSpriteSequence.Kill();
+            }
+
             // Imageを無効化する
             image.enabled = false;
         }

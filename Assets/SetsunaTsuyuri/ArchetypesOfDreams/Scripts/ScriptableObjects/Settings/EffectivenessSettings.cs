@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 有効性の設定
     /// </summary>
-    [CreateAssetMenu(menuName = "Settings/Effectiveness")]
+    [CreateAssetMenu(fileName = "Effectiveness", menuName = "Settings/Effectiveness")]
     public class EffectivenessSettings : ScriptableObject
     {
         /// <summary>

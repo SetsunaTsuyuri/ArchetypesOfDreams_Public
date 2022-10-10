@@ -10,16 +10,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     [System.Serializable]
     public class EffectItemData : ItemData
     {
-        /// <summary>
-        /// 使ってもなくならない
-        /// </summary>
-        [field: SerializeField]
-        public bool IsReusable { get; private set; }
-
-        /// <summary>
-        /// 行動内容
-        /// </summary>
-        [field : SerializeField]
-        public EffectData Effect { get; private set; }
     }
 }

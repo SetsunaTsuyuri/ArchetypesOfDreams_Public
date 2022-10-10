@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,7 +17,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動実行
         /// </summary>
-        private class ActionExecution : FiniteStateMachine<BattleManager>.State
+        private class ActionExecution : StateMachine<BattleManager>.State
         {
             public override void Enter(BattleManager context)
             {
@@ -27,7 +27,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     .ToArray();
 
                 // 行動させる
-                context.ExecuteCombatantActionAsync().Forget();
+                CancellationToken token = context.GetCancellationTokenOnDestroy();
+                context.ExecuteCombatantActionAsync(token).Forget();
             }
 
             public override void Exit(BattleManager context)
@@ -40,13 +41,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 非同期的に戦闘者を行動させる
         /// </summary>
+        /// <param name="token"></param>
         /// <returns></returns>
-        private async UniTask ExecuteCombatantActionAsync()
+        private async UniTask ExecuteCombatantActionAsync(CancellationToken token)
         {
-            // スキルを実行させる
-            await Performer.Combatant.UseSkill(this, this.GetCancellationTokenOnDestroy());
+            // 行動を実行させる
+            await Actor.Combatant.Act(this, token);
 
-            // 行動終了へ
+            // 行動終了
             State.Change<ActionEnd>();
         }
 

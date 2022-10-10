@@ -18,12 +18,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Button button = GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                // セーブ初期化
-                SaveDataManager.CurrentSaveData.Initialize();
+                // 初期化する
+                RuntimeData.Instance.Initialize();
 
                 // 最初のダンジョンへ遷移する
-                RuntimeData.DungeonToPlay = MasterData.Dungeons.GetValue(0);
-                SceneChangeManager.ChangeScene(ScenesName.Dungeon);
+                RuntimeData.DungeonToPlay = MasterData.Dungeons[0];
+                SceneChangeManager.ChangeScene(SceneNames.Dungeon);
             });
         }
     }

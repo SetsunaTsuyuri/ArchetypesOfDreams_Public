@@ -45,7 +45,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (container.ContainsCombatant())
             {
                 gameObject.SetActive(true);
-                Name.text = container.Combatant?.GetData().Name;
+                Name.text = container.Combatant?.Data.Name;
                 Level.text = GameSettings.Terms.Level + container.Combatant?.Level.ToString();
 
                 if (container.ContainsReleasable())

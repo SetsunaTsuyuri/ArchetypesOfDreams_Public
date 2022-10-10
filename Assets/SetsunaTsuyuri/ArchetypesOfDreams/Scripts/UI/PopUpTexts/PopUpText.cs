@@ -101,27 +101,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             LoopSequence
                 .AppendInterval(GameSettings.PopUpTexts.BlinkingInterval)
-                .Append
-                (
-                    DOTween.To
-                    (
+                .Append(
+                    DOTween.To(
                         () => canvasGroup.alpha,
                         x => canvasGroup.alpha = x,
                         0.0f,
-                        GameSettings.PopUpTexts.BkinkingFadeDutation
+                        GameSettings.PopUpTexts.BlinkingFadeDutation
                     )
                 )
-                .Append
-                (
-                    DOTween.To
-                    (
+                .Append(
+                    DOTween.To(
                         () => canvasGroup.alpha,
                         x => canvasGroup.alpha = x,
                         1.0f,
-                        GameSettings.PopUpTexts.BkinkingFadeDutation
+                        GameSettings.PopUpTexts.BlinkingFadeDutation
                     )
                 )
-                .SetLoops(-1);
+                .SetLoops(-1)
+                .SetLink(gameObject);
         }
 
         /// <summary>
@@ -136,10 +133,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Show(position, text, color);
 
             // シーケンス
-            Sequence sequence = DOTween.Sequence();
+            Sequence sequence = DOTween.Sequence()
+                .SetLink(gameObject)
+                .OnComplete(Hide);
 
             // 移動
-            var move = RectTransform.DOLocalMove(GameSettings.PopUpTexts.MoveVector, GameSettings.PopUpTexts.MoveDuration)
+            var move = RectTransform
+                .DOLocalMove(GameSettings.PopUpTexts.MoveVector, GameSettings.PopUpTexts.MoveDuration)
                 .SetRelative();
 
             sequence.Append(move);
@@ -147,8 +147,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // フェードアウト
             var fadeout = canvasGroup.DOFade(0.0f, GameSettings.PopUpTexts.FadeOutDuration);
             sequence.Append(fadeout);
-
-            sequence.OnComplete(Hide);
         }
     }
 }

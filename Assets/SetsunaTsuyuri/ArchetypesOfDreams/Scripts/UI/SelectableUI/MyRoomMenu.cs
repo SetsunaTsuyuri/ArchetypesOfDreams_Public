@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -52,12 +52,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             saveDataMenu.Previous = this;
         }
 
-        public override void SetUpButtons()
+        public override void SetUp()
         {
-            base.SetUpButtons();
+            base.SetUp();
 
             // 冒険ボタンのセットアップ
-            adventureButton.AddOnClickListener(() => SceneChangeManager.ChangeScene(ScenesName.DungeonSelection));
+            adventureButton.AddOnClickListener(() => SceneChangeManager.ChangeScene(SceneNames.DungeonSelection));
             adventureButton.AddTrriger(EventTriggerType.Select, (_) => description.SetText(adventureDescription));
 
             // セーブボタンのセットアップ

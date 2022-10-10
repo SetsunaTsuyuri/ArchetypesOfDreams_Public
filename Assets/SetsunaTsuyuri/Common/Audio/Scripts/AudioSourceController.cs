@@ -15,7 +15,7 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// AudioSource
         /// </summary>
-        AudioSource audioSource = null;
+        AudioSource _audioSource = null;
 
         /// <summary>
         /// 再生中のBGMID
@@ -25,19 +25,19 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// オーディオデータ
         /// </summary>
-        AudioData data = null;
+        AudioData _data = null;
 
         /// <summary>
         /// オーディオデータ
         /// </summary>
         public AudioData Data
         {
-            get => data;
+            get => _data;
             set
             {
-                data = value;
-                audioSource.clip = data.Clip;
-                audioSource.volume = data.Volume;
+                _data = value;
+                _audioSource.clip = _data.Clip;
+                _audioSource.volume = _data.Volume;
             }
         }
 
@@ -46,8 +46,8 @@ namespace SetsunaTsuyuri
         /// </summary>
         public AudioClip Clip
         {
-            get => audioSource.clip;
-            set => audioSource.clip = value;
+            get => _audioSource.clip;
+            set => _audioSource.clip = value;
         }
 
         /// <summary>
@@ -55,13 +55,22 @@ namespace SetsunaTsuyuri
         /// </summary>
         public float Volume
         {
-            get => audioSource.volume;
-            set => audioSource.volume = value;
+            get => _audioSource.volume;
+            set => _audioSource.volume = value;
+        }
+
+        /// <summary>
+        /// 再生位置
+        /// </summary>
+        public float PlaybackPosition
+        {
+            get => _audioSource.time;
+            set => _audioSource.time = value;
         }
 
         private void Awake()
         {
-            audioSource = GetComponent<AudioSource>();
+            _audioSource = GetComponent<AudioSource>();
         }
 
         /// <summary>
@@ -69,7 +78,7 @@ namespace SetsunaTsuyuri
         /// </summary>
         public void PlayOneShot()
         {
-            audioSource.PlayOneShot(audioSource.clip, Data.Volume);
+            _audioSource.PlayOneShot(_audioSource.clip, Data.Volume);
         }
 
         /// <summary>
@@ -83,8 +92,7 @@ namespace SetsunaTsuyuri
             // 既に同じBGMを再生しているなら、PlayしないでBGMを継続する
             if (Data.Id != playingBgmId)
             {
-                audioSource.Play();
-
+                _audioSource.Play();
                 playingBgmId = Data.Id;
             }
 
@@ -100,9 +108,9 @@ namespace SetsunaTsuyuri
         public async UniTask StopWithFadeOut(float fadeDuration, CancellationToken token)
         {
             // 再生中のBGMIDをリセットする
-            ResetPlayingBgmId();
+            ResetPlayingBGMId();
 
-            await ChangeVolumeAsync(audioSource.volume, 0.0f, fadeDuration, token);
+            await ChangeVolumeAsync(_audioSource.volume, 0.0f, fadeDuration, token);
         }
 
         /// <summary>
@@ -118,7 +126,7 @@ namespace SetsunaTsuyuri
             try
             {
                 // 開始時の音量にする
-                audioSource.volume = start;
+                _audioSource.volume = start;
 
                 // フェード経過時間
                 float elapsed = 0.0f;
@@ -129,7 +137,7 @@ namespace SetsunaTsuyuri
                     // 音量変更
                     float lerp = elapsed / duration;
                     float lerpVolume = Mathf.Lerp(start, end, lerp);
-                    audioSource.volume = lerpVolume;
+                    _audioSource.volume = lerpVolume;
 
                     // 経過時間を増やす
                     elapsed += Time.deltaTime;
@@ -139,7 +147,7 @@ namespace SetsunaTsuyuri
                 }
 
                 // 終了時の音量にする
-                audioSource.volume = end;
+                _audioSource.volume = end;
 
             }
             catch (OperationCanceledException) { }
@@ -148,7 +156,7 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// 再生中のBGMIDをリセットする
         /// </summary>
-        private void ResetPlayingBgmId()
+        private void ResetPlayingBGMId()
         {
             playingBgmId = -1;
         }

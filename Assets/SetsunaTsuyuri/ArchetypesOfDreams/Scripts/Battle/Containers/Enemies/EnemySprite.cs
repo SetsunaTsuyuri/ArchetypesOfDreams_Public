@@ -49,10 +49,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             if (combatant != null)
             {
-                spriteRenderer.sprite = combatant.GetData().Sprite;
+                spriteRenderer.sprite = combatant.Data.Sprite;
                 Vector3 scale = transform.localScale;
-                scale.x = defaultLocalScaleX * combatant.GetData().SpriteScale;
-                scale.y = defaultLocalScaleY * combatant.GetData().SpriteScale;
+                scale.x = defaultLocalScaleX * combatant.Data.SpriteScale;
+                scale.y = defaultLocalScaleY * combatant.Data.SpriteScale;
                 transform.localScale = scale;
                 spriteRenderer.enabled = true;
             }
@@ -86,6 +86,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                         GameSettings.VisualEffects.EnemyFadeDuration);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 揺れる
+        /// </summary>
+        public void Shake()
+        {
+            float duration = GameSettings.Enemies.DamageShakeDuration;
+            float strength = GameSettings.Enemies.DamageShakeStrength;
+            int vibrato = GameSettings.Enemies.DamageShakeVibrato;
+            transform
+                .DOShakePosition(duration, strength, vibrato)
+                .SetLink(gameObject);
         }
 
         /// <summary>
@@ -147,7 +160,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 元の色に戻す
-            spriteRenderer.color = defaultColor;
+            if (spriteRenderer)
+            {
+                spriteRenderer.color = defaultColor;
+            }
         }
     }
 }

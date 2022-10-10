@@ -20,200 +20,205 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 経験値
         /// </summary>
         [SerializeField]
-        int experience = 0;
+        int _experience = 0;
 
         /// <summary>
         /// 経験値
         /// </summary>
         public int Experience
         {
-            get => experience;
+            get => _experience;
             set
             {
-                experience = value;
+                _experience = value;
                 OnExperienceSet();
             }
         }
 
         /// <summary>
-        /// 生命力
+        /// 現在HP
         /// </summary>
-        int life = 0;
+        int _currentHP = 0;
 
         /// <summary>
-        /// 生命力
+        /// 現在HP
         /// </summary>
-        public int Life
+        public int CurrentHP
         {
-            get => life;
-            set
+            get => _currentHP;
+            protected set
             {
-                life = Mathf.Clamp(value, 0, MaxLife);
+                _currentHP = Mathf.Clamp(value, 0, MaxHP);
             }
         }
 
         /// <summary>
-        /// 最大生命力
+        /// 最大HP
         /// </summary>
-        int maxLife;
+        int _maxHP;
 
         /// <summary>
-        /// 最大生命力
+        /// 最大HP
         /// </summary>
-        public int MaxLife
+        public int MaxHP
         {
-            get => maxLife;
-            set
+            get => _maxHP;
+            protected set
             {
-                maxLife = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxLife);
+                _maxHP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxHP);
             }
         }
 
         /// <summary>
-        /// 夢想力
+        /// 現在DP
         /// </summary>
-        int dream = 0;
+        int _currentDP = 0;
 
         /// <summary>
-        /// 夢想力
+        /// 現在DP
         /// </summary>
-        public int Dream
+        public int CurrentDP
         {
-            get => dream;
-            set
+            get => _currentDP;
+            protected set
             {
-                dream = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxDream);
+                _currentDP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxDP);
             }
         }
 
         /// <summary>
-        /// 初期夢想力
+        /// 初期DP
         /// </summary>
-        public int InitialDream { get; set; } = 0;
+        public int InitialDP { get; protected set; } = 0;
 
         /// <summary>
-        /// 精神力
+        /// 現在SP
         /// </summary>
-        int soul = 0;
+        int _currentSP = 0;
 
         /// <summary>
-        /// 精神力
+        /// 現在SP
         /// </summary>
-        public int Soul
+        public int CurrentSP
         {
-            get => soul;
-            set
+            get => _currentSP;
+            protected set
             {
-                soul = Mathf.Clamp(value, 0, MaxSoul);
+                _currentSP = Mathf.Clamp(value, 0, MaxSP);
             }
         }
 
         /// <summary>
-        /// 最大精神力
+        /// 最大SP
         /// </summary>
-        int maxSoul = 0;
+        int _maxSP = 0;
 
         /// <summary>
-        /// 最大精神力
+        /// 最大SP
         /// </summary>
-        public int MaxSoul
+        public int MaxSP
         {
-            get => maxSoul;
-            set
+            get => _maxSP;
+            protected set
             {
-                maxSoul = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxSoul);
+                _maxSP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxSP);
             }
         }
 
         /// <summary>
-        /// 近接攻撃力
+        /// 力
         /// </summary>
-        public int MeleeAttack { get; set; } = 0;
+        public int Power { get; protected set; } = 0;
 
         /// <summary>
-        /// 近接守備力
+        /// 技
         /// </summary>
-        public int MeleeDefense { get; set; } = 0;
+        public int Technique { get; protected set; } = 0;
 
         /// <summary>
-        /// 遠隔攻撃力
+        /// 素早さ
         /// </summary>
-        public int RangedAttack { get; set; } = 0;
-
-        /// <summary>
-        /// 遠隔守備力
-        /// </summary>
-        public int RangedDefense { get; set; } = 0;
-
-        /// <summary>
-        /// 基本の素早さ
-        /// </summary>
-        public int BaseSpeed { get; set; } = 0;
-
-        /// <summary>
-        /// ランダムに変化する素早さ
-        /// </summary>
-        public float RandomSpeed { get; set; } = 0.0f;
+        public int Agility { get; protected set; } = 0;
 
         /// <summary>
         /// 感情属性
         /// </summary>
-        public Attribute.Emotion Emotion { get; set; } = Attribute.Emotion.None;
+        public Attribute.Emotion Emotion { get; protected set; } = Attribute.Emotion.None;
 
         /// <summary>
-        /// クラッシュ状態からの復帰するまでの残りターン数
+        /// クラッシュ状態から復帰するまでの残りターン数
         /// </summary>
-        public int RemainingCrushTurns { get; set; } = 0;
+        public int RemainingCrushTurns { get; protected set; } = 0;
+
+        /// <summary>
+        /// 通常攻撃スキル
+        /// </summary>
+        public ActionModel NormalAttack { get; protected set; } = null;
 
         /// <summary>
         /// スキル配列
         /// </summary>
-        public Skill[] Skills { get; private set; } = null;
+        public ActionModel[] Skills { get; protected set; } = null;
 
         /// <summary>
-        /// 近接武器スキルIDリスト
+        /// STR依存スキルIDリスト
         /// </summary>
-        List<int> meleeWeaponSkillIdList = new List<int>();
+        List<int> _strengthSkillIdList = new();
 
         /// <summary>
-        /// 遠隔武器スキルIDリスト
+        /// TEC依存スキルIDリスト
         /// </summary>
-        List<int> rangedWeaponSkillIdList = new List<int>();
+        List<int> _techniqueSkillIdList = new();
 
         /// <summary>
         /// 特殊スキルIDリスト
         /// </summary>
-        List<int> specialSkillIdList = new List<int>();
+        List<int> _specialSkillIdList = new();
+
+        /// <summary>
+        /// ステータス効果リスト
+        /// </summary>
+        public readonly List<StatusEffect> StatusEffects = new();
 
         /// <summary>
         /// 命中
         /// </summary>
-        public int Hit { get; set; } = 0;
+        public int Hit { get; protected set; } = 0;
 
         /// <summary>
         /// 回避
         /// </summary>
-        public int Evasion { get; set; } = 0;
+        public int Evasion { get; protected set; } = 0;
 
         /// <summary>
-        /// クリティカル命中率
+        /// クリティカル命中
         /// </summary>
-        public int CriticalHit { get; set; } = 0;
+        public int CriticalHit { get; protected set; } = 0;
 
         /// <summary>
-        /// クリティカル回避率
+        /// クリティカル回避
         /// </summary>
-        public int CriticalEvasion { get; set; } = 0;
+        public int CriticalEvasion { get; protected set; } = 0;
 
         /// <summary>
-        /// 行動優先度
+        /// HP増減率
         /// </summary>
-        public int ActionPriority { get; set; } = 0;
+        public int HPChangeRate { get; protected set; } = 0;
 
         /// <summary>
-        /// 精神設定配列の何番目を参照しているか
+        /// DP増減値
         /// </summary>
-        public int CurrentSoulIndex { get; set; } = 0;
+        public int DPChangeValue { get; protected set; } = 0;
+
+        /// <summary>
+        /// SP増減値
+        /// </summary>
+        public int SPChangeValue { get; protected set; } = 0;
+
+        /// <summary>
+        /// 精神配列の索引
+        /// </summary>
+        public int CurrentSoulIndex { get; protected set; } = 0;
 
         /// <summary>
         /// ステータスを初期化する
@@ -223,9 +228,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             RefreshStatus();
 
             Condition = Attribute.Condition.Normal;
-            RecoverLifeFully();
-            RecoverSoulFully();
-            InitializeDream();
+            RecoverHp();
+            RecoverSp();
+            InitializeDp();
         }
 
         /// <summary>
@@ -233,8 +238,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void RefreshStatus()
         {
+            HPChangeRate = 0;
+            DPChangeValue = 0;
+            SPChangeValue = 0;
+            CriticalHit = 0;
+            CriticalEvasion = 0;
+
             SetStatusBasedOnData();
             ApplyStatusCorrectionBasedOnLevel();
+            ApplyStatusEffects();
+
+            SetSkillsBasedOnIdList();
         }
 
         /// <summary>
@@ -242,44 +256,42 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         protected virtual void SetStatusBasedOnData()
         {
-            if (GetData() is null)
+            if (Data is null)
             {
                 return;
             }
 
-            // 生命力
-            MaxLife = GetData().Status.Life;
+            // 最大HP
+            MaxHP = Data.Status.HP;
 
-            // 夢想力
-            InitialDream = GetData().Status.Dream;
+            // 初期DP
+            InitialDP = Data.Status.DP;
 
-            // 精神
             SoulData soul = GetCurrentSoulData();
-            MaxSoul = soul.Max;
+
+            // 最大SP
+            MaxSP = soul.Max;
+
+            // 感情属性
             Emotion = soul.Emotion;
 
-            // 攻撃力
-            MeleeAttack = GetData().Status.MeleeAttack;
-            RangedAttack = GetData().Status.RangedAttack;
+            // STR
+            Power = Data.Status.Power;
 
-            // 守備力
-            MeleeDefense = GetData().Status.MeleeDefense;
-            RangedDefense = GetData().Status.RangedDefense;
+            // TEC
+            Technique = Data.Status.Technique;
 
-            // 素早さ
-            BaseSpeed = GetData().Status.Speed;
+            // AGI
+            Agility = Data.Status.Speed;
 
-            // 近接武器スキル
-            meleeWeaponSkillIdList = new List<int>(GetData().MeleeWeaponSkills);
+            // STR依存武器スキルIDリスト
+            _strengthSkillIdList = new List<int>(Data.StrengthSkills);
 
-            // 遠隔武器スキル
-            rangedWeaponSkillIdList = new List<int>(GetData().RangedWeaponSkills);
+            // TEC依存武器スキルIDリスト
+            _techniqueSkillIdList = new List<int>(Data.TechniqueSkills);
 
-            // 特殊スキル
-            specialSkillIdList = new List<int>(GetData().SpecialSkills);
-
-            // スキル
-            SetSkillsBasedOnData();
+            // 特殊スキルIDリスト
+            _specialSkillIdList = new List<int>(Data.SpecialSkills);
         }
 
         /// <summary>
@@ -288,61 +300,91 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         protected virtual void ApplyStatusCorrectionBasedOnLevel()
         {
             // 倍率
-            float multiplier = GetStatusCorrectionMultiplierBasedOnLevel();
+            float multiplier = 1.0f + ((Level - 1) * GameSettings.Combatants.AmountOfIncreaseInStatusPerLevel);
 
-            // 最大生命力
-            MaxLife = Mathf.FloorToInt(GetData().Status.Life * multiplier);
+            // 最大HP
+            MaxHP = Mathf.FloorToInt(Data.Status.HP * multiplier);
 
-            // 近接攻撃力
-            MeleeAttack = Mathf.FloorToInt(GetData().Status.MeleeAttack * multiplier);
+            // STR
+            Power = Mathf.FloorToInt(Data.Status.Power * multiplier);
 
-            // 遠隔攻撃力
-            RangedAttack = Mathf.FloorToInt(GetData().Status.RangedAttack * multiplier);
-
-            // 素早さ
-            BaseSpeed = Mathf.FloorToInt(GetData().Status.Speed * multiplier);
+            // TEC
+            Technique = Mathf.FloorToInt(Data.Status.Technique * multiplier);
         }
 
         /// <summary>
-        /// レベルに応じたステータス補正倍率を取得する
+        /// ステータス効果を適用する
         /// </summary>
-        /// <returns></returns>
-        protected float GetStatusCorrectionMultiplierBasedOnLevel()
+        private void ApplyStatusEffects()
         {
-            return 1.0f + ((Level - 1) * GameSettings.Combatants.AmountOfIncreaseInStatusPerLevel);
+            foreach (var statusEffect in StatusEffects)
+            {
+                ApplyStatusEffectData(statusEffect.Data);
+            }
         }
 
         /// <summary>
-        /// データを基にスキルを設定する
+        /// ステータス効果を適用する
         /// </summary>
-        private void SetSkillsBasedOnData()
+        /// <param name="data">ステータス効果データ</param>
+        private void ApplyStatusEffectData(StatusEffectData data)
         {
+            // HP増減率
+            HPChangeRate += data.HPChangeRate;
+
+            // DP増減値
+            DPChangeValue += data.DPChangeValue;
+
+            // SP増減値
+            SPChangeValue += data.SPChangeValue;
+
+            // 命中
+            Hit += data.Hit;
+
+            // 回避
+            Evasion += data.Evasion;
+
+            // クリティカル命中
+            CriticalHit += data.CriticalHit;
+
+            // クリティカル回避
+            CriticalEvasion += data.CriticalEvasion;
+        }
+
+        /// <summary>
+        /// IDリストを基にスキルを設定する
+        /// </summary>
+        private void SetSkillsBasedOnIdList()
+        {
+            // 通常攻撃
+            NormalAttack = new(MasterData.Skills.NormalAttack, Data.NormalAttack);
+
             // スキルリスト
-            List<Skill> skills = new List<Skill>();
+            List<ActionModel> skillList = new();
 
             // スキルを追加する関数
-            void AddSkills(List<int> idList, System.Func<int, SkillData> func, Attribute.Skill skillAttribute)
+            void AddSkills(List<int> idList, Attribute.Skill skillAttribute)
             {
                 foreach (var id in idList)
                 {
-                    SkillData data = func.Invoke(id);
-                    Skill skill = new Skill(this, data, skillAttribute);
+                    SkillData data = MasterData.Skills[id];
+                    ActionModel skill = new(data, skillAttribute);
 
-                    skills.Add(skill);
+                    skillList.Add(skill);
                 }
             }
 
-            // 近接武器スキルを加える
-            AddSkills(meleeWeaponSkillIdList, MasterData.WeaponSkills.GetValue, Attribute.Skill.MeleeWeapon);
+            // 力依存スキルを加える
+            AddSkills(_strengthSkillIdList, Attribute.Skill.PowerSkill);
 
-            // 遠隔武器スキルを加える
-            AddSkills(rangedWeaponSkillIdList, MasterData.WeaponSkills.GetValue, Attribute.Skill.RangedWeapon);
+            // 技依存スキルを加える
+            AddSkills(_techniqueSkillIdList, Attribute.Skill.TechniqueSkill);
 
             // 特殊スキルを加える
-            AddSkills(specialSkillIdList, MasterData.SpecialSkills.GetValue, Attribute.Skill.Special);
+            AddSkills(_specialSkillIdList, Attribute.Skill.Special);
 
-            // 配列にコピーする
-            Skills = skills.ToArray();
+            // 配列に入れる
+            Skills = skillList.ToArray();
         }
 
         /// <summary>
@@ -350,9 +392,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="attack">攻撃属性</param>
         /// <returns></returns>
-        public Skill[] GetSkills(Attribute.Attack attack)
+        public ActionModel[] GetSkills(Attribute.Attack attack)
         {
-            Skill[] result = Skills
+            ActionModel[] result = Skills
                 .Where(x => x.GetAttack() == attack)
                 .ToArray();
 
@@ -360,27 +402,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 生命力を全回復する
+        /// HPを全回復する
         /// </summary>
-        public void RecoverLifeFully()
+        public void RecoverHp()
         {
-            Life = MaxLife;
+            CurrentHP = MaxHP;
         }
 
         /// <summary>
-        /// 精神力を全回復する
+        /// SPを全回復する
         /// </summary>
-        public void RecoverSoulFully()
+        public void RecoverSp()
         {
-            Soul = MaxSoul;
+            CurrentSP = MaxSP;
         }
 
         /// <summary>
-        /// 夢想力を初期値に設定する
+        /// DPを初期値に設定する
         /// </summary>
-        public void InitializeDream()
+        public void InitializeDp()
         {
-            Dream = InitialDream;
+            CurrentDP = InitialDP;
         }
 
         /// <summary>
@@ -389,7 +431,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public SoulData GetCurrentSoulData()
         {
-            SoulData soulData = GetData().Souls[CurrentSoulIndex];
+            SoulData soulData = Data.Souls[CurrentSoulIndex];
             return soulData;
         }
 
@@ -399,7 +441,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void InitializeSoul()
         {
             ChangeSoul(0);
-            RecoverSoulFully();
+            RecoverSp();
         }
 
         /// <summary>
@@ -408,7 +450,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void ChangeSoul()
         {
             // 次のインデックスへ 最後のインデックスへ到達したら最初に戻る
-            int nextIndex = (CurrentSoulIndex + 1) % GetData().Souls.Length;
+            int nextIndex = (CurrentSoulIndex + 1) % Data.Souls.Length;
             ChangeSoul(nextIndex);
         }
 
@@ -425,24 +467,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ランダムに変化する素早さを更新する
-        /// </summary>
-        public void UpdateRandomSpeed()
-        {
-            float max = GameSettings.Combatants.RandomSpeedCorrection;
-            RandomSpeed = BaseSpeed * Random.Range(0.0f, max);
-        }
-
-        /// <summary>
         /// 経験値が設定されたときの処理
         /// </summary>
         private void OnExperienceSet()
         {
-            if (Level == GameSettings.Combatants.MaxLevel)
-            {
-                return;
-            }
-
             int previousLevel = Level;
 
             Level = ExperienceToLevel();
@@ -459,46 +487,74 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private int ExperienceToLevel()
         {
-            //int level = GameSettings.Combatants.MinLevel;
-            //int experience = Experience;
+            int level = GameSettings.Combatants.MinLevel;
+            while (Experience >= ToMinExperience(level + 1))
+            {
+                level++;
+            }
 
-            //// もらえる経験値の計算
-
-            //// 同レベルの敵を倒した場合、レベルアップに必要な撃破数
-            //int defeat = 5;
-
-            //// レベルアップに必要な基本経験値
-            //int baseE = 50;
-
-            //// レベルによる補正
-            //float levelCorrectionBase = 1.1f;
-
-            //// 種族毎の補正
-            //float raceCorrection = 1.0f;
-
-            //// 基本
-            //float resultF = baseE / (float)defeat;
-
-            //// レベル補正
-            //float levelCorrection = 1.0f + (levelCorrectionBase * (Level - 1));
-
-            //// 種族補正
-            //levelCorrection *= raceCorrection;
-
-            int result = (Experience / 2) + 1;
-            return result;
+            return level;
         }
 
         /// <summary>
-        /// レベルをその値に至るために必要な最低経験値に変換する
+        /// そのレベルに至るために必要な最低経験値を求める
+        /// </summary>
+        /// <param name="level">レベル</param>
+        /// <returns></returns>
+        public int ToMinExperience(int level)
+        {
+            // 戦闘者の設定
+            CombatantsSettings combatants = GameSettings.Combatants;
+
+            // 最小レベル
+            int minLevel = combatants.MinLevel;
+
+            // 基本値
+            int baseValue = combatants.ExperienceRequiredToLevelUp;
+
+            // 増加倍率
+            float rate = combatants.PercentageIncreaceInExperienceRequiredToLevelUp;
+
+            // 合計値
+            int sum = 0;
+
+            for (int i = minLevel; i < level; i++)
+            {
+                // 実際の倍率
+                float levelRate = rate * (i - 1) + 1.0f;
+
+                // 経験値を合計値に加える
+                int experience = Mathf.FloorToInt(baseValue * levelRate);
+                sum += experience;
+            }
+
+            return sum;
+        }
+
+        /// <summary>
+        /// 次のレベルに到達するまでに必要な経験値を取得する
         /// </summary>
         /// <returns></returns>
-        private int LevelToExperience()
+        public int GetNextLevelExperience()
         {
-            // 経験値テーブルを順番に調べていく 取り出した要素以下ならそのレベルになる
-            // 経験値テーブルからレベル番目の最低経験値を取得する
-            int result = (Level - 1) * 2;
-            result = Mathf.Max(result, 0);
+            // 次のレベルまでに必要な最低経験値
+            int min = ToMinExperience(Level + 1);
+
+            // 現在の経験値から最低経験値を引く
+            int next = Experience - min;
+            return next;
+        }
+
+        /// <summary>
+        /// 敵として倒された場合に得られる経験値を取得する
+        /// </summary>
+        /// <returns></returns>
+        public int GetRewardExperience()
+        {
+            int experience = Data.RewardExperience;
+            float increace = GameSettings.Combatants.PercentageIncreaceInExperienceRequiredToLevelUp;
+            float rate = (Level - 1) * increace + 1.0f;
+            int result = Mathf.FloorToInt(experience * rate);
             return result;
         }
     }

@@ -1,0 +1,303 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ffa0a0a4",
+            "id": 1,
+            "members": [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "is_random",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "Battle",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 9,
+            "members": [
+                {
+                    "name": "collides",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "direction_x",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "direction_y",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "name": "trigger",
+                    "propertyType": "Trigger",
+                    "type": "string",
+                    "value": "None"
+                },
+                {
+                    "name": "type",
+                    "propertyType": "Type",
+                    "type": "string",
+                    "value": "None"
+                }
+            ],
+            "name": "Event",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 10,
+            "members": [
+            ],
+            "name": "Goal",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 3,
+            "members": [
+                {
+                    "name": "basic_enemy_level",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "max_enemy_id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "min_enemy_id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "name",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "Map",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 12,
+            "members": [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Scenario",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 4,
+            "members": [
+            ],
+            "name": "Start",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 16,
+            "members": [
+                {
+                    "name": "Formula",
+                    "propertyType": "TriggerFormula",
+                    "type": "string",
+                    "value": "Equal"
+                },
+                {
+                    "name": "id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "parameter",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "StoryTrigger",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 13,
+            "members": [
+                {
+                    "name": "map_id",
+                    "type": "int",
+                    "value": -1
+                }
+            ],
+            "name": "Travel",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "id": 2,
+            "members": [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "number",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Treasure",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset"
+            ]
+        },
+        {
+            "id": 8,
+            "name": "Trigger",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "None",
+                "Check",
+                "Touch"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "id": 17,
+            "name": "TriggerFormula",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "Equal",
+                "OrMore",
+                "OrLess"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "id": 11,
+            "name": "Type",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "None",
+                "Scenario",
+                "Start",
+                "Goal"
+            ],
+            "valuesAsFlags": false
+        }
+    ]
+}

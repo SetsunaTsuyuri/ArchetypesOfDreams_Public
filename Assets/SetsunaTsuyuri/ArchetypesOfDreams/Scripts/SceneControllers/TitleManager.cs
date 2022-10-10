@@ -11,7 +11,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     {
         private void Start()
         {
-            AudioManager.PlayBGM("自室");
+            AudioManager.PlayBgm("自室");
         }
     }
 }

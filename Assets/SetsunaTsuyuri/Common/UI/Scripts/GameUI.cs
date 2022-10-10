@@ -15,17 +15,17 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// キャンバス
         /// </summary>
-        protected Canvas canvas;
+        protected Canvas _canvas;
 
         /// <summary>
         /// キャンバスグループ
         /// </summary>
-        protected CanvasGroup canvasGroup = null;
+        protected CanvasGroup _canvasGroup = null;
 
         protected virtual void Awake()
         {
-            canvas = GetComponent<Canvas>();
-            canvasGroup = GetComponent<CanvasGroup>();
+            _canvas = GetComponent<Canvas>();
+            _canvasGroup = GetComponent<CanvasGroup>();
         }
 
         /// <summary>
@@ -34,15 +34,15 @@ namespace SetsunaTsuyuri
         /// <param name="interactable"></param>
         public virtual void SetInteractable(bool interactable)
         {
-            canvasGroup.interactable = interactable;
+            _canvasGroup.interactable = interactable;
         }
 
         /// <summary>
-        /// 表示する
+        /// 見せる
         /// </summary>
         public virtual void Show()
         {
-            canvas.enabled = true;
+            _canvas.enabled = true;
             SetInteractable(true);
         }
 
@@ -51,7 +51,7 @@ namespace SetsunaTsuyuri
         /// </summary>
         public virtual void Hide()
         {
-            canvas.enabled = false;
+            _canvas.enabled = false;
             SetInteractable(false);
         }
 

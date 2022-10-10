@@ -11,43 +11,31 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class BasicStatusData
     {
         /// <summary>
-        /// 生命力
+        /// HP
         /// </summary>
         [field: SerializeField]
-        public int Life { get; private set; }
+        public int HP { get; private set; }
 
         /// <summary>
-        /// 初期夢想力
+        /// DP
         /// </summary>
         [field: SerializeField]
-        public int Dream { get; private set; }
+        public int DP { get; private set; }
 
         /// <summary>
-        /// 近接攻撃力
+        /// 力
         /// </summary>
         [field: SerializeField]
-        public int MeleeAttack { get; private set; }
+        public int Power { get; private set; }
 
         /// <summary>
-        /// 遠隔攻撃力
+        /// 技
         /// </summary>
         [field: SerializeField]
-        public int RangedAttack { get; private set; }
+        public int Technique { get; private set; }
 
         /// <summary>
-        /// 近接守備力
-        /// </summary>
-        [field: SerializeField]
-        public int MeleeDefense { get; private set; }
-
-        /// <summary>
-        /// 遠隔守備力
-        /// </summary>
-        [field: SerializeField]
-        public int RangedDefense { get; private set; }
-
-        /// <summary>
-        /// 行動速度
+        /// 素早さ
         /// </summary>
         [field: SerializeField]
         public int Speed { get; private set; }

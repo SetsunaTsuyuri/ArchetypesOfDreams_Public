@@ -1,4 +1,4 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Attribute
+namespace SetsunaTsuyuri.ArchetypesOfDreams.Attribute
 {
     /// <summary>
     /// スキルの属性
@@ -11,17 +11,17 @@
         Common = 0,
 
         /// <summary>
-        /// 近接武器
+        /// 力依存スキル
         /// </summary>
-        MeleeWeapon = 1,
+        PowerSkill = 1,
 
         /// <summary>
-        /// 遠隔武器
+        /// 技依存スキル
         /// </summary>
-        RangedWeapon = 2,
+        TechniqueSkill = 2,
 
         /// <summary>
-        /// 特殊
+        /// 特殊スキル
         /// </summary>
         Special = 3,
     }

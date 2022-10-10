@@ -18,6 +18,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 味方のUI
         /// </summary>
+        [field: SerializeField]
         public AllyUIManager AlliesUI { get; private set; } = null;
 
         /// <summary>
@@ -31,33 +32,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public BattleCommandsManager BattleCommands { get; private set; } = null;
 
         /// <summary>
-        /// 近接武器スキルボタンの管理者
+        /// スキルボタンの管理者
         /// </summary>
-        public MeleeWeaponSkillButtonsManager MeleeWeaponSkillButtons { get; private set; } = null;
+        public SkillButtonsManager Skills { get; private set; } = null;
 
         /// <summary>
-        /// 遠隔武器スキルボタンの管理者
+        /// アイテムボタンの管理者
         /// </summary>
-        public RangedWeaponSkillButtonsManager RangedWeaponSkillButtons { get; private set; } = null;
+        public ItemButtonsManager Items { get; private set; } = null;
 
         /// <summary>
-        /// 特殊スキルボタンの管理者
+        /// 行動順UIの管理者
         /// </summary>
-        public SpecialSkillButtonsManager SpecialSkillButtons { get; private set; } = null;
+        public OrderOfActionsDisplayer OrderOfActions { get; private set; } = null;
 
         protected override void Awake()
         {
             base.Awake();
 
-            Description = GetComponentInChildren<DescriptionUIManager>(true);
-
-            AlliesUI = GetComponentInChildren<AllyUIManager>(true);
             EnemiesUI = GetComponentInChildren<EnemyUIManager>(true);
 
             BattleCommands = GetComponentInChildren<BattleCommandsManager>(true);
-            MeleeWeaponSkillButtons = GetComponentInChildren<MeleeWeaponSkillButtonsManager>(true);
-            RangedWeaponSkillButtons = GetComponentInChildren<RangedWeaponSkillButtonsManager>(true);
-            SpecialSkillButtons = GetComponentInChildren<SpecialSkillButtonsManager>(true);
+            Skills = GetComponentInChildren<SkillButtonsManager>(true);
+            Items = GetComponentInChildren<ItemButtonsManager>(true);
+
+            Description = GetComponentInChildren<DescriptionUIManager>(true);
+            OrderOfActions = GetComponentInChildren<OrderOfActionsDisplayer>(true);
         }
 
         /// <summary>
@@ -66,17 +66,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="battle">戦闘の管理者</param>
         public void SetUpButtons(BattleManager battle)
         {
-            BattleCommands.SetUpButtons(battle);
-            BattleCommands.Hide();
-
-            MeleeWeaponSkillButtons.SetUpButtons(battle);
-            MeleeWeaponSkillButtons.Hide();
-
-            RangedWeaponSkillButtons.SetUpButtons(battle);
-            RangedWeaponSkillButtons.Hide();
-
-            SpecialSkillButtons.SetUpButtons(battle);
-            SpecialSkillButtons.Hide();
+            BattleCommands.SetUp(battle);
+            Skills.SetUp(battle);
+            Items.SetUp(battle);
         }
 
         /// <summary>
@@ -86,9 +78,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void UpdateButtons(BattleManager battle)
         {
             BattleCommands.UpdateButtons(battle);
-            MeleeWeaponSkillButtons.UpdateButtons(battle);
-            RangedWeaponSkillButtons.UpdateButtons(battle);
-            SpecialSkillButtons.UpdateButtons(battle);
+            Skills.UpdateButtons(battle);
+            Items.UpdateButtons(battle);
         }
     }
 }

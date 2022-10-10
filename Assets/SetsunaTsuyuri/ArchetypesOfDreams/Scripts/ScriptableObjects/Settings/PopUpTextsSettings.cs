@@ -62,19 +62,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 夢想力のダメージ・回復表示の接頭辞
         /// </summary>
         [field: SerializeField]
-        public string DreamPrefix { get; private set; } = "DP";
+        public string DPPrefix { get; private set; } = "DP";
 
         /// <summary>
         /// 精神力のダメージ・回復表示の接頭辞
         /// </summary>
         [field: SerializeField]
-        public string SoulPrefix { get; private set; } = "SP";
+        public string SPPrefix { get; private set; } = "SP";
 
         /// <summary>
         /// 点滅表示のフェード時間
         /// </summary>
         [field: SerializeField]
-        public float BkinkingFadeDutation { get; private set; } = 0.75f;
+        public float BlinkingFadeDutation { get; private set; } = 0.75f;
 
         /// <summary>
         /// 点滅する時間間隔

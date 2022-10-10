@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 戦闘者の設定
     /// </summary>
-    [CreateAssetMenu(fileName ="Combatants", menuName = "Settings/Combatants")]
+    [CreateAssetMenu(fileName = "Combatants", menuName = "Settings/Combatants")]
     public class CombatantsSettings : ScriptableObject
     {
         /// <summary>
@@ -20,31 +20,49 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 最大レベル
         /// </summary>
         [field: SerializeField]
-        public int MaxLevel { get; private set; } = 999;
+        public int MaxLevel { get; private set; } = 99;
+
+        /// <summary>
+        /// レベルアップに必要な経験値
+        /// </summary>
+        [field: SerializeField]
+        public int ExperienceRequiredToLevelUp { get; private set; } = 1000;
+
+        /// <summary>
+        /// 1レベル毎のレベルアップに必要な経験値の増加率
+        /// </summary>
+        [field: SerializeField]
+        public float PercentageIncreaceInExperienceRequiredToLevelUp { get; private set; } = 1.0f;
 
         /// <summary>
         /// 1レベル毎のステータス増加量
         /// </summary>
         [field: SerializeField]
-        public float AmountOfIncreaseInStatusPerLevel { get; private set; } = 0.05f;
+        public float AmountOfIncreaseInStatusPerLevel { get; private set; } = 0.1f;
 
         /// <summary>
-        /// 最大生命力
+        /// 最大HP
         /// </summary>
         [field: SerializeField]
-        public int MaxLife { get; private set; } = 99999;
+        public int MaxHP { get; private set; } = 99999;
 
         /// <summary>
-        /// 最大夢想力
+        /// 最大DP
         /// </summary>
         [field: SerializeField]
-        public int MaxDream { get; private set; } = 100;
+        public int MaxDP { get; private set; } = 100;
 
         /// <summary>
-        /// 最大精神力
+        /// 最大SP
         /// </summary>
         [field: SerializeField]
-        public int MaxSoul { get; private set; } = 999;
+        public int MaxSP { get; private set; } = 100;
+
+        /// <summary>
+        /// 最大待機時間
+        /// </summary>
+        [field: SerializeField]
+        public int MaxWaitTime { get; private set; } = 10000;
 
         /// <summary>
         /// 1ターンごとの夢想力増加量
@@ -57,12 +75,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public int AmoutOfSoulRecoverdPerTurn { get; private set; } = 1;
-
-        /// <summary>
-        /// 素早さのランダム補正
-        /// </summary>
-        [field: SerializeField]
-        public float RandomSpeedCorrection { get; private set; } = 0.1f;
 
         /// <summary>
         /// 防御状態のときの被ダメージ倍率
@@ -105,11 +117,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public int CrushTurns { get; private set; } = 2;
-
-        /// <summary>
-        /// 敵UIの表示位置オフセット
-        /// </summary>
-        [field: SerializeField]
-        public Vector2 EnemyUIPositionOffset { get; private set; } = new Vector2(0.0f, 1.0f);
     }
 }

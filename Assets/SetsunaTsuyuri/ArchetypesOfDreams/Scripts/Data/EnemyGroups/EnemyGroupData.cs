@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 敵グループのデータ
     /// </summary>
     [System.Serializable]
-    public class EnemyGroupData
+    public class EnemyGroupData : Data
     {
         /// <summary>
         /// 敵の構成

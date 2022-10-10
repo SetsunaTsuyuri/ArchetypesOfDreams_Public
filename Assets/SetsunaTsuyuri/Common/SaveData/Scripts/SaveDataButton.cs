@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using TMPro;
 using SetsunaTsuyuri.ArchetypesOfDreams;
 
@@ -23,7 +21,7 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// セーブデータID
         /// </summary>
-        public int SaveDataId { get; set; } = 0;
+        public int Id { get; set; } = 0;
 
         /// <summary>
         /// オートセーブスロットである
@@ -64,9 +62,9 @@ namespace SetsunaTsuyuri
                 {
                     // セーブ
                     case SaveDataCommandType.Save:
-                        SaveDataManager.Save(SaveDataId);
-                        UpdateTexts(SaveDataManager.CurrentSaveData);
-                        UpdateImages(SaveDataManager.CurrentSaveData);
+                        SaveDataManager.Save(Id);
+                        UpdateTexts(SaveDataManager.Saves[Id]);
+                        UpdateImages(SaveDataManager.Saves[Id]);
                         break;
 
                     // ロード
@@ -78,9 +76,9 @@ namespace SetsunaTsuyuri
                         }
                         else
                         {
-                            SaveDataManager.Load(SaveDataId);
+                            SaveDataManager.Load(Id);
                         }
-                        SceneChangeManager.ChangeScene(ScenesName.MyRoom);
+                        SceneChangeManager.ChangeScene(SceneNames.MyRoom);
                         break;
                 }
             });
@@ -95,24 +93,24 @@ namespace SetsunaTsuyuri
         public void SetUp(SaveDataCommandType command, int id = 0, bool isAutoSave = false)
         {
             SaveDataMenu = command;
-            SaveDataId = id;
+            Id = id;
             IsAutoSave = isAutoSave;
 
             // セーブデータ
-            SaveData save = isAutoSave switch
+            SaveData saveData = isAutoSave switch
             {
                 true => SaveDataManager.AutoSaveData,
                 false => SaveDataManager.Saves[id]
             };
 
             // テキストを更新する
-            UpdateTexts(save, isAutoSave);
+            UpdateTexts(saveData, isAutoSave);
 
             // イメージを更新する
-            UpdateImages(save);
+            UpdateImages(saveData);
 
             // 空きデータはロードできないようにする
-            if (save is null && SaveDataMenu == SaveDataCommandType.Load)
+            if (saveData is null && SaveDataMenu == SaveDataCommandType.Load)
             {
                 SetInteractable(false);
             }
@@ -141,7 +139,7 @@ namespace SetsunaTsuyuri
             }
             else
             {
-                idText.text += $"No.{SaveDataId + 1} ";
+                idText.text += $"No.{Id + 1} ";
             }
 
             // セーブデータが存在する場合
@@ -174,7 +172,7 @@ namespace SetsunaTsuyuri
                 // 味方全員のスプライト
                 Sprite[] sprites = saveData.Allies
                     .Concat(saveData.ReserveAllies)
-                    .Select((x) => x.GetData().GetFaceSpriteOrSprite())
+                    .Select((x) => x.Data.GetFaceSpriteOrSprite())
                     .ToArray();
 
                 // スプライトが存在する場合のみ表示する

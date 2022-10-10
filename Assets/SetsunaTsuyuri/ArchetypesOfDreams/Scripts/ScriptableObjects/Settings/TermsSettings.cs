@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,6 +15,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public string Level { get; private set; } = "Lv.";
+
 
         /// <summary>
         /// 感情属性アイコンの名前

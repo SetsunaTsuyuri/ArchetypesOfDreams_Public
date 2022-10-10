@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +15,14 @@ namespace SetsunaTsuyuri
     [RequireComponent(typeof(EventTrigger))]
     public class GameButton : MonoBehaviour
     {
+        public static readonly float InteractableTextAlpha = 1.0f;
+        public static readonly float NonInteractableTextAlpha = 0.5f;
+
+        /// <summary>
+        /// キャンバスグループ
+        /// </summary>
+        CanvasGroup _canvasGroup = null;
+
         /// <summary>
         /// ボタン
         /// </summary>
@@ -27,12 +35,11 @@ namespace SetsunaTsuyuri
 
         protected virtual void Awake()
         {
+            _canvasGroup = GetComponent<CanvasGroup>();
             Button = GetComponent<Button>();
             EventTrigger = GetComponent<EventTrigger>();
 
             AddTrriger(EventTriggerType.Submit, (_) => AudioManager.PlaySE("決定"));
-            AddTrriger(EventTriggerType.PointerDown, (_) => AudioManager.PlaySE("決定"));
-            
             AddTrriger(EventTriggerType.Move, (_) => AudioManager.PlaySE("ボタン移動"));
             AddTrriger(EventTriggerType.Cancel, (_) => AudioManager.PlaySE("キャンセル"));
         }
@@ -63,7 +70,7 @@ namespace SetsunaTsuyuri
         /// <param name="action">UnityAction</param>
         public void AddTrriger(EventTriggerType type, UnityAction<BaseEventData> action)
         {
-            EventTrigger.Entry entry = new EventTrigger.Entry
+            EventTrigger.Entry entry = new()
             {
                 eventID = type
             };
@@ -72,13 +79,28 @@ namespace SetsunaTsuyuri
             EventTrigger.triggers.Add(entry);
         }
 
-        /// <summary>
-        /// ボタンのinteractableを設定する
-        /// </summary>
-        /// <param name="interactable"></param>
         public void SetInteractable(bool interactable)
         {
             Button.interactable = interactable;
+
+            if (interactable)
+            {
+                _canvasGroup.alpha = InteractableTextAlpha;
+            }
+            else
+            {
+                _canvasGroup.alpha = NonInteractableTextAlpha;
+            }
+        }
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
         }
 
         /// <summary>

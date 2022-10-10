@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -17,57 +17,65 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             return true;
         }
 
-        public override CombatantData GetData()
+        public override bool CanSelectPurification()
         {
-            return MasterData.Nightmares.GetValue(DataId);
+            return false;
         }
 
         /// <summary>
-        /// ナイトメアのデータとして取得する
+        /// ナイトメアデータ
         /// </summary>
         /// <returns></returns>
-        public NightmareData GetNightmareData()
+        private NightmareData NightmareData
         {
-            return GetData() as NightmareData;
+            get => MasterData.Nightmares[DataId];
         }
 
-        /// <summary>
-        /// 浄化成功率を取得する
-        /// </summary>
-        /// <param name="target">対象</param>
-        /// <returns></returns>
-        public virtual int GetPurificationSuccessRate(DreamWalker dreamWalker)
+        public override CombatantData Data
         {
-            // ボス耐性持ちには通じない
-            if (HasBossResistance)
+            get => NightmareData;
+        }
+
+        public override int GetPurificationSuccessRate(Combatant purifier)
+        {
+            int result = 0;
+
+            if (purifier is DreamWalker dreamWalker && !HasBossResistance)
             {
-                return 0;
+                // 成功率
+                float rate = NightmareData.PurificationSuccessRate;
+
+                // レベル差補正
+                if (dreamWalker.Level > Level)
+                {
+                    rate += (dreamWalker.Level - Level) * GameSettings.Purification.LevelDifferenceCorrection;
+                }
+
+                // 共感力補正
+                rate += dreamWalker.Empathy * GameSettings.Purification.EmpathyCorrection;
+
+                // HP補正
+                rate *= 1.0f + (GetHPReductionRate() * GameSettings.Purification.LifeReductionCorrection);
+
+                // クラッシュ補正
+                if (IsCrushed())
+                {
+                    rate *= GameSettings.Purification.CrushCorrection;
+                }
+
+                // 設定された範囲内に収める
+                int min = GameSettings.Purification.MinSuccessRate;
+                int max = GameSettings.Purification.MaxSuccsessRate;
+                result = Mathf.Clamp(Mathf.FloorToInt(rate), min, max);
             }
 
-            // 成功率
-            float rate = GetNightmareData().PurificationSuccessRate;
-
-            // レベル差補正
-            if (dreamWalker.Level > Level)
-            {
-                rate += (dreamWalker.Level - Level) * GameSettings.Purification.LevelDifferenceCorrection;
-            }
-
-            // 共感力補正
-            rate += dreamWalker.Empathy * GameSettings.Purification.EmpathyCorrection;
-
-            // 生命力補正
-            rate *= 1.0f + (GetLifeReductionRate() * GameSettings.Purification.LifeReductionCorrection);
-
-            // クラッシュ補正
-            if (IsCrushed())
-            {
-                rate *= GameSettings.Purification.CrushCorrection;
-            }
-
-            // 0-100%の範囲内に収める
-            int result = Mathf.Clamp(Mathf.FloorToInt(rate), 0, 100);
             return result;
+        }
+
+        protected override Combatant CreateClone(string json)
+        {
+            Nightmare clone = JsonUtility.FromJson<Nightmare>(json);
+            return clone;
         }
     }
 }

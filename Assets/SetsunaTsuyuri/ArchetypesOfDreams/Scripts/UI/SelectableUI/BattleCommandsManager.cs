@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,28 +12,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class BattleCommandsManager : SelectableGameUI<GameButton>
     {
         /// <summary>
-        /// 近接武器スキルボタン
+        /// 通常攻撃ボタン
         /// </summary>
         [field: SerializeField]
-        public GameButton MeleeWeaponSkills { get; private set; } = null;
+        public SkillButton NormalAttack { get; private set; } = null;
 
         /// <summary>
-        /// 遠隔武器スキルボタン
+        /// スキルボタン
         /// </summary>
         [field: SerializeField]
-        public GameButton RangedWeaponSkills { get; private set; } = null;
+        public GameButton Skills { get; private set; } = null;
 
         /// <summary>
-        /// 特殊スキルボタン
+        /// アイテムボタン
         /// </summary>
         [field: SerializeField]
-        public GameButton SpecialSkills { get; private set; } = null;
+        public GameButton Items { get; private set; } = null;
 
         /// <summary>
         /// 防御ボタン
         /// </summary>
         [field: SerializeField]
-        public SkillButton Defending { get; private set; } = null;
+        public SkillButton Defense { get; private set; } = null;
 
         /// <summary>
         /// 浄化ボタン
@@ -47,65 +47,61 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public SkillButton Change { get; private set; } = null;
 
-        ///// <summary>
-        ///// アイテムボタン
-        ///// </summary>
-        //[SerializeField]
-        //GameButton item = null;
-
         /// <summary>
-        /// ボタンをセットアップする
+        /// セットアップする
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void SetUpButtons(BattleManager battle)
+        public void SetUp(BattleManager battle)
         {
+            SetUp();
+
             // イベント追加
-            foreach (var button in buttons)
+            foreach (var button in _buttons)
             {
                 button.AddOnClickListener(() => SetInteractable(false));
             }
 
-            // 近接武器スキル
-            MeleeWeaponSkills.Button.onClick.AddListener(() =>
+            // 通常攻撃
+            NormalAttack.AddOnClickListener(() =>
             {
-                battle.Performer.Combatant.LastSelected = MeleeWeaponSkills.Button;
-                battle.BattleUI.MeleeWeaponSkillButtons.Select();
+                battle.Actor.Combatant.LastSelected = NormalAttack.Button;
             });
-            MeleeWeaponSkills.AddTrriger(EventTriggerType.Select,(_) => battle.BattleUI.Description.SetText(GameSettings.Description.MeleeWeaponSkills));
-
-            // 遠隔武器スキル
-            RangedWeaponSkills.Button.onClick.AddListener(() =>
-            {
-                battle.Performer.Combatant.LastSelected = RangedWeaponSkills.Button;
-                battle.BattleUI.RangedWeaponSkillButtons.Select();
-            });
-            RangedWeaponSkills.AddTrriger(EventTriggerType.Select, (_) => battle.BattleUI.Description.SetText(GameSettings.Description.RangedWeaponSkills));
-
-            // 特殊スキル
-            SpecialSkills.Button.onClick.AddListener(() =>
-            {
-                battle.Performer.Combatant.LastSelected = SpecialSkills.Button;
-                battle.BattleUI.SpecialSkillButtons.Select();
-            });
-            SpecialSkills.AddTrriger(EventTriggerType.Select, (_) => battle.BattleUI.Description.SetText(GameSettings.Description.SpecialSkills));
 
             // 浄化
-            Purification.Button.onClick.AddListener(() =>
+            Purification.AddOnClickListener(() =>
             {
-                battle.Performer.Combatant.LastSelected = Purification.Button;
+                battle.Actor.Combatant.LastSelected = Purification.Button;
             });
 
             // 交代
-            Change.Button.onClick.AddListener(() =>
+            Change.AddOnClickListener(() =>
             {
-                battle.Performer.Combatant.LastSelected = Change.Button;
+                battle.Actor.Combatant.LastSelected = Change.Button;
             });
 
             // 防御
-            Defending.Button.onClick.AddListener(() =>
+            Defense.AddOnClickListener(() =>
             {
-                battle.Performer.Combatant.LastSelected = Defending.Button;
+                battle.Actor.Combatant.LastSelected = Defense.Button;
             });
+
+            // スキル
+            Skills.AddOnClickListener(() =>
+            {
+                battle.Actor.Combatant.LastSelected = Skills.Button;
+                battle.BattleUI.Skills.Select();
+            });
+            Skills.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Skills));
+
+            // アイテム
+            Items.AddOnClickListener(() =>
+            {
+                battle.Actor.Combatant.LastSelected = Items.Button;
+                battle.BattleUI.Items.Select();
+            });
+            Items.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Items));
+
+            Hide();
         }
 
         /// <summary>
@@ -114,48 +110,29 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="battle">戦闘の管理者</param>
         public void UpdateButtons(BattleManager battle)
         {
-            // 行動する戦闘者
-            Combatant combatant = battle.Performer.Combatant;
+            // 行動者
+            Combatant actor = battle.Actor.Combatant;
 
-            // 近接武器スキルボタン
-            MeleeWeaponSkills.gameObject.SetActive(combatant.HasMeleeWeaponSkills());
-            if (MeleeWeaponSkills.gameObject.activeSelf)
+            // 通常攻撃ボタン
+            NormalAttack.UpdateButton(actor.NormalAttack, battle);
+
+            // スキルボタン
+            Skills.gameObject.SetActive(actor.HasSkills());
+            if (Skills.isActiveAndEnabled)
             {
-                MeleeWeaponSkills.SetInteractable(combatant.CanSelectAnyMeleeWeaponSkills(battle));
+                Skills.SetInteractable(actor.CanSelectAnySkill(battle));
             }
             else
             {
-                MeleeWeaponSkills.SetInteractable(false);
-            }
-
-            // 遠隔武器スキルボタン
-            RangedWeaponSkills.gameObject.SetActive(combatant.HasRangedWeaponSkills());
-            if (RangedWeaponSkills.gameObject.activeSelf)
-            {
-                RangedWeaponSkills.SetInteractable(combatant.CanSelectAnyRangedWeaponSkills(battle));
-            }
-            else
-            {
-                RangedWeaponSkills.SetInteractable(false);
-            }
-
-            // 特殊スキルボタン
-            SpecialSkills.gameObject.SetActive(combatant.HasSpecialSkills());
-            if (SpecialSkills.gameObject.activeSelf)
-            {
-                SpecialSkills.SetInteractable(combatant.CanSelectAnySpecialSkills(battle));
-            }
-            else
-            {
-                SpecialSkills.SetInteractable(false);
+                Skills.SetInteractable(false);
             }
 
             // 浄化ボタン
-            Purification.gameObject.SetActive(combatant is DreamWalker);
-            if (Purification.gameObject.activeSelf)
+            Purification.gameObject.SetActive(actor is DreamWalker);
+            if (Purification.isActiveAndEnabled)
             {
-                Skill purificationSkill = new Skill(combatant, MasterData.CommonSkills.Purification);
-                Purification.SetUp(purificationSkill, battle);
+                ActionModel purificationSkill = new(MasterData.Skills.Purification);
+                Purification.UpdateButton(purificationSkill, battle);
             }
             else
             {
@@ -163,11 +140,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 交代ボタン
-            Change.gameObject.SetActive(combatant is Nightmare);
-            if (Change.gameObject.activeSelf)
+            Change.gameObject.SetActive(actor is Nightmare);
+            if (Change.isActiveAndEnabled)
             {
-                Skill changeSkill = new Skill(combatant, MasterData.CommonSkills.Change);
-                Change.SetUp(changeSkill, battle);
+                ActionModel changeSkill = new(MasterData.Skills.Change);
+                Change.UpdateButton(changeSkill, battle);
             }
             else
             {
@@ -175,8 +152,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 防御ボタン
-            Skill defendingSkill = new Skill(combatant, MasterData.CommonSkills.Defending);
-            Defending.SetUp(defendingSkill, battle);
+            ActionModel defenseSkill = new(MasterData.Skills.Defense);
+            Defense.UpdateButton(defenseSkill, battle);
+
+            // アイテムボタン
+            Items.SetInteractable(actor.CanSelectAnyItem(battle));
 
             // ナビゲーション更新
             UpdateButtonNavigationsToLoop();
@@ -198,7 +178,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
             else
             {
-                foreach (var button in buttons)
+                foreach (var button in _buttons)
                 {
                     if (button.Button.interactable)
                     {

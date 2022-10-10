@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SetsunaTsuyuri
 {
@@ -8,14 +6,8 @@ namespace SetsunaTsuyuri
     /// オーディオデータ
     /// </summary>
     [System.Serializable]
-    public class AudioData
+    public class AudioData : Data
     {
-        /// <summary>
-        /// ID
-        /// </summary>
-        [field: SerializeField]
-        public int Id { get; private set; } = 0;
-
         /// <summary>
         /// 名前
         /// </summary>

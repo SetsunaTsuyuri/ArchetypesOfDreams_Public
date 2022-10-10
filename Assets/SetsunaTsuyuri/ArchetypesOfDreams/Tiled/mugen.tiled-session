@@ -1,0 +1,130 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "maps/map2.json",
+    "expandedProjectPaths": [
+        ".",
+        "tilesets",
+        "maps"
+    ],
+    "file.lastUsedOpenFilter": "すべてのファイル (*)",
+    "fileStates": {
+        "://automap-tiles.tsx": {
+            "scaleInDock": 1
+        },
+        ":/automap-tiles.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/vantan/Desktop/mugen_copied/maps/map.tmx": {
+            "scale": 1.0553906249999998,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 320.73432526463847,
+                "y": 320.2605670293878
+            }
+        },
+        "C:/Users/vantan/Desktop/mugen_copied/tilesets/tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/map.json": {
+            "scale": 0.4794531249999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 443.213296398892,
+                "y": 721.6555320189018
+            }
+        },
+        "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/map.tmj": {
+            "scale": 0.62640625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 320.07982040409075,
+                "y": 320.07982040409075
+            }
+        },
+        "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/tilesets/tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "maps/map.json": {
+            "expandedObjectLayers": [
+                11
+            ],
+            "scale": 1.0553906249999998,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 319.7868087941373,
+                "y": 320.26056702938786
+            }
+        },
+        "maps/map.tmj": {
+            "scale": 1.0553906249999998,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 320.73432526463847,
+                "y": 320.2605670293878
+            }
+        },
+        "maps/map.tmx": {
+            "expandedObjectLayers": [
+                11
+            ],
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 319.5,
+                "y": 318
+            }
+        },
+        "maps/map2.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.082109375,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 321.13204822756484,
+                "y": 320.66998772651795
+            }
+        },
+        "maps/test.json": {
+            "scale": 1.082109375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 320.20792722547117,
+                "y": 320.66998772651795
+            }
+        },
+        "tilesets/tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/Tiled/maps",
+    "last.imagePath": "C:/Users/vantan/Desktop/Tiled/mugen/tilesets",
+    "last.objectTypesPath": "C:/Users/vantan/Desktop/Tiled/mugen/maps/propertytypes.json",
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "json",
+    "map.renderOrder": null,
+    "map.width": 20,
+    "openFiles": [
+        "tilesets/tileset.tsx",
+        "maps/map.json",
+        "maps/map2.json"
+    ],
+    "project": "mugen.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "tilesets/tileset.tsx",
+        "maps/map.json",
+        "maps/map2.json",
+        "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/map.json",
+        "maps/test.json",
+        "maps/map.tmj",
+        "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/map.tmj",
+        "maps/map.tmx",
+        "C:/Users/vantan/Desktop/mugen_copied/maps/map.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}

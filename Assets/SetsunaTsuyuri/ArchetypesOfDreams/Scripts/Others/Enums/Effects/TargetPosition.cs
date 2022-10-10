@@ -1,4 +1,4 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Effect
+namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
     /// 対象の立場

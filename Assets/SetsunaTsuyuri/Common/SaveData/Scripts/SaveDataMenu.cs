@@ -22,18 +22,18 @@ namespace SetsunaTsuyuri
 
             // オートセーブ+セーブの数だけボタンを作り配列化する
             int numerOfButtons = SaveDataManager.Saves.Length + 1;
-            buttons = new SaveDataButton[numerOfButtons];
+            _buttons = new SaveDataButton[numerOfButtons];
             for (int i = 0; i < numerOfButtons; i++)
             {
-                SaveDataButton button = Instantiate(buttonPrefab, layoutGroup.transform);
-                buttons[i] = button;
+                SaveDataButton button = Instantiate(buttonPrefab, _layoutGroup.transform);
+                _buttons[i] = button;
             }
         }
 
         private void Start()
         {
             // ボタンをセットアップする
-            SetUpButtons();
+            SetUp();
 
             // 隠す
             Hide();
@@ -46,13 +46,13 @@ namespace SetsunaTsuyuri
         public void UpdateButtonsAndSelect(SaveDataCommandType command)
         {
             // オートセーブ用ボタンのセットアップ
-            buttons[0].SetUp(command, 0, true);
+            _buttons[0].SetUp(command, 0, true);
 
             // セーブ用ボタンのセットアップ
             int saves = SaveDataManager.Saves.Length + 1;
             for (int i = 1; i < saves; i++)
             {
-                buttons[i].SetUp(command, i - 1);
+                _buttons[i].SetUp(command, i - 1);
             }
 
             // ナビゲーション更新

@@ -1,11 +1,11 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Effect
+﻿namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
     /// 式の種類
     /// </summary>
     public enum Formula
     {
-        AttackAndDefense = 0, // 攻撃力と守備力
+        Status = 0, // ステータス依存
         Rate = 1, // 割合
     }
 }

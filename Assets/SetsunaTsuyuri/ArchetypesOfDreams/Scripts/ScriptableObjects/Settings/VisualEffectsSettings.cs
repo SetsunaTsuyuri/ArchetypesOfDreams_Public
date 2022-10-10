@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 視覚効果の設定
     /// </summary>
-    [CreateAssetMenu(menuName = "Settings/VisualEffects")]
+    [CreateAssetMenu(fileName = "VisualEffects", menuName = "Settings/VisualEffects")]
     public class VisualEffectsSettings : ScriptableObject
     {
         /// <summary>

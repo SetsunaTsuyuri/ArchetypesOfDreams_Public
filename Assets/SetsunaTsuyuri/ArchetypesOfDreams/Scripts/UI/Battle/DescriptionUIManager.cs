@@ -13,13 +13,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 説明文
         /// </summary>
-        TextMeshProUGUI text = null;
+        TextMeshProUGUI _text = null;
 
         protected override void Awake()
         {
             base.Awake();
 
-            text = GetComponentInChildren<TextMeshProUGUI>(true);
+            _text = GetComponentInChildren<TextMeshProUGUI>(true);
         }
 
         /// <summary>
@@ -28,7 +28,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="text">文章の文字列</param>
         public void SetText(string text)
         {
-            this.text.text = text;
+            _text.alignment = TextAlignmentOptions.Left;
+            _text.text = text;
+        }
+
+        /// <summary>
+        /// 文章をクリアする
+        /// </summary>
+        public void ClearText()
+        {
+            _text.text = string.Empty;
+        }
+
+        /// <summary>
+        /// 行動名を表示する
+        /// </summary>
+        /// <param name="action">行動内容</param>
+        public void DisplayActionName(ActionModel action)
+        {
+            _text.alignment = TextAlignmentOptions.Center;
+            _text.text = action.Name;
         }
     }
 }

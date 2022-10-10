@@ -25,6 +25,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int DataId { get; set; } = 0;
 
         /// <summary>
+        /// データ
+        /// </summary>
+        /// <returns></returns>
+        public abstract CombatantData Data { get; }
+
+        /// <summary>
         /// リーダーである
         /// </summary>
         public bool IsLeader { get; set; } = false;
@@ -56,16 +62,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 防御している
-        /// </summary>
-        public bool IsDefending { get; set; } = false;
-
-        /// <summary>
-        /// 行動済みである
-        /// </summary>
-        public bool Acted { get; set; } = false;
-
-        /// <summary>
         /// 最後に選択したコマンド
         /// </summary>
         public Selectable LastSelected { get; set; } = null;
@@ -73,22 +69,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動の結果
         /// </summary>
-        public TargetActionResult Result { get; set; } = new TargetActionResult();
+        public ActionResult Result { get; set; } = new ActionResult();
 
         public void Initialize()
         {
             Result.Initialize();
-            Experience = LevelToExperience();
-            Acted = false;
+            Experience = ToMinExperience(Level);
             InitializeStatus();
+
+            WaitTime = 0;
             LastSelected = null;
         }
-
-        /// <summary>
-        /// データを取得する
-        /// </summary>
-        /// <returns></returns>
-        public abstract CombatantData GetData();
 
         /// <summary>
         /// 行動可能である
@@ -98,9 +89,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             bool result = false;
 
-            if (!Acted &&
-                (Condition == Attribute.Condition.Normal ||
-                (Condition == Attribute.Condition.Crush && HasBossResistance)))
+            if (Condition == Attribute.Condition.Normal ||
+                (Condition == Attribute.Condition.Crush && HasBossResistance))
             {
                 result = true;
             }
@@ -127,31 +117,60 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 近接武器スキルを有している
+        /// スキルを有している
         /// </summary>
         /// <returns></returns>
-        public bool HasMeleeWeaponSkills()
+        public bool HasSkills()
         {
-            return meleeWeaponSkillIdList.Count > 0;
+            return Skills.Any();
         }
 
         /// <summary>
-        /// 遠隔武器スキルを有している
+        /// スキルを選択できる
         /// </summary>
+        /// <param name="battle">戦闘の管理者</param>
         /// <returns></returns>
-        public bool HasRangedWeaponSkills()
+        public bool CanSelectAnySkill(BattleManager battle)
         {
-            return rangedWeaponSkillIdList.Count > 0;
+            return GetAvailableSkills(battle).Any();
         }
 
         /// <summary>
-        /// 特殊スキルを有している
+        /// アイテムを選択できる
         /// </summary>
+        /// <param name="battle">戦闘の管理者</param>
         /// <returns></returns>
-        public bool HasSpecialSkills()
+        public bool CanSelectAnyItem(BattleManager battle)
         {
-            return specialSkillIdList.Count > 0;
+            return ItemUtility.HasAnyUsableItem();
         }
+
+        ///// <summary>
+        ///// 近接武器スキルを有している
+        ///// </summary>
+        ///// <returns></returns>
+        //public bool HasMeleeWeaponSkills()
+        //{
+        //    return _strengthSkillIdList.Count > 0;
+        //}
+
+        ///// <summary>
+        ///// 遠隔武器スキルを有している
+        ///// </summary>
+        ///// <returns></returns>
+        //public bool HasRangedWeaponSkills()
+        //{
+        //    return _techniqueSkillIdList.Count > 0;
+        //}
+
+        ///// <summary>
+        ///// 特殊スキルを有している
+        ///// </summary>
+        ///// <returns></returns>
+        //public bool HasSpecialSkills()
+        //{
+        //    return _specialSkillIdList.Count > 0;
+        //}
 
         /// <summary>
         /// 近接武器コマンドを選択できる
@@ -161,7 +180,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool CanSelectAnyMeleeWeaponSkills(BattleManager battle)
         {
             return GetAvailableSkills(battle)
-                .Where(x => x.SkillAttribute == Attribute.Skill.MeleeWeapon)
+                .Where(x => x.SkillAttribute == Attribute.Skill.PowerSkill)
                 .Any();
         }
 
@@ -173,7 +192,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool CanSelectAnyRangedWeaponSkills(BattleManager battle)
         {
             return GetAvailableSkills(battle)
-                .Where(x => x.SkillAttribute == Attribute.Skill.RangedWeapon)
+                .Where(x => x.SkillAttribute == Attribute.Skill.TechniqueSkill)
                 .Any();
         }
 
@@ -193,7 +212,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 防御コマンドを選択できる
         /// </summary>
         /// <returns></returns>
-        public bool CanSelectGuard()
+        public bool CanSelectDefending()
         {
             return true;
         }
@@ -202,36 +221,30 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 浄化コマンドを選択できる
         /// </summary>
         /// <returns></returns>
-        public bool CanSelectPurification()
-        {
-            return this is DreamWalker;
-        }
+        public abstract bool CanSelectPurification();
 
         /// <summary>
         /// コンテナから解放できる
         /// </summary>
         /// <returns></returns>
-        public virtual bool CanBeReleased()
-        {
-            return false;
-        }
+        public abstract bool CanBeReleased();
 
         /// <summary>
         /// 生命力の割合を取得する
         /// </summary>
         /// <returns></returns>
-        public float GetLifeRate()
+        public float GetHPRate()
         {
-            return GetStatusRate(Life, MaxLife);
+            return GetStatusRate(CurrentHP, MaxHP);
         }
 
         /// <summary>
         /// 生命力の減少率を取得する
         /// </summary>
         /// <returns></returns>
-        public float GetLifeReductionRate()
+        public float GetHPReductionRate()
         {
-            return 1.0f - GetLifeRate();
+            return 1.0f - GetHPRate();
         }
 
         /// <summary>
@@ -240,7 +253,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public float GetDreamRate()
         {
-            return GetStatusRate(Dream, GameSettings.Combatants.MaxDream);
+            return GetStatusRate(CurrentDP, GameSettings.Combatants.MaxDP);
         }
 
         /// <summary>
@@ -256,9 +269,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 精神力の割合を取得する
         /// </summary>
         /// <returns></returns>
-        public float GetSoulRate()
+        public float GetSPRate()
         {
-            return GetStatusRate(Soul, MaxSoul);
+            return GetStatusRate(CurrentSP, MaxSP);
         }
 
         /// <summary>
@@ -267,7 +280,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public float GetSoulReductionRate()
         {
-            return 1.0f - GetSoulRate();
+            return 1.0f - GetSPRate();
         }
 
         /// <summary>
@@ -280,5 +293,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             return remaining / max;
         }
+
+        /// <summary>
+        /// クローン（ディープコピー）を作る
+        /// </summary>
+        /// <returns></returns>
+        public Combatant Clone()
+        {
+            string json = JsonUtility.ToJson(this);
+            Combatant clone = CreateClone(json);
+            clone.Initialize();
+            return clone;
+        }
+
+        /// <summary>
+        /// クローン（ディープコピー）を作る
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        protected abstract Combatant CreateClone(string json);
     }
 }

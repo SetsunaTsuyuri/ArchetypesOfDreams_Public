@@ -45,7 +45,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             AddTrriger(EventTriggerType.Select, (_) => description.SetText(Data.Description));
 
             // キャンセルされたとき、自室シーンに移る
-            AddTrriger(EventTriggerType.Cancel, (_) => SceneChangeManager.ChangeScene(ScenesName.MyRoom));
+            AddTrriger(EventTriggerType.Cancel, (_) => SceneChangeManager.ChangeScene(SceneNames.MyRoom));
             
             Button.onClick.AddListener(() =>
             {

@@ -25,12 +25,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// スキル名を表示する
+        /// 行動名を表示する
         /// </summary>
-        /// <param name="name">名前</param>
-        public void DisplaySkillName(Skill skill)
+        /// <param name="model">行動内容</param>
+        public void DisplaySkillName(ActionModel model)
         {
-            text.text = skill.GetName();
+            text.text = model.Name;
             Show();
         }
     }

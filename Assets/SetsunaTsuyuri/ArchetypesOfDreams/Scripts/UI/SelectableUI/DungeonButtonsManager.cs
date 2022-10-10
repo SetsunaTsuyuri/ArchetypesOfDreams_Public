@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -10,29 +11,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class DungeonButtonsManager : SelectableGameUI<DungeonButton>
     {
         /// <summary>
-        /// ダンジョンボタンをセットアップする
+        /// セットアップする
         /// </summary>
         /// <param name="description">説明文の管理者</param>
-        public void SetUpDungeonButtons(DescriptionUIManager description)
+        public void SetUp(DescriptionUIManager description)
         {
-            SetUpButtons();
+            SetUp();
 
-            SaveData save = SaveDataManager.CurrentSaveData;
-            bool[] openDungeons = save.OpenDungeons;
-
+            ShowOrHideAllButtons(false);
+            bool[] openDungeons = RuntimeData.OpenDungeons;
             for (int i = 0; i < openDungeons.Length; i++)
             {
                 // ダンジョンデータ
-                DungeonData dungeon = MasterData.Dungeons.GetValue(i);
+                DungeonData dungeon = MasterData.Dungeons[i];
 
                 // ダンジョンボタン
-                DungeonButton button = buttons[i];
+                DungeonButton button = _buttons[i];
 
                 // 選択できないダンジョンは非アクティブかつ選択不能にしてコンティニューする
                 if (dungeon.CannotBeSelected)
                 {
                     button.SetInteractable(false);
-                    button.gameObject.SetActive(false);
+                    button.Hide();
                     continue;
                 }
 

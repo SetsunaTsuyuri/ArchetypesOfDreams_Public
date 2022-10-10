@@ -62,14 +62,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 武器スキルのデータ集
+        /// スキルデータグループ
         /// </summary>
-        SkillDataCollection weaponSkills = null;
+        SkillDataGroup _skills = null;
+
+        /// <summary>
+        /// スキルデータグループ
+        /// </summary>
+        public static SkillDataGroup Skills
+        {
+            get => Instance._skills;
+        }
 
         /// <summary>
         /// 武器スキルのデータ集
         /// </summary>
-        public static SkillDataCollection WeaponSkills
+        SkillDataGroup weaponSkills = null;
+
+        /// <summary>
+        /// 武器スキルのデータ集
+        /// </summary>
+        public static SkillDataGroup WeaponSkills
         {
             get => Instance.weaponSkills;
         }
@@ -77,12 +90,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 特殊スキルのデータ集
         /// </summary>
-        SkillDataCollection specialSkills = null;
+        SkillDataGroup specialSkills = null;
 
         /// <summary>
         /// 特殊スキルのデータ集
         /// </summary>
-        public static SkillDataCollection SpecialSkills
+        public static SkillDataGroup SpecialSkills
         {
             get => Instance.specialSkills;
         }
@@ -98,6 +111,29 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static CommonSkillDataCollection CommonSkills
         {
             get => Instance.commonSkills;
+        }
+
+        /// <summary>
+        /// ステータス効果のデータ集
+        /// </summary>
+        StatusEffectDataCollection statusEffects = null;
+
+        /// <summary>
+        /// ステータス効果のデータ集
+        /// </summary>
+        public static StatusEffectDataCollection StatusEffects
+        {
+            get => Instance.statusEffects;
+        }
+
+        /// <summary>
+        /// アイテムのデータ集
+        /// </summary>
+        ItemDataCollection items = null;
+
+        public static ItemDataCollection Items
+        {
+            get => Instance.items;
         }
 
         /// <summary>
@@ -119,44 +155,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             enemyGroups = Resources.Load<EnemyGroupDataCollection>(ResourcesPath.EnemyGroups);
             dreamWalkes = Resources.Load<DreamWalkerDataCollection>(ResourcesPath.DreamWalkers);
             nightmares = Resources.Load<NightmareDataCollection>(ResourcesPath.Nightmares);
-            weaponSkills = Resources.Load<SkillDataCollection>(ResourcesPath.WeaponSkills);
-            specialSkills = Resources.Load<SkillDataCollection>(ResourcesPath.SpecialSkills);
-            commonSkills = Resources.Load<CommonSkillDataCollection>(ResourcesPath.CommonSkills);
+            _skills = Resources.Load<SkillDataGroup>("MasterData/Skills");
+            statusEffects = Resources.Load<StatusEffectDataCollection>(ResourcesPath.StatusEffects);
+            items = Resources.Load<ItemDataCollection>(ResourcesPath.Items);
             scenarios = Resources.Load<ScenarioDataCollection>(ResourcesPath.Scenarios);
-        }
-
-        /// <summary>
-        /// 武器スキルのデータを読み込む
-        /// </summary>
-        /// <param name="idList">スキルIDリスト</param>
-        public static SkillData[] LoadWeaponSkillData(List<int> idList)
-        {
-            List<SkillData> skills = new List<SkillData>();
-
-            foreach (var id in idList)
-            {
-                SkillData data = WeaponSkills.GetValue(id);
-                skills.Add(data);
-            }
-
-            return skills.ToArray();
-        }
-
-        /// <summary>
-        /// 特殊スキルのデータを読み込む
-        /// </summary>
-        /// <param name="idList">スキルIDリスト</param>
-        public static SkillData[] LoadSpecialSkillData(List<int> idList)
-        {
-            List<SkillData> skills = new List<SkillData>();
-
-            foreach (var id in idList)
-            {
-                SkillData data = SpecialSkills.GetValue(id);
-                skills.Add(data);
-            }
-
-            return skills.ToArray();
         }
     }
 }

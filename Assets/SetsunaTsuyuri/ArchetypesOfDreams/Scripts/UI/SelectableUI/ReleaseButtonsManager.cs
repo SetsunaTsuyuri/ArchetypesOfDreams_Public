@@ -19,7 +19,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             for (int i = 0; i < containers.Length; i++)
             {
-                buttons[i].SetUp(allies, containers[i]);
+                _buttons[i].SetUp(allies, containers[i]);
             }
 
             UpdateButtonNavigationsToLoop();

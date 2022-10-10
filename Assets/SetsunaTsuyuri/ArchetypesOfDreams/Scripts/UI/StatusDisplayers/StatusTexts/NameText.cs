@@ -17,7 +17,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         protected override string GetValue(Combatant combatant)
         {
-            return combatant.GetData().Name;
+            return combatant.Data.Name;
         }
     }
 }

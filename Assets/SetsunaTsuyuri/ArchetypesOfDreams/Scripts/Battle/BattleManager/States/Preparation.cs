@@ -11,7 +11,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘開始前の準備
         /// </summary>
-        private class Preparation : FiniteStateMachine<BattleManager>.State
+        private class Preparation : StateMachine<BattleManager>.State
         {
             public override void Enter(BattleManager context)
             {
@@ -29,14 +29,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // フェードアウト
             await FadeManager.FadeOut(token);
 
-            // 初期化する
-            Initialize();
-
             // 戦闘UIを表示する
             BattleUI.Show();
-
-            // 敵を作る
-            Enemies.CreateEnemies(gameCommand);
 
             // 位置を調整する
             Enemies.AdjsutEnemiesPosition();

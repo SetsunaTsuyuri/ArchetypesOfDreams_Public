@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,10 +17,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int Id { get; private set; }
 
         /// <summary>
-        /// レベル補正
+        /// レベル
         /// </summary>
         [field: SerializeField]
-        public int LevelCorrection { get; private set; }
+        public int Level { get; private set; }
 
         /// <summary>
         /// リーダーである
@@ -29,7 +29,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool IsLeader { get; private set; }
 
         /// <summary>
-        /// ボスとしての耐性を持っている
+        /// ボス耐性を持っている
         /// </summary>
         [field: SerializeField]
         public bool HasBossResistance { get; private set; }

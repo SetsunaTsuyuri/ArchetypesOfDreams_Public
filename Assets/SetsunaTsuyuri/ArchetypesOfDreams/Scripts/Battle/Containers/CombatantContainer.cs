@@ -17,7 +17,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ID
         /// </summary>
         public int Id { get; set; } = 0;
-        
+
         /// <summary>
         /// 戦闘者
         /// </summary>
@@ -79,13 +79,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         GameEventWithCombatantContainer onTargetFlagSet = null;
 
         /// <summary>
-        /// スキルを使用したときのゲームイベント
+        /// 行動したときのゲームイベント
         /// </summary>
         [SerializeField]
-        GameEventWithSkill onSkillUsed = null;
+        GameEventWithSkill onAction = null;
 
         /// <summary>
-        /// 攻撃を回避したときのゲームイベント
+        /// 回避したときのゲームイベント
         /// </summary>
         [SerializeField]
         GameEventWithCombatantContainer onMiss = null;
@@ -119,14 +119,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// スキルを使用した
+        /// 行動した
         /// </summary>
-        /// <param name="skill">スキル</param>
-        public void OnSkillUsed(Skill skill)
+        /// <param name="model">行動内容</param>
+        public void OnAction(ActionModel model)
         {
-            if (onSkillUsed)
+            if (onAction)
             {
-                onSkillUsed.Invoke(skill);
+                onAction.Invoke(model);
             }
         }
 
@@ -144,7 +144,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ダメージ
         /// </summary>
-        public void OnDamage()
+        public virtual void OnDamage()
         {
             if (onDamage)
             {
@@ -172,6 +172,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 戦闘開始時の処理
+        /// </summary>
+        public void OnBattleStart()
+        {
+            Combatant?.OnBattleStart();
+        }
+
+        /// <summary>
+        /// 戦闘開始時の処理(控えにいる場合)
+        /// </summary>
+        public void OnBattleStartReserve()
+        {
+            Combatant?.OnBattleStartReserve();
+        }
+
+        /// <summary>
+        /// 戦闘終了時の処理
+        /// </summary>
+        public void OnBattleEnd()
+        {
+            Combatant?.OnBattleEnd();
+        }
+
+        /// <summary>
+        /// 時間が経過した時の処理
+        /// </summary>
+        /// <param name="elapsedTime">経過時間</param>
+        public void OnTimeElapsed(int elapsedTime)
+        {
+            Combatant?.OnTimeElapsed(elapsedTime);
+        }
+
+        /// <summary>
         /// 自身が格納している戦闘者を別のコンテナに入れる
         /// </summary>
         /// <param name="target"></param>
@@ -187,7 +220,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool IsAvailable()
         {
-            return Combatant == null;
+            return Combatant is null;
         }
 
         /// <summary>
@@ -196,16 +229,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsCombatant()
         {
-            return Combatant != null;
+            return Combatant is not null;
         }
 
         /// <summary>
         /// 行動の対象にできる戦闘者を格納している
         /// </summary>
+        /// <param name="condition">対象にできる対象の状態</param>
         /// <returns></returns>
-        public bool ContainsTargetable()
+        public bool ContainsTargetable(TargetCondition condition)
         {
-            return ContainsFightable();
+            return condition switch
+            {
+                TargetCondition.Living => ContainsFightable(),
+                TargetCondition.KnockedOut => ContainsKnockedOut(),
+                TargetCondition.LivingAndKnockedOut => ContainsCombatant(),
+                _ => false
+            };
         }
 
         /// <summary>
@@ -215,6 +255,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool ContainsFightable()
         {
             return ContainsCombatant() && !Combatant.IsKnockedOut();
+        }
+
+        /// <summary>
+        /// 戦闘不能な戦闘者を格納している
+        /// </summary>
+        /// <returns></returns>
+        public bool ContainsKnockedOut()
+        {
+            return ContainsCombatant() && Combatant.IsKnockedOut();
         }
 
         /// <summary>
@@ -260,6 +309,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public virtual bool ContainsPlayerControlled()
         {
             return false;
+        }
+
+        /// <summary>
+        /// クラッシュ状態の戦闘者を格納している
+        /// </summary>
+        /// <returns></returns>
+        public bool ContainsCrush()
+        {
+            return ContainsCombatant() && Combatant.IsCrushed();
         }
     }
 }

@@ -45,6 +45,7 @@ namespace SetsunaTsuyuri.Scenario
         /// <returns></returns>
         public async UniTask CrossFade(Sprite sprite, float duration, CancellationToken token)
         {
+
             List<UniTask> tasks = new List<UniTask>();
 
             // 古いスプライトをフェードアウト

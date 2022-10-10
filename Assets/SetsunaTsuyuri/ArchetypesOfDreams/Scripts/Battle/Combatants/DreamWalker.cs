@@ -16,18 +16,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public int Empathy { get; set; } = 0;
 
-        public override CombatantData GetData()
-        {
-            return MasterData.DreamWalkers.GetValue(DataId);
-        }
-
         /// <summary>
-        /// 夢渡りのデータにして取得する
+        /// 夢渡りデータ
         /// </summary>
         /// <returns></returns>
-        public DreamWalkerData GetDreamWalkerData()
+        public DreamWalkerData DreamWalkerData
         {
-            return GetData() as DreamWalkerData;
+            get => MasterData.DreamWalkers[DataId];
+        }
+
+        public override CombatantData Data
+        {
+            get => DreamWalkerData;
+        }
+
+        public override bool CanBeReleased()
+        {
+            return false;
+        }
+
+        public override bool CanSelectPurification()
+        {
+            return true;
+        }
+
+        public override int GetPurificationSuccessRate(Combatant purifier)
+        {
+            return 0;
+        }
+
+        protected override Combatant CreateClone(string json)
+        {
+            DreamWalker clone = JsonUtility.FromJson<DreamWalker>(json);
+            return clone;
         }
     }
 }

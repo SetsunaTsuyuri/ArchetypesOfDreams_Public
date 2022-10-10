@@ -9,6 +9,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 休眠状態
         /// </summary>
-        private class Sleep : FiniteStateMachine<BattleManager>.State { }
+        private class Sleep : StateMachine<BattleManager>.State { }
     }
 }

@@ -37,11 +37,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ターゲット選択
         /// </summary>
-        private class TargetSelection : FiniteStateMachine<BattleManager>.State
+        private class TargetSelection : StateMachine<BattleManager>.State
         {
             public override void Enter(BattleManager context)
             {
-                if (context.SkillToBeUsed is null)
+                if (context.ActorAction is null)
                 {
                     Debug.LogError("SkillToBeUsed is null");
                     return;
@@ -84,7 +84,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void UpdateTargetables()
         {
-            Targetables = GetTargetables(SkillToBeUsed.Data.Effect);
+            Targetables = GetTargetables(ActorAction.Effect);
         }
 
         /// <summary>
@@ -94,14 +94,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             // スキルが設定されていないか、
             // 対象にできるコンテナが存在しないなら中止する
-            if (SkillToBeUsed is null ||
+            if (ActorAction is null ||
                 !Targetables.Any())
             {
                 return;
             }
 
             // 単体を対象としていない場合
-            if (SkillToBeUsed.Data.Effect.TargetSelection != Effect.TargetSelection.Single)
+            if (ActorAction.Effect.TargetSelection != TargetSelectionType.Single)
             {
                 // 非単体対象フラグON
                 targetIsNotSingle = true;
@@ -118,7 +118,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 targetIsNotSingle = false;
 
                 // プレイヤーが操作可能な戦闘者の場合
-                if (Performer.ContainsPlayerControlled())
+                if (Actor.ContainsPlayerControlled())
                 {
                     // 0番目を対象とする
                     targetIndex = 0;
@@ -126,7 +126,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 else
                 {
                     // AIが自動的に対象を決定する
-                    targetIndex = Performer.Combatant.DecideTargetIndex(Targetables);
+                    targetIndex = Actor.Combatant.DecideTargetIndex(Targetables);
                 }
 
                 Targetables[targetIndex].IsTargeted = true;
@@ -138,7 +138,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void MakeActionResultOnTargetSelection()
         {
-            Performer.Combatant.MakeActionResultOnTargetSelection(SkillToBeUsed, Targetables);
+            Actor.Combatant.MakeActionResultOnTargetSelection(ActorAction, Targetables);
         }
 
         /// <summary>
@@ -151,29 +151,29 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             return effect.TargetPosition switch
             {
                 // 敵
-                Effect.TargetPosition.Enemies => GetPerformersTargetableEnemies(),
+                TargetPosition.Enemies => GetActorsTargetableEnemies(effect.TargetCondition),
 
                 // 味方
-                Effect.TargetPosition.Allies => GetPerformersTargetableAllies(),
+                TargetPosition.Allies => GetActorsTargetableAllies(effect.TargetCondition),
 
                 // 敵味方両方
-                Effect.TargetPosition.Both => Enemies.GetTargetables()
-                                        .Concat(Allies.GetTargetables())
+                TargetPosition.Both => Enemies.GetTargetables(effect.TargetCondition)
+                                        .Concat(Allies.GetTargetables(effect.TargetCondition))
                                         .ToArray(),
                 // 自分
-                Effect.TargetPosition.Oneself => new CombatantContainer[1] { Performer },
+                TargetPosition.Oneself => new CombatantContainer[1] { Actor },
 
                 // 自分以外の味方
-                Effect.TargetPosition.AlliesOtherThanOneself => GetPerformersTargetableAllies()
-                                        .Where(x => x != Performer)
+                TargetPosition.AlliesOtherThanOneself => GetActorsTargetableAllies(effect.TargetCondition)
+                                        .Where(x => x != Actor)
                                         .ToArray(),
                 // 自分以外の敵味方
-                Effect.TargetPosition.OtherThanOneself => Enemies.GetTargetables()
-                                        .Concat(Allies.GetTargetables())
-                                        .Where(x => x != Performer)
+                TargetPosition.OtherThanOneself => Enemies.GetTargetables(effect.TargetCondition)
+                                        .Concat(Allies.GetTargetables(effect.TargetCondition))
+                                        .Where(x => x != Actor)
                                         .ToArray(),
                 // 控え
-                Effect.TargetPosition.Reserves => Allies.ReserveMembers
+                TargetPosition.Reserves => Allies.ReserveMembers
                                         .Where(x => x.ContainsChangeable())
                                         .ToArray(),
 
@@ -187,40 +187,43 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="effect">効果データ</param>
         /// <returns></returns>
-        public bool ExistsTargetableOrTargetOfEffectIsNone(EffectData effect)
+        public bool ExistsTargetableOrTargetPositionIsNone(EffectData effect)
         {
-            return GetTargetables(effect).Any() || effect.TargetPosition == Effect.TargetPosition.None;
+            return GetTargetables(effect).Any()
+                || effect.TargetPosition == TargetPosition.None;
         }
 
         /// <summary>
         /// 行動者の敵で対象にできる戦闘者コンテナ配列を取得する
         /// </summary>
+        /// <param name="condition">対象にできる戦闘者の状態</param>
         /// <returns></returns>
-        private CombatantContainer[] GetPerformersTargetableEnemies()
+        private CombatantContainer[] GetActorsTargetableEnemies(TargetCondition condition)
         {
-            if (Performer is AllyContainer)
+            if (Actor is AllyContainer)
             {
-                return Enemies.GetTargetables();
+                return Enemies.GetTargetables(condition);
             }
             else
             {
-                return Allies.GetTargetables();
+                return Allies.GetTargetables(condition);
             }
         }
 
         /// <summary>
         /// 行動者の味方で対象にできる戦闘者コンテナ配列を取得する
         /// </summary>
+        /// <param name="condition">対象にできる戦闘者の状態</param>
         /// <returns></returns>
-        private CombatantContainer[] GetPerformersTargetableAllies()
+        private CombatantContainer[] GetActorsTargetableAllies(TargetCondition condition)
         {
-            if (Performer is AllyContainer)
+            if (Actor is AllyContainer)
             {
-                return Allies.GetTargetables();
+                return Allies.GetTargetables(condition);
             }
             else
             {
-                return Enemies.GetTargetables();
+                return Enemies.GetTargetables(condition);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,12 +12,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// メインカメラ
         /// </summary>
-        Camera mainCamera = null;
+        Camera _mainCamera = null;
 
         protected override void Awake()
         {
             base.Awake();
-            mainCamera = Camera.main;
+            _mainCamera = Camera.main;
         }
 
         /// <summary>
@@ -38,10 +38,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             EnemyUI ui = uiArray[container.Id];
             ui.transform.position = RectTransformUtility.WorldToScreenPoint(
-                mainCamera,
-                container.transform.position +
-                (Vector3)GameSettings.Combatants.EnemyUIPositionOffset +
-                (Vector3)container.Combatant.GetData().EnemyUIPositionOffset);
+                _mainCamera,
+                container.transform.position
+                + (Vector3)GameSettings.Enemies.UIPositionOffset
+                + (Vector3)container.Combatant.Data.EnemyUIPositionOffset);
         }
     }
 }

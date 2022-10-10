@@ -21,7 +21,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// コマンド選択
         /// </summary>
-        private class CommandSelection : FiniteStateMachine<BattleManager>.State
+        private class CommandSelection : StateMachine<BattleManager>.State
         {
             public override void Enter(BattleManager context)
             {
@@ -50,7 +50,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SelectCommandButtons()
         {
-            BattleUI.BattleCommands.Select(Performer.Combatant.LastSelected);
+            BattleUI.BattleCommands.Select(Actor.Combatant.LastSelected);
         }
     }
 }

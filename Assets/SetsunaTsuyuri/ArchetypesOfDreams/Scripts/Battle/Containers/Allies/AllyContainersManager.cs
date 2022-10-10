@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -34,6 +35,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public CombatantContainer ToBeReleased { get; set; } = null;
 
+        public override void OnBattleStart()
+        {
+            base.OnBattleStart();
+
+            foreach (var reserve in ReserveMembers)
+            {
+                reserve.OnBattleStartReserve();
+            }
+        }
+
+        /// <summary>
+        /// 戦闘終了時の処理
+        /// </summary>
+        public void OnBattleEnd()
+        {
+            Combatant[] combatants = GetAllCombatants();
+            foreach (var combatant in combatants)
+            {
+                combatant.OnBattleEnd();
+            }
+        }
+
         public override bool CanFight()
         {
             // 戦闘可能な夢渡りが存在する
@@ -51,9 +74,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             GetAllContainers().Initialize();
 
             // ロード
-            SaveData save = SaveDataManager.CurrentSaveData;
-            AddCombatants(Members, save.Allies);
-            AddCombatants(ReserveMembers, save.ReserveAllies);
+            AddCombatants(Members, RuntimeData.Allies);
+            AddCombatants(ReserveMembers, RuntimeData.ReserveAllies);
         }
 
         /// <summary>
@@ -61,9 +83,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="containers">戦闘者コンテナ配列</param>
         /// <param name="combatants">戦闘者配列</param>
-        public void AddCombatants(CombatantContainer[] containers, Combatant[] combatants)
+        public void AddCombatants(CombatantContainer[] containers, List<Combatant> combatants)
         {
-            for (int i = 0;i < containers.Length && i < combatants.Length; i++)
+            int min = Math.Min(containers.Length, combatants.Count);
+            for (int i = 0;i < min; i++)
             {
                 containers[i].Combatant = combatants[i];
             }
@@ -71,20 +94,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void OnDestroy()
         {
-            // セーブに全戦闘者を保存する
-            Combatant[] allies = Members
+            var allies = Members
                 .Where(x => x.ContainsCombatant())
-                .Select(x => x.Combatant)
-                .ToArray();
+                .Select(x => x.Combatant);
 
-            Combatant[] reserveAllies = ReserveMembers
+            RuntimeData.SetAllies(allies);
+
+            var reserveAllies = ReserveMembers
                 .Where(x => x.ContainsCombatant())
-                .Select(x => x.Combatant)
-                .ToArray();
+                .Select(x => x.Combatant);
 
-            SaveData save = SaveDataManager.CurrentSaveData;
-            save.Allies = allies;
-            save.ReserveAllies = reserveAllies;
+            RuntimeData.SetReserveAllies(reserveAllies);
         }
 
         public override AllyContainer FindAvailable()
@@ -106,28 +126,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .ToArray();
 
             return result;
-        }
-
-        public override void OnTurnEnd()
-        {
-            base.OnTurnEnd();
-
-            foreach (var reserve in ReserveMembers)
-            {
-                reserve.Combatant?.OnTurnEndReserve();
-            }
-        }
-
-        /// <summary>
-        /// 戦闘終了時の処理
-        /// </summary>
-        public void OnBattleEnd()
-        {
-            Combatant[] combatants = GetAllCombatants();
-            foreach (var combatant in combatants)
-            {
-                combatant.OnBattleEnd();
-            }
         }
 
         /// <summary>
@@ -213,8 +211,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Combatant[] combatants = GetAllCombatants();
             foreach (var combatant in combatants)
             {
-                combatant.Experience += 1;
-                //combatant.Experience += value;
+                combatant.Experience += value;
             }
         }
     }

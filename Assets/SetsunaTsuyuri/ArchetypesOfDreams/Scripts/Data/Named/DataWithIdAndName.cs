@@ -5,16 +5,10 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// IDと名前のあるデータ
+    /// IDと名前と説明のあるデータ
     /// </summary>
-    public abstract class DataWithIdAndName
+    public abstract class DataWithIdAndName : Data
     {
-        /// <summary>
-        /// ID
-        /// </summary>
-        [field: SerializeField]
-        public int Id { get; private set; } = 0;
-
         /// <summary>
         /// 名前
         /// </summary>

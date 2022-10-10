@@ -71,6 +71,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EnemySprite.OnConditionSet(Combatant);
         }
 
+        public override void OnDamage()
+        {
+            base.OnDamage();
+
+            EnemySprite.Shake();
+        }
+
         /// <summary>
         /// 浄化されたときの処理
         /// </summary>
@@ -109,14 +116,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// ナイトメアを作る
+        /// </summary>
+        /// <param name="id">ID</param>
+        /// <param name="level">レベル</param>
+        public void CreateNightmare(int id, int level)
+        {
+            NightmareData nightmareData = MasterData.Nightmares[id];
+            if (nightmareData is not null)
+            {
+                Nightmare nightmare = new()
+                {
+                    DataId = id,
+                    Level = level
+                };
+
+                nightmare.Initialize();
+
+                Combatant = nightmare;
+            }
+        }
+
+        /// <summary>
         /// 敵のナイトメアを作る
         /// </summary>
-        /// <param name="data">敵データ</param>
-        /// <param name="enemyData">レベル</param>
+        /// <param name="enemyData">敵データ</param>
+        /// <param name="level">レベル</param>
         public void CreateEnemyNightmare(EnemyData enemyData, int level)
         {
             // IDを元にデータを取得する
-            NightmareData nightmareData = MasterData.Nightmares.GetValue(enemyData.Id);
+            NightmareData nightmareData = MasterData.Nightmares[enemyData.Id];
 
             // ナイトメアを作る
             Nightmare nightmare = new Nightmare()

@@ -73,13 +73,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnTargetSelectionEnter(BattleManager battle)
         {
             // プレイヤー操作が不可能、または交代、逃走する場合は中止する
-            if (!battle.Performer.ContainsPlayerControlled())
+            if (!battle.Actor.ContainsPlayerControlled())
             {
                 return;
             }
 
             // 行動者の行動効果データを取得する
-            EffectData effect = battle.SkillToBeUsed.Data.Effect;
+            EffectData effect = battle.ActorAction.Effect;
             
             // 効果に応じて処理を決める
             System.Action<CombatantContainer> action = null;
@@ -172,8 +172,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void PopUpDamage(CombatantContainer container)
         {
             string damage = string.Empty;
-            TargetActionResult result = container.Combatant.Result;
-            MakeDamageOrRecoveryText(ref damage, result.LifeDamage, result.DreamDamage, result.SoulDamage);
+            ActionResult result = container.Combatant.Result;
+            MakeDamageOrRecoveryText(ref damage, result.HpDamage, result.DpDamage, result.SpDamage);
 
             PopUp(container, damage, GameSettings.PopUpTexts.DamageColor);
         }
@@ -185,37 +185,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void PopUpRecovery(CombatantContainer container)
         {
             string recovery = string.Empty;
-            TargetActionResult result = container.Combatant.Result;
-            MakeDamageOrRecoveryText(ref recovery, result.LifeRecovery, result.DreamRecovery, result.SoulRecovery);
+            ActionResult result = container.Combatant.Result;
+            MakeDamageOrRecoveryText(ref recovery, result.HpRecovery, result.DpRecovery, result.SpRecovery);
 
             PopUp(container, recovery, GameSettings.PopUpTexts.RecoveryColor);
-        }
-
-        /// <summary>
-        /// ポップアップテキストを表示する
-        /// </summary>
-        /// <param name="container">戦闘者コンテナ</param>
-        /// <param name="text">文字列</param>
-        /// <param name="color">色</param>
-        public void PopUp(CombatantContainer container, string text, Color color)
-        {
-            PopUpText popUpText = GetPopUpText();
-            Vector3 position = DecidePosition(container);
-            popUpText.DoPopUpSequence(position, text, color);
         }
 
         /// <summary>
         /// ダメージまたは回復の表示文字列を作る
         /// </summary>
         /// <param name="text">文字列</param>
-        /// <param name="life">生命力</param>
-        /// <param name="dream">夢想力</param>
-        /// <param name="soul">精神力</param>
-        private void MakeDamageOrRecoveryText(ref string text, int? life, int? dream, int? soul)
+        /// <param name="hp">生命力</param>
+        /// <param name="dp">夢想力</param>
+        /// <param name="sp">精神力</param>
+        private void MakeDamageOrRecoveryText(ref string text, int? hp, int? dp, int? sp)
         {
-            AddNewLineAndText(ref text, life);
-            AddNewLineAndText(ref text, dream, GameSettings.PopUpTexts.DreamPrefix);
-            AddNewLineAndText(ref text, soul, GameSettings.PopUpTexts.SoulPrefix);
+            AddNewLineAndText(ref text, hp);
+            AddNewLineAndText(ref text, dp, GameSettings.PopUpTexts.DPPrefix);
+            AddNewLineAndText(ref text, sp, GameSettings.PopUpTexts.SPPrefix);
         }
 
         /// <summary>
@@ -241,11 +228,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// ポップアップテキストを表示する
+        /// </summary>
+        /// <param name="container">戦闘者コンテナ</param>
+        /// <param name="text">文字列</param>
+        /// <param name="color">色</param>
+        private void PopUp(CombatantContainer container, string text, Color color)
+        {
+            PopUpText popUpText = GetPopUpText();
+            Vector3 position = DecidePosition(container);
+            popUpText.DoPopUpSequence(position, text, color);
+        }
+
+        /// <summary>
         /// 戦闘者コンテナの情報を基に文字の表示位置を決定する
         /// </summary>
         /// <param name="container">戦闘者コンテナ</param>
         /// <returns></returns>
-        public Vector3 DecidePosition(CombatantContainer container)
+        private Vector3 DecidePosition(CombatantContainer container)
         {
             Vector3 result;
 

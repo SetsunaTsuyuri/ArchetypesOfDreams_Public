@@ -11,7 +11,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘終了
         /// </summary>
-        private class BattleEnd : FiniteStateMachine<BattleManager>.State
+        private class BattleEnd : StateMachine<BattleManager>.State
         {
             public override void Enter(BattleManager context)
             {
@@ -34,7 +34,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Debug.Log("味方の勝ち");
 
                 // 味方経験値増加
-                AddAlliesExperience();
+                Allies.AddExperience(RewardExperience);
             }
             else
             {
@@ -56,16 +56,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 休眠状態へ
             State.Change<Sleep>();
 
+            // カメラ視点を元に戻す
+            _cameraController.ToPrevious();
+
             // 戦闘終了フラグON
             IsOver = true;
-        }
-
-        /// <summary>
-        /// 味方の経験値を増やす
-        /// </summary>
-        private void AddAlliesExperience()
-        {
-            Allies.AddExperience(Experience);
         }
     }
 }

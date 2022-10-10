@@ -1,12 +1,12 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Effect
+﻿namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
     /// どのステータスに影響を与えるか
     /// </summary>
     public enum Affected
     {
-        Life = 0, // 生命力
-        Dream = 1,// 夢想力
-        Soul = 2, // 精神力
+        Hp = 0,
+        Dp = 1,
+        Sp = 2
     }
 }

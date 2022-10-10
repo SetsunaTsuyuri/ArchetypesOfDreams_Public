@@ -14,53 +14,72 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 敵が複数存在する場合、この数値が大きい程左右に広がる
         /// </summary>
         [SerializeField]
-        float enemyDistance = 3.0f;
+        float _enemyDistance = 1.0f;
 
         public override bool CanFight()
         {
-            // 戦闘可能な夢渡りが存在する
+            // 戦闘可能なコンテナが存在する
             return Members
                 .Any(x => x.ContainsFightable());
         }
 
         /// <summary>
+        /// ランダムエンカウントで出現する敵を作る
+        /// </summary>
+        /// <param name="map">マップ</param>
+        /// <param name="allies">味方</param>
+        public void CreateEnemies(Map map, AllyContainersManager allies)
+        {
+            // 敵の数
+            int numberOfEnemies = allies.CountCombatants();
+
+            // レベル
+            int level = map.BasicEnemyLevel;
+
+            for (int i = 0; i < numberOfEnemies; i++)
+            {
+                // ID
+                int id = Random.Range(map.MinEnemyId, map.MaxEnemyId + 1);
+                Debug.Log($"Selected enemy id is {id} min {map.MinEnemyId} max {map.MaxEnemyId}");
+                Members[i].CreateNightmare(id, level);
+            }
+        }
+
+        /// <summary>
+        /// イベントで出現する敵を作る
+        /// </summary>
+        /// <param name="battleEvent">バトルイベント</param>
+        public void CreateEnemies(BattleEvent battleEvent)
+        {
+            int id = battleEvent.EnemyGroupId;
+            EnemyGroupData enemyGroupData = MasterData.EnemyGroups[id];
+
+            // 敵を作る
+            CreateEnemies(enemyGroupData);
+        }
+
+        /// <summary>
         /// 敵を作る
         /// </summary>
-        /// <param name="command">ゲームコマンド</param>
-        public void CreateEnemies(GameCommand command)
+        /// <param name="enemyGroupData">敵グループデータ</param>
+        private void CreateEnemies(EnemyGroupData enemyGroupData)
         {
-            // ダンジョンのデータ
-            DungeonData dungeon = RuntimeData.DungeonToPlay;
-            
-            // セクションのデータ
-            DungeonSectionData section = dungeon.DungeonSections[command.CurrentPlayerSection];
-
-            // 敵グループID
-            int id = command.EnemyGroup switch
-            {
-                Attribute.EnemyGroup.Random => Random.Range(section.MinRandomGroupId, section.MaxRandomGroupId),
-                _ => command.Id
-            };
-
-            // 敵グループ
-            EnemyGroupData enemyGroup = MasterData.EnemyGroups.GetValue(id);
-
-            if (enemyGroup.Enemies.Length > Members.Length)
+            if (enemyGroupData.Enemies.Length > Members.Length)
             {
                 Debug.LogError("敵グループデータの敵の数がコンテナの数よりも大きいです");
                 return;
             }
 
-            for (int i = 0; i < enemyGroup.Enemies.Length; i++)
+            for (int i = 0; i < enemyGroupData.Enemies.Length; i++)
             {
                 // 敵データを取得する
-                EnemyData enemyData = enemyGroup.Enemies[i];
+                EnemyData enemyData = enemyGroupData.Enemies[i];
 
-                // レベル計算
-                int level = dungeon.BasicEnemyLevel;
-                level += command.LevelCorrection;
-                level += enemyData.LevelCorrection;
-                level = Mathf.Clamp(level, GameSettings.Combatants.MinLevel, GameSettings.Combatants.MaxLevel);
+                // レベル
+                int level = enemyData.Level;
+                int min = GameSettings.Combatants.MinLevel;
+                int max = GameSettings.Combatants.MaxLevel;
+                level = Mathf.Clamp(level, min, max);
 
                 // 敵ナイトメアを生成する
                 Members[i].CreateEnemyNightmare(enemyData, level);
@@ -85,8 +104,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             // 戦闘者を格納している敵コンテナ配列
             EnemyContainer[] containers = GetContainersWithContents();
-
-            // それらが存在しない場合、処理の必要なし
             if (!containers.Any())
             {
                 return;
@@ -102,8 +119,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 // X座標
                 float x = Mathf.Lerp(
-                    -enemyDistance,
-                    enemyDistance,
+                    -_enemyDistance,
+                    _enemyDistance,
                     offset * (i + 1));
 
                 // 座標を変更する

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 精神データ
+    /// 精神力データ
     /// </summary>
     [System.Serializable]
     public class SoulData
@@ -21,11 +21,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public Attribute.Emotion Emotion { get; private set; }
-
-        /// <summary>
-        /// 状態異常に対する有効性
-        /// </summary>
-        [field: SerializeField]
-        public EffectivenessDataOfStatusAbnormalities Effectiveness { get; private set; }
     }
 }

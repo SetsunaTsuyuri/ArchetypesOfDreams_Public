@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -38,9 +38,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 戦闘開始時の処理
+        /// </summary>
+        public virtual void OnBattleStart()
+        {
+            foreach (var member in Members)
+            {
+                member.OnBattleStart();
+            }
+        }
+
+        /// <summary>
         /// 戦闘不能になっている解放可能な戦闘者を解放する
         /// </summary>
-        public void ReleaseDeadReleasables()
+        public void ReleaseKnockedOutReleasables()
         {
             CombatantContainer[] containers = GetAllContainers()
                 .Where(x => x.ContainsCombatant() && x.Combatant.IsKnockedOut())
@@ -85,7 +96,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 全ての戦闘者コンテナを取得する
+        /// 全てのコンテナを取得する
         /// </summary>
         /// <returns></returns>
         public virtual TContainer[] GetAllContainers()
@@ -105,39 +116,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .ToArray();
 
             return result;
-        } 
+        }
 
         /// <summary>
-        /// 行動対象にできる戦闘者コンテナを取得する
+        /// 戦闘者の数を数える
         /// </summary>
         /// <returns></returns>
-        public CombatantContainer[] GetTargetables()
+        public int CountCombatants()
         {
             return Members
-                .Where(x => x.ContainsTargetable())
+                .Count(x => x.ContainsCombatant());
+        }
+
+        /// <summary>
+        /// 戦闘可能なコンテナを取得する
+        /// </summary>
+        /// <returns></returns>
+        public TContainer[] GetFightables()
+        {
+            return Members
+                .Where(x => x.ContainsFightable())
                 .ToArray();
         }
 
         /// <summary>
-        /// 戦闘者のランダムに変化する素早さを更新する
+        /// 行動対象にできるコンテナを取得する
         /// </summary>
-        public void UpdateRandomSpeedOfCombatants()
+        /// <param name="condition">対象にできる戦闘者の状態</param>
+        /// <returns></returns>
+        public CombatantContainer[] GetTargetables(TargetCondition condition)
         {
-            foreach (var member in Members)
-            {
-                member.Combatant?.UpdateRandomSpeed();
-            }
-        }
-
-        /// <summary>
-        /// ターン終了時の処理
-        /// </summary>
-        public virtual void OnTurnEnd()
-        {
-            foreach (var member in Members)
-            {
-                member.Combatant?.OnTurnEnd();
-            }
+            return Members
+                .Where(x => x.ContainsTargetable(condition))
+                .ToArray();
         }
 
         /// <summary>

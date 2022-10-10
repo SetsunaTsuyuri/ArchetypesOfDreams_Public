@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 感情属性の設定
     /// </summary>
-    [CreateAssetMenu(menuName = "Settings/Emotions")]
+    [CreateAssetMenu(fileName = "Emotions", menuName = "Settings/Emotions")]
     public class EmotionsSettings : ScriptableObject
     {
         // 属性毎の有効性配列
@@ -24,7 +24,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public Attribute.Effectiveness GetEffectiveness(Attribute.Emotion attackEmotion, Attribute.Emotion defenseEmotion)
         {
             Attribute.Effectiveness result = Attribute.Effectiveness.Normal;
-            
+
             var offense = Effectiveness.FirstOrDefault(a => a.Attack == attackEmotion);
             if (offense != null)
             {

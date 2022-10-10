@@ -27,17 +27,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public int Critical { get; private set; }
-
-        /// <summary>
-        /// 近接攻撃無効化率
-        /// </summary>
-        [field: SerializeField]
-        public int MeleeNullification { get; private set; }
-
-        /// <summary>
-        /// 遠隔攻撃無効化率
-        /// </summary>
-        [field: SerializeField]
-        public int RangedNullification { get; private set; }
     }
 }

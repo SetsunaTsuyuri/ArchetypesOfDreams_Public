@@ -21,54 +21,73 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// キャンセルした際の遷移先UI
         /// </summary>
-        public ISelectableGameUI Previous = null;
+        public ISelectableGameUI Previous { get; set; } = null;
 
         /// <summary>
         /// ゲームボタン配列
         /// </summary>
-        protected TGameButton[] buttons = null;
+        protected TGameButton[] _buttons = null;
 
         /// <summary>
         /// 最後に選ばれたボタン
         /// </summary>
-        protected Selectable lastSelected = null;
+        protected Selectable _lastSelected = null;
 
         /// <summary>
         /// レイアウトグループ
         /// </summary>
-        protected LayoutGroup layoutGroup = null;
+        protected LayoutGroup _layoutGroup = null;
 
         protected override void Awake()
         {
             base.Awake();
 
-            layoutGroup = GetComponentInChildren<LayoutGroup>(true);
-            buttons = GetComponentsInChildren<TGameButton>(true);
+            _layoutGroup = GetComponentInChildren<LayoutGroup>(true);
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+
+            // ボタンが選択されている場合、それを外す
+            EventSystem eventSystem = EventSystem.current;
+            if (_lastSelected &&
+                _lastSelected.gameObject == eventSystem.currentSelectedGameObject)
+            {
+                eventSystem.SetSelectedGameObject(null);
+            }
         }
 
         /// <summary>
-        /// ボタンをセットアップする
+        /// セットアップする
         /// </summary>
-        public virtual void SetUpButtons()
+        public virtual void SetUp()
         {
+            // ボタンキャッシュ
+            _buttons = GetComponentsInChildren<TGameButton>(true);
+
             // イベントトリガー登録
-            for (int i = 0; i < buttons.Length; i++)
+            for (int i = 0; i < _buttons.Length; i++)
             {
                 // 選ばれたとき、自身を最後に選ばれたボタンとする
                 int index = i;
-                buttons[i].AddTrriger(EventTriggerType.Select, (_) => lastSelected = buttons[index].Button);
+                _buttons[i].AddTrriger(EventTriggerType.Select, _ =>
+                {
+                    _lastSelected = _buttons[index].Button;
+                });
 
                 // キャンセルされたとき、前のUIに戻る
-                buttons[i].AddTrriger(EventTriggerType.Cancel, (_) =>
+                if (Previous != null)
                 {
-                    if (Previous != null)
+                    _buttons[i].AddTrriger(EventTriggerType.Cancel, _ =>
                     {
-                        Hide();
                         Previous.Select();
-                    }
-                });
+                        Hide();
+                    });
+                }
             }
 
+            // ナビゲーションを更新する
             UpdateButtonNavigationsToLoop();
         }
 
@@ -77,7 +96,7 @@ namespace SetsunaTsuyuri
         /// </summary>
         protected void UpdateButtonNavigationsToLoop()
         {
-            Selectable[] selectables = buttons
+            Selectable[] selectables = _buttons
                 .Where(x => x.isActiveAndEnabled)
                 .Where(x => x.Button.interactable)
                 .Select(x => x.GetComponent<Selectable>())
@@ -92,7 +111,7 @@ namespace SetsunaTsuyuri
                 int previous = i == 0 ? length - 1 : i - 1;
                 int next = (i + 1) % length;
 
-                UnityAction action = layoutGroup switch
+                UnityAction action = _layoutGroup switch
                 {
                     HorizontalLayoutGroup _ => () =>
                     {
@@ -123,16 +142,16 @@ namespace SetsunaTsuyuri
         {
             Show();
 
-            if (selectLastSelected &&
-                lastSelected &&
-                lastSelected.isActiveAndEnabled &&
-                lastSelected.interactable)
+            if (selectLastSelected
+                && _lastSelected
+                && _lastSelected.isActiveAndEnabled
+                && _lastSelected.interactable)
             {
-                lastSelected.Select();
+                _lastSelected.Select();
             }
             else
             {
-                foreach (var button in buttons)
+                foreach (var button in _buttons)
                 {
                     if (button.Button.interactable)
                     {
@@ -144,31 +163,43 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// 全てのボタンをアクティブまたは非アクティブにする
+        /// 全てのボタンを表示する、または隠す
         /// </summary>
         /// <param name="value">値</param>
-        public void SetActiveToAllButtons(bool value)
+        public void ShowOrHideAllButtons(bool value)
         {
-            foreach (var button in buttons)
+            foreach (var button in _buttons)
             {
-                button.gameObject.SetActive(value);
+                if (value)
+                {
+                    button.Show();
+                }
+                else
+                {
+                    button.Hide();
+                }
             }
         }
 
         /// <summary>
         /// いずれかのボタンが押されるのを待つ
         /// </summary>
-        /// <param name="token">トークン</param>
+        /// <param name="token"></param>
         /// <returns></returns>
         public async UniTask WaitForAnyButtonPressed(CancellationToken token)
         {
             await UniTask.Yield(token);
 
-            UniTask[] tasks = buttons
+            UniTask[] tasks = _buttons
+                .Where(x => x.Button.isActiveAndEnabled)
                 .Where(x => x.Button.interactable)
                 .Select(x => x.Button.OnClickAsync(token))
                 .ToArray();
-            await UniTask.WhenAny(tasks);
+
+            if (tasks.Any())
+            {
+                await UniTask.WhenAny(tasks);
+            }
         }
     }
 }

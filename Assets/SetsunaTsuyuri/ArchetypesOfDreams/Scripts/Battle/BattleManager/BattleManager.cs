@@ -9,15 +9,53 @@ using Cysharp.Threading.Tasks;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
+    /// 戦闘結果の種類
+    /// </summary>
+    public enum BattleResultType
+    {
+        /// <summary>
+        /// 勝利
+        /// </summary>
+        Win = 0,
+
+        /// <summary>
+        /// 敗北
+        /// </summary>
+        Lose = 1,
+
+        /// <summary>
+        /// 中止
+        /// </summary>
+        Canceled = 2
+    }
+
+    /// <summary>
     /// 戦闘の管理者
     /// </summary>
     public partial class BattleManager : MonoBehaviour, IInitializable
     {
         /// <summary>
+        /// インスタンス
+        /// </summary>
+        public static BattleManager InstanceInActiveScene { get; private set; } = null;
+
+        /// <summary>
         /// 戦闘UIの管理者
         /// </summary>
         [field: SerializeField]
         public BattleUIManager BattleUI { get; private set; } = null;
+
+        /// <summary>
+        /// カメラコントローラー
+        /// </summary>
+        [SerializeField]
+        CameraController _cameraController = null;
+
+        /// <summary>
+        /// カメラのトランスフォーム
+        /// </summary>
+        [SerializeField]
+        Transform _cameraTransform = null; 
 
         /// <summary>
         /// 味方の管理者
@@ -40,29 +78,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool ForbidEscaping { get; private set; } = false;
 
         /// <summary>
-        /// 現在のターンの行動順
+        /// 行動者コンテナ
         /// </summary>
-        public List<CombatantContainer> OrderOfActions { get; private set; } = new List<CombatantContainer>();
+        public CombatantContainer Actor { get; private set; } = null;
 
         /// <summary>
-        /// 行動中の戦闘者コンテナ
+        /// 行動者の行動内容
         /// </summary>
-        public CombatantContainer Performer { get; private set; } = null;
-
-        /// <summary>
-        /// 行動中の戦闘者が使用するスキル
-        /// </summary>
-        public Skill SkillToBeUsed { get; private set; } = null;
+        public ActionModel ActorAction { get; private set; } = null;
 
         /// <summary>
         /// この戦いで得られる経験値
         /// </summary>
-        public int Experience { get; private set; } = 0;
+        public int RewardExperience { get; private set; } = 0;
 
         /// <summary>
         /// 有限ステートマシン
         /// </summary>
-        public FiniteStateMachine<BattleManager> State { get; private set; }
+        public StateMachine<BattleManager> State { get; private set; } = null;
 
         /// <summary>
         /// ゲームコマンド
@@ -76,10 +109,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Awake()
         {
-            SetUpStateMachine();
-
             Allies = GetComponentInChildren<AllyContainersManager>();
             Enemies = GetComponentInChildren<EnemyContainersManager>();
+
+            SetUpStateMachine();
+
+            InstanceInActiveScene = this;
         }
 
         /// <summary>
@@ -87,27 +122,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SetUpStateMachine()
         {
-            State = new FiniteStateMachine<BattleManager>(this);
-
+            State = new StateMachine<BattleManager>(this);
             State.Add<Sleep>();
             State.Add<Preparation>();
             State.Add<BattleStart>();
-            State.Add<TurnStart>();
+            State.Add<TimeAdvancing>();
             State.Add<ActionStart>();
             State.Add<CommandSelection>();
             State.Add<TargetSelection>();
             State.Add<ActionExecution>();
             State.Add<ActionEnd>();
-            State.Add<TurnEnd>();
             State.Add<BattleEnd>();
-            State.ProhibitAdding();
-            State.Change<Sleep>();
         }
 
         private void Start()
         {
             // 各UIをセットアップする
             BattleUI.SetUpButtons(this);
+
+            // スリープステートへ移行する
+            State.Change<Sleep>();
         }
 
         private void Update()
@@ -124,10 +158,71 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Turn = 0;
 
             // 経験値
-            Experience = 0;
+            RewardExperience = 0;
 
-            // 敵
+            // カメラの視点
+            _cameraController.Target = _cameraTransform;
+        }
+
+        /// <summary>
+        /// ランダムエンカウントによる戦闘を行う
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async UniTask<BattleResultType> ExecuteRandomBattle(Map map, CancellationToken token)
+        {
+            await FadeManager.FadeOut(token);
+            
             Enemies.Initialize();
+            Enemies.CreateEnemies(map, Allies);
+
+            // 通常戦闘BGMを再生する
+            AudioManager.PlayBgm("通常戦闘");
+
+            return await ExecuteBattle(token);
+        }
+
+        /// <summary>
+        /// イベント戦闘を行う
+        /// </summary>
+        /// <param name="battleEvent"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async UniTask<BattleResultType> ExecuteEventBattle(BattleEvent battleEvent, CancellationToken token)
+        {
+            await FadeManager.FadeOut(token);
+            
+            Enemies.Initialize();
+            Enemies.CreateEnemies(battleEvent);
+
+            // ボス戦以外の場合
+            if (!battleEvent.IsBossBattle)
+            {
+                // 通常戦闘BGMを再生する
+                AudioManager.PlayBgm("通常戦闘");
+            }
+
+            return await ExecuteBattle(token);
+        }
+
+        /// <summary>
+        /// 戦闘を行う
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private async UniTask<BattleResultType> ExecuteBattle(CancellationToken token)
+        {
+            Initialize();
+
+            // 準備状態へ移行する
+            State.Change<Preparation>();
+
+            // 戦闘終了まで待つ
+            await UniTask.WaitUntil(() => IsOver, cancellationToken: token);
+
+            BattleResultType result = BattleResultType.Win;
+            return result;
         }
 
         /// <summary>
@@ -167,34 +262,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 行動順を更新する
-        /// </summary>
-        private void UpdateOrderOfActions()
-        {
-            OrderOfActions = Allies.Members
-                .Concat(Enemies.Members as CombatantContainer[])
-                .Where(x => x.ContainsFightable())
-                .OrderBy(a => a.Combatant.ActionPriority)
-                .ThenBy(a => a.Combatant.BaseSpeed + a.Combatant.RandomSpeed)
-                .ToList();
-        }
-
-        /// <summary>
-        /// 戦闘者全員のランダムに変わる素早さを更新する
-        /// </summary>
-        private void UpdateRandomSpeedOfCombatants()
-        {
-            Allies.UpdateRandomSpeedOfCombatants();
-            Enemies.UpdateRandomSpeedOfCombatants();
-        }
-
-        /// <summary>
         /// スキルが選択されたときの処理
         /// </summary>
         /// <param name="skill">スキル</param>
-        public void OnSkillSelected(Skill skill)
+        public void OnSkillSelected(ActionModel skill)
         {
-            SkillToBeUsed = skill;
+            ActorAction = skill;
 
             // 対象選択ステートへ移行する
             State.Change<TargetSelection>();
@@ -207,8 +280,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnEnemyKnockedOutOrPurified(CombatantContainer container)
         {
             // 経験値増加
-            Experience += container.Combatant.Experience;
-            Debug.Log($"経験値: {Experience}");
+            RewardExperience += container.Combatant.GetRewardExperience();
         }
 
         /// <summary>
@@ -286,11 +358,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Vector2 input = context.ReadValue<Vector2>();
             if (input == Vector2.right || input == Vector2.down)
             {
-                Targetables.IncrementIndexLoop(ref targetIndex);
+                targetIndex++;
+                if (targetIndex >= Targetables.Length)
+                {
+                    targetIndex = 0;
+                }
             }
             else if (input == Vector2.left || input == Vector2.up)
             {
-                Targetables.DecrementIndexLoop(ref targetIndex);
+                targetIndex--;
+                if (targetIndex < 0)
+                {
+                    targetIndex = Targetables.Length - 1;
+                }
             }
 
             Targetables[targetIndex].IsTargeted = true;
@@ -339,7 +419,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// コマンド選択ステートへ移行する
         /// </summary>
-        /// <param name="token">トークン</param>
+        /// <param name="token"></param>
         /// <returns></returns>
         private async UniTask ToCommandSelectionAsync(CancellationToken token)
         {

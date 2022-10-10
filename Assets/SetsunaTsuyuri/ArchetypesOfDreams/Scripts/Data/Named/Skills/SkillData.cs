@@ -12,7 +12,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class SkillData : DataWithIdAndName
     {
         /// <summary>
-        /// 消費夢想力
+        /// 消費DP
         /// </summary>
         [field: SerializeField]
         public int Cost { get; private set; }

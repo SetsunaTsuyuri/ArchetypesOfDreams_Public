@@ -2,20 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// セーブデータの管理者(シングルトン)
+    /// セーブデータの管理者
     /// </summary>
     public class SaveDataManager : Singleton<SaveDataManager>, IInitializable
     {
-        /// <summary>
-        /// オートセーブ可能な数
-        /// </summary>
-        public static readonly int AutoSaves = 1;
-
         /// <summary>
         /// セーブ可能な数
         /// </summary>
@@ -36,45 +32,36 @@ namespace SetsunaTsuyuri
         /// </summary>
         public static readonly string AutoSaveDataName = "autosave";
 
+        static readonly int s_blockSize = 128;
+        static readonly int s_keySize = 128;
+        static readonly string s_iv = "1K9hf715zU8sm59H";
+        static readonly string s_key = "R18FaEzPyxdv0WwW";
+
         /// <summary>
         /// セーブデータ配列
         /// </summary>
-        readonly SaveData[] saves = new SaveData[MaxSaves];
+        readonly SaveData[] _saves = new SaveData[MaxSaves];
 
         /// <summary>
         /// セーブデータ配列
         /// </summary>
         public static SaveData[] Saves
         {
-            get => Instance.saves;
+            get => Instance._saves;
         }
 
         /// <summary>
         /// オートセーブデータ
         /// </summary>
-        SaveData autoSaveData = null;
+        SaveData _autoSaveData = null;
 
         /// <summary>
         /// オートセーブデータ
         /// </summary>
         public static SaveData AutoSaveData
         {
-            get => Instance.autoSaveData;
-            set => Instance.autoSaveData = value;
-        }
-
-        /// <summary>
-        /// 現在のセーブデータ
-        /// </summary>
-        SaveData currentSaveData = new SaveData();
-
-        /// <summary>
-        /// 現在のセーブデータ
-        /// </summary>
-        public static SaveData CurrentSaveData
-        {
-            get => Instance.currentSaveData;
-            private set => Instance.currentSaveData = value;
+            get => Instance._autoSaveData;
+            set => Instance._autoSaveData = value;
         }
 
         public override void Initialize()
@@ -91,14 +78,14 @@ namespace SetsunaTsuyuri
             string autoSaveDataPath = GetAutoSaveDataJsonPath();
             if (File.Exists(autoSaveDataPath))
             {
-                AutoSaveData = ImportSave(autoSaveDataPath);
+                AutoSaveData = Import(autoSaveDataPath);
             }
 
             // セーブデータ
             string[] saveDataPathes = GetSaveDataJsonPathes();
             foreach (var path in saveDataPathes)
             {
-                SaveData save = ImportSave(path);
+                SaveData save = Import(path);
                 Saves[save.Id] = save;
             }
         }
@@ -108,9 +95,13 @@ namespace SetsunaTsuyuri
         /// </summary>
         /// <param name="path">セーブデータのパス</param>
         /// <returns></returns>
-        private static SaveData ImportSave(string path)
+        private static SaveData Import(string path)
         {
             byte[] bytes = File.ReadAllBytes(path);
+
+            // 複合する
+            bytes = Decrypt(bytes);
+
             string json = Encoding.UTF8.GetString(bytes);
             SaveData save = JsonUtility.FromJson<SaveData>(json);
 
@@ -123,11 +114,16 @@ namespace SetsunaTsuyuri
         /// <param name="id">セーブデータID</param>
         public static void Save(int id)
         {
-            CurrentSaveData.Save(id);
+            if (Saves[id] is null)
+            {
+                Saves[id] = new();
+            }
+
+            SaveData saveData = Saves[id];
+            saveData.Save(id);
 
             string path = GetSaveDataJsonPath(id);
-            SaveData copy = ExportAndCopySaveData(path);
-            Saves[id] = copy;
+            Export(saveData, path);
         }
 
         /// <summary>
@@ -135,29 +131,10 @@ namespace SetsunaTsuyuri
         /// </summary>
         public static void SaveAuto()
         {
-            CurrentSaveData.Save();
+            AutoSaveData.Save();
 
             string path = GetAutoSaveDataJsonPath();
-            SaveData copy = ExportAndCopySaveData(path);
-            AutoSaveData = copy;
-        }
-
-        /// <summary>
-        /// セーブデータをJson形式で書き出し、そのディープコピーを作る
-        /// </summary>
-        /// <param name="path">json形式で書き出す際のパス</param>
-        /// <param name="id">ID</param>
-        /// <returns>セーブデータ(ディープコピー)</returns>
-        private static SaveData ExportAndCopySaveData(string path)
-        {
-            // セーブデータをjson形式で書き出す
-            string json = JsonUtility.ToJson(CurrentSaveData);
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
-            File.WriteAllBytes(path, bytes);
-
-            // 書き出したjsonから新しくセーブデータを作る(ディープコピー)
-            SaveData copy = JsonUtility.FromJson<SaveData>(json);
-            return copy;
+            Export(AutoSaveData, path);
         }
 
         /// <summary>
@@ -166,7 +143,7 @@ namespace SetsunaTsuyuri
         /// <param name="id">セーブデータID</param>
         public static void Load(int id)
         {
-            CurrentSaveData = Saves[id];
+            Saves[id].Load();
         }
 
         /// <summary>
@@ -174,7 +151,23 @@ namespace SetsunaTsuyuri
         /// </summary>
         public static void LoadAuto()
         {
-            CurrentSaveData = AutoSaveData;
+            AutoSaveData.Load();
+        }
+
+        /// <summary>
+        /// セーブデータをJson形式で書き出す
+        /// </summary>
+        /// <param name="saveData">セーブデータ</param>
+        /// <param name="path">json形式で書き出すパス</param>
+        private static void Export(SaveData saveData, string path)
+        {
+            string json = JsonUtility.ToJson(saveData);
+            byte[] bytes = Encoding.UTF8.GetBytes(json);
+
+            // 暗号化する
+            bytes = Encrypt(bytes);
+
+            File.WriteAllBytes(path, bytes);
         }
 
         /// <summary>
@@ -183,7 +176,7 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         private static string[] GetSaveDataJsonPathes()
         {
-            return Directory.GetFiles(SaveDataPath, $"{SaveDataName}_*.json");
+            return Directory.GetFiles(SaveDataPath, $"{SaveDataName}_*.dat");
         }
 
         /// <summary>
@@ -193,7 +186,7 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         private static string GetSaveDataJsonPath(int id)
         {
-            return $"{SaveDataPath}/{SaveDataName}_{id}.json";
+            return $"{SaveDataPath}/{SaveDataName}_{id}.dat";
         }
 
         /// <summary>
@@ -202,7 +195,52 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         private static string GetAutoSaveDataJsonPath()
         {
-            return $"{SaveDataPath}/{AutoSaveDataName}.json";
+            return $"{SaveDataPath}/{AutoSaveDataName}.dat";
+        }
+
+        /// <summary>
+        /// 暗号化する
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        private static byte[] Encrypt(byte[] bytes)
+        {
+            AesManaged managed = CreateAesManaged();
+            ICryptoTransform encryptor = managed.CreateEncryptor();
+            byte[] encrypted = encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+            return encrypted;
+        }
+
+        /// <summary>
+        /// 複合する
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        private static byte[] Decrypt(byte[] bytes)
+        {
+            AesManaged managed = CreateAesManaged();
+            ICryptoTransform decryptor = managed.CreateDecryptor();
+            byte[] decrypted = decryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+            return decrypted;
+        }
+
+        /// <summary>
+        /// AesManagedを作る
+        /// </summary>
+        /// <returns></returns>
+        private static AesManaged CreateAesManaged()
+        {
+            AesManaged managed = new()
+            {
+                BlockSize = s_blockSize,
+                KeySize = s_keySize,
+                IV = Encoding.UTF8.GetBytes(s_iv),
+                Key = Encoding.UTF8.GetBytes(s_key),
+                Mode = CipherMode.CBC,
+                Padding = PaddingMode.PKCS7
+            };
+
+            return managed;
         }
     }
 }

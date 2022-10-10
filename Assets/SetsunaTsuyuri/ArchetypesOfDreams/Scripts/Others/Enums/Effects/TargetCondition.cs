@@ -1,4 +1,4 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Effect
+﻿namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
     /// 対象の状態
@@ -6,7 +6,7 @@
     public enum TargetCondition
     {
         Living = 0, // 生きている
-        Dead = 1, // 死んでいる
-        LivingAndDead = 2 // 生きているまたは死んでいる
+        KnockedOut = 1, // 倒されている
+        LivingAndKnockedOut = 2 // 生きているまたは倒されている
     }
 }

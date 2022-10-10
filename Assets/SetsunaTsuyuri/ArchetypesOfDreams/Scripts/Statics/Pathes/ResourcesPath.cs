@@ -15,6 +15,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static readonly string CombatantsSettings = "Settings/Combatants";
 
         /// <summary>
+        /// マップの設定
+        /// </summary>
+        public static readonly string MapsSettings = "Settings/Maps";
+
+        /// <summary>
+        /// アイテムの設定
+        /// </summary>
+        public static readonly string ItemsSettings = "Settings/Items";
+
+        /// <summary>
         /// 感情属性の設定
         /// </summary>
         public static readonly string EmotionsSettings = "Settings/Emotions";
@@ -88,6 +98,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// シナリオのデータ集
         /// </summary>
         public static readonly string Scenarios = "MasterData/Scenarios";
+
+        /// <summary>
+        /// ステータス効果のデータ集
+        /// </summary>
+        public static readonly string StatusEffects = "MasterData/StatusEffects";
+
+        /// <summary>
+        /// アイテムのデータ集
+        /// </summary>
+        public static readonly string Items = "MasterData/Items";
 
         /// <summary>
         /// リセットマネージャー

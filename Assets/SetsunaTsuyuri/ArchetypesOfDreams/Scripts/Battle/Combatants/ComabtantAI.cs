@@ -11,9 +11,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 使用するスキルを決定する
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public Skill DecideTheSkillToBeUsed(BattleManager battle)
+        public ActionModel DecideTheSkillToBeUsed(BattleManager battle)
         {
-            Skill result = null;
+            ActionModel result = null;
 
             // 行動できないならnullを返す
             if (!CanAct())
@@ -21,27 +21,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 return null;
             }
 
-            // 現在使用可能なスキルを抽出し、ランダムに選ぶ
-            Skill[] availables = GetAvailableSkills(battle);
+            // 使用可能な通常攻撃及びスキルを抽出し、ランダムに選ぶ
+            ActionModel[] availables = Skills
+                .Append(NormalAttack)
+                .Where(x => x.CanBeExecuted(battle))
+                .ToArray();
+
             if (availables.Any())
             {
                 int index = Random.Range(0, availables.Length);
                 result = availables[index];
             }
-
-            return result;
-        }
-
-        /// <summary>
-        /// 現在使用可能なスキルを全て取得する
-        /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        /// <returns></returns>
-        private Skill[] GetAvailableSkills(BattleManager battle)
-        {
-            Skill[] result = Skills
-                .Where(x => x.CanBeUsed(battle))
-                .ToArray();
 
             return result;
         }

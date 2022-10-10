@@ -27,7 +27,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public void Initialize()
         {
-            DungeonButtons.SetUpDungeonButtons(description);
+            DungeonButtons.SetUp(description);
         }
     }
 }
