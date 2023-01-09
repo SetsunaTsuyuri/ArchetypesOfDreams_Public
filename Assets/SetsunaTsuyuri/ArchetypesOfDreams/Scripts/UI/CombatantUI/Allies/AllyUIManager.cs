@@ -63,6 +63,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             ReleaseButtons.SetUp();
             ReleaseButtons.Hide();
+
+            for (int i = 0; i < containers.Members.Length; i++)
+            {
+                containers.Members[i].OnDamageEvent += uiArray[i].OnDamage;
+            }
         }
 
         /// <summary>

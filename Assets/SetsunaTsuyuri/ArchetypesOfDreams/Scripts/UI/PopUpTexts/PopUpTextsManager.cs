@@ -14,40 +14,49 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// プレファブ
         /// </summary>
         [SerializeField]
-        PopUpText prefab = null;
-
-        /// <summary>
-        /// ポップアップテキストのリスト
-        /// </summary>
-        List<PopUpText> popUpTexts = new List<PopUpText>();
+        PopUpText _prefab = null;
 
         /// <summary>
         /// インスタンスを作る数
         /// </summary>
         [SerializeField]
-        int numberToInstantiate = 20;
+        int _numberToInstantiate = 20;
 
         /// <summary>
         /// 味方UIトランスフォーム配列
         /// </summary>
         [SerializeField]
-        RectTransform[] allyUIs = null;
+        RectTransform[] _allyUIs = null;
 
         /// <summary>
         /// メインカメラ
         /// </summary>
-        Camera mainCamera = null;
+        Camera _mainCamera = null;
+
+        /// <summary>
+        /// ポップアップテキストのリスト
+        /// </summary>
+        List<PopUpText> _popUpTexts = new();
+
+        /// <summary>
+        /// レクトトランスフォーム
+        /// </summary>
+        RectTransform _rectTransform = null;
+
+        private void Awake()
+        {
+            _mainCamera = Camera.main;
+            _rectTransform = GetComponent<RectTransform>();
+        }
 
         private void Start()
         {
-            mainCamera = Camera.main;
-
             // プレファブをインスタンス化する
-            for (int i = 0; i < numberToInstantiate; i++)
+            for (int i = 0; i < _numberToInstantiate; i++)
             {
-                PopUpText instance = Instantiate(prefab, transform);
+                PopUpText instance = Instantiate(_prefab, transform);
                 instance.Hide();
-                popUpTexts.Add(instance);
+                _popUpTexts.Add(instance);
             }
         }
 
@@ -57,11 +66,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public PopUpText GetPopUpText()
         {
-            PopUpText popUpText = popUpTexts.FirstOrDefault(x => !x.enabled);
+            PopUpText popUpText = _popUpTexts.FirstOrDefault(x => !x.enabled);
             if (!popUpText)
             {
-                popUpText = Instantiate(prefab, transform);
-                popUpTexts.Add(popUpText);
+                popUpText = Instantiate(_prefab, transform);
+                _popUpTexts.Add(popUpText);
             }
             return popUpText;
         }
@@ -80,7 +89,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 行動者の行動効果データを取得する
             EffectData effect = battle.ActorAction.Effect;
-            
+
             // 効果に応じて処理を決める
             System.Action<CombatantContainer> action = null;
             if (effect.IsOffensive)
@@ -109,7 +118,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnTargetSelectionExit()
         {
             // ループ表示しているテキストを全て非表示にする
-            PopUpText[] loops = popUpTexts
+            PopUpText[] loops = _popUpTexts
                .Where(x => x.LoopSequence != null && x.LoopSequence.active)
                .ToArray();
 
@@ -128,7 +137,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             string rate = GameSettings.PopUpTexts.PurificationSuccessRateText;
             rate += container.Combatant.Result.PurificationSuccessRate.ToString();
             rate += GameSettings.PopUpTexts.PurificatinSuccessRateSuffix;
-            
+
             PopUpLoop(container, rate, GameSettings.PopUpTexts.PurificationSuccessRateColor);
         }
 
@@ -153,7 +162,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             PopUpText popUpText = GetPopUpText();
             Vector3 position = DecidePosition(container);
-            popUpText.DoFlashingSequence(position, text, color);
+            popUpText.DoBlinkingSequence(position, text, color);
         }
 
         /// <summary>
@@ -173,7 +182,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             string damage = string.Empty;
             ActionResult result = container.Combatant.Result;
-            MakeDamageOrRecoveryText(ref damage, result.HpDamage, result.DpDamage, result.SpDamage);
+            MakeDamageOrRecoveryText(ref damage, result.HPDamage, result.DPDamage, result.GPDamage);
 
             PopUp(container, damage, GameSettings.PopUpTexts.DamageColor);
         }
@@ -186,9 +195,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             string recovery = string.Empty;
             ActionResult result = container.Combatant.Result;
-            MakeDamageOrRecoveryText(ref recovery, result.HpRecovery, result.DpRecovery, result.SpRecovery);
+            MakeDamageOrRecoveryText(ref recovery, result.HPHealing, result.DPHealing, result.GPHealing);
 
-            PopUp(container, recovery, GameSettings.PopUpTexts.RecoveryColor);
+            PopUp(container, recovery, GameSettings.PopUpTexts.HealingColor);
         }
 
         /// <summary>
@@ -202,7 +211,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             AddNewLineAndText(ref text, hp);
             AddNewLineAndText(ref text, dp, GameSettings.PopUpTexts.DPPrefix);
-            AddNewLineAndText(ref text, sp, GameSettings.PopUpTexts.SPPrefix);
+            AddNewLineAndText(ref text, sp, GameSettings.PopUpTexts.GPPrefix);
         }
 
         /// <summary>
@@ -247,23 +256,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private Vector3 DecidePosition(CombatantContainer container)
         {
-            Vector3 result;
+            Vector3 result = Vector3.zero;
 
             // 味方の場合
             AllyContainer allyContainer = container as AllyContainer;
             if (allyContainer)
             {
                 // UIのある位置
-                result = allyUIs[allyContainer.Id].position;
+                result = _allyUIs[allyContainer.Id].position;
             }
             else
             {
-                // コンテナのワールド座標をスクリーン座標に変換
-                result = RectTransformUtility.WorldToScreenPoint(
-                    mainCamera,
+                Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(
+                    _mainCamera,
                     container.transform.position + GameSettings.PopUpTexts.Offset);
-            }
 
+                if(RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, screenPoint, _mainCamera, out Vector2 localPoint))
+                {
+                    result = transform.TransformPoint(localPoint);
+                }
+            }
             return result;
         }
     }

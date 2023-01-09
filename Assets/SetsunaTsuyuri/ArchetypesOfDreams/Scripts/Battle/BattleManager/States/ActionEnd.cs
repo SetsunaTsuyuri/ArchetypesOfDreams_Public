@@ -1,6 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -23,24 +24,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 context.onActionEndEnter.Invoke();
 
                 // 行動後の処理
-                context.Actor.Combatant?.OnActionEnd(context);
+                CancellationToken token = context.GetCancellationTokenOnDestroy();
+                context.ActionEndAsync(token).Forget();
+            }
+        }
 
-                // 解放可能な敵を解放する
-                context.Enemies.ReleaseKnockedOutReleasables();
+        /// <summary>
+        /// 戦闘者の行動終了時の処理
+        /// </summary>
+        /// <param name="token"></param>
+        private async UniTask ActionEndAsync(CancellationToken token)
+        {
+            if (Actor != null)
+            {
+                await Actor.Combatant.OnActionEnd(this, token);
+            }
 
-                // 戦闘続行可能の場合
-                if (context.CanContinue())
-                {
-                    // 時間進行
-                    context.State.Change<TimeAdvancing>();
-                }
-                else
-                {
-                    // 戦闘終了
-                    context.State.Change<BattleEnd>();
-                }
+            // 解放可能な敵を解放する
+            Enemies.ReleaseKnockedOutReleasables();
+
+            // 戦闘続行可能の場合
+            if (CanContinue())
+            {
+                // 時間進行
+                State.Change<TimeAdvancing>();
+            }
+            else
+            {
+                // 戦闘終了
+                State.Change<BattleEnd>();
             }
         }
     }
-
 }

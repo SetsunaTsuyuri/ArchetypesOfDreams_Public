@@ -5,8 +5,8 @@ using UnityEngine;
 namespace SetsunaTsuyuri.Scenario
 {
     /// <summary>
-    /// 出演者たちのデータ集
+    /// 出演者のデータグループ
     /// </summary>
     [CreateAssetMenu(fileName = "Actors", menuName = "SetsunaTsuyuri/Scenario/Data/Actors")]
-    public class ActorDataCollection : SpriteDataCollection<ActorData> { }
+    public class ActorDataGroup : SpriteDataGroup<ActorData> { }
 }

@@ -20,7 +20,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 return;
             }
-            SceneChangeManager.ChangeScene(SceneNames.Title);
+            SceneChangeManager.StartChange(SceneNames.Title);
         }
     }
 }

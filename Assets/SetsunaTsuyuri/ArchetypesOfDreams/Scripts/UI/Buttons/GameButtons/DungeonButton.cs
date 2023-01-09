@@ -42,18 +42,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             NameText.text = dungeon.Name;
 
             // 選択されたとき、説明文を設定する
-            AddTrriger(EventTriggerType.Select, (_) => description.SetText(Data.Description));
+            AddTrrigerEntry(EventTriggerType.Select, (_) => description.SetText(Data.Description));
 
             // キャンセルされたとき、自室シーンに移る
-            AddTrriger(EventTriggerType.Cancel, (_) => SceneChangeManager.ChangeScene(SceneNames.MyRoom));
+            AddTrrigerEntry(EventTriggerType.Cancel, (_) => SceneChangeManager.StartChange(SceneNames.MyRoom));
             
-            Button.onClick.AddListener(() =>
+            // 押されたとき、ダンジョンシーンに移行する
+            AddOnClickListener(() =>
             {
-                // プレイするダンジョンを決定する
-                RuntimeData.DungeonToPlay = Data;
-
-                // ダンジョンシーンへ移行する
-                SceneChangeManager.ChangeScene("Dungeon");
+                VariableData.DungeonId = Data.Id;
+                SceneChangeManager.StartChange(SceneNames.Dungeon);
             });
         }
     }

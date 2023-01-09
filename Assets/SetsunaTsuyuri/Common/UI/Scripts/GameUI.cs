@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using DG.Tweening;
 
 namespace SetsunaTsuyuri
 {
@@ -21,6 +20,11 @@ namespace SetsunaTsuyuri
         /// キャンバスグループ
         /// </summary>
         protected CanvasGroup _canvasGroup = null;
+
+        /// <summary>
+        /// フェードTween
+        /// </summary>
+        Tween _fadeTween = null;
 
         protected virtual void Awake()
         {
@@ -71,6 +75,45 @@ namespace SetsunaTsuyuri
         {
             gameObject.SetActive(false);
             Hide();
+        }
+
+        /// <summary>
+        /// フェードインする
+        /// </summary>
+        /// <param name="duration"></param>
+        public void FadeIn(float duration = 0.5f)
+        {
+            KillIfFadeTweenIsActive();
+
+            _canvas.enabled = true;
+            _canvasGroup.alpha = 0.0f;
+
+            _fadeTween = _canvasGroup.DOFade(1.0f, duration)
+                .SetLink(gameObject);
+        }
+
+        /// <summary>
+        /// フェードアウトする
+        /// </summary>
+        /// <param name="duration"></param>
+        public void FadeOut(float duration = 0.5f)
+        {
+            KillIfFadeTweenIsActive();
+
+            _fadeTween = _canvasGroup.DOFade(0.0f, duration)
+                .SetLink(gameObject)
+                .OnComplete(() => _canvas.enabled = true);
+        }
+
+        /// <summary>
+        /// フェードTweenがアクティブの場合、それを終了する
+        /// </summary>
+        private void KillIfFadeTweenIsActive()
+        {
+            if (_fadeTween.IsActive())
+            {
+                _fadeTween.Kill();
+            }
         }
     }
 }

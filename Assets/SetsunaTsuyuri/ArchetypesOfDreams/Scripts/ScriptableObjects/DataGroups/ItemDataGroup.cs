@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 効果アイテムのデータ集
     /// </summary>
     [CreateAssetMenu(menuName = "Data/Items", fileName = "Items")]
-    public class ItemDataCollection : DataGroup<ItemData> { }
+    public class ItemDataGroup : DataGroup<ItemData> { }
 }

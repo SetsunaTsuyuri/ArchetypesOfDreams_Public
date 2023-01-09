@@ -39,9 +39,9 @@ namespace SetsunaTsuyuri
             Button = GetComponent<Button>();
             EventTrigger = GetComponent<EventTrigger>();
 
-            AddTrriger(EventTriggerType.Submit, (_) => AudioManager.PlaySE("決定"));
-            AddTrriger(EventTriggerType.Move, (_) => AudioManager.PlaySE("ボタン移動"));
-            AddTrriger(EventTriggerType.Cancel, (_) => AudioManager.PlaySE("キャンセル"));
+            AddTrrigerEntry(EventTriggerType.Submit, (_) => AudioManager.PlaySE("決定"));
+            AddTrrigerEntry(EventTriggerType.Move, (_) => AudioManager.PlaySE("ボタン移動"));
+            AddTrrigerEntry(EventTriggerType.Cancel, (_) => AudioManager.PlaySE("キャンセル"));
         }
 
         /// <summary>
@@ -63,12 +63,12 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// イベントトリガーを追加する
+        /// イベントトリガーエントリーを追加する
         /// </summary>
         /// <param name="button">ボタン</param>
         /// <param name="type">トリガーの種類</param>
         /// <param name="action">UnityAction</param>
-        public void AddTrriger(EventTriggerType type, UnityAction<BaseEventData> action)
+        public void AddTrrigerEntry(EventTriggerType type, UnityAction<BaseEventData> action)
         {
             EventTrigger.Entry entry = new()
             {

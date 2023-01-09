@@ -27,6 +27,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Transform _previousTarget = null;
 
         /// <summary>
+        /// カメラ
+        /// </summary>
+        public Camera Camera { get; private set; } = null;
+
+        /// <summary>
         /// 視点となるトランスフォーム
         /// </summary>
         public Transform Target
@@ -36,11 +41,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 _previousTarget = _target;
                 _target = value;
-                if (_target)
-                {
-                    transform.SetPositionAndRotation(Target.position, Target.rotation);
-                }
+                UpdatePositionAndRotation();
             }
+        }
+
+        private void Awake()
+        {
+            Camera = GetComponent<Camera>();
         }
 
         private void LateUpdate()

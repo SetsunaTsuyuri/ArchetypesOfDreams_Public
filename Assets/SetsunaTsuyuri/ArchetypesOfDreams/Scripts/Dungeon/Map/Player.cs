@@ -50,13 +50,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="trigger">マップイベントの起動条件</param>
         /// <param name="mapEventObject">マップイベントオブジェクト</param>
         /// <returns>イベントが起動可能ならtrueを返す</returns>
-        public bool GetMapEventObject(Map map, MapEventTriggerType trigger, out MapEventObject mapEventObject)
+        public bool TryGetMapEventObject(Map map, MapEventTriggerType trigger, out MapEventObject mapEventObject)
         {
-            // 足元
+            // 同じセル
             mapEventObject = map.GetMapEventObject(Position, trigger);
             if (!mapEventObject)
             {
-                // 目の前
+                // 目の前のセル
                 mapEventObject = map.GetMapEventObject(Position + Direction, trigger, true);
             }
 

@@ -6,10 +6,10 @@ using UnityEngine;
 namespace SetsunaTsuyuri.Scenario
 {
     /// <summary>
-    /// スプライトデータの配列
+    /// スプライトデータグループ
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class SpriteDataCollection<T> : ScriptableObject where T : SpriteData
+    public abstract class SpriteDataGroup<T> : ScriptableObject where T : SpriteData
     {
         [field: SerializeField]
         public T[] Data { get; set; }

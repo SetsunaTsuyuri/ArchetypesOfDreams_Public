@@ -59,6 +59,9 @@ namespace SetsunaTsuyuri
             }
         }
 
+        /// <summary>
+        /// 初期化する
+        /// </summary>
         public virtual void Initialize() { }
     }
 }

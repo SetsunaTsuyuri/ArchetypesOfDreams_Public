@@ -40,7 +40,12 @@
             "id": 9,
             "members": [
                 {
-                    "name": "collides",
+                    "name": "appearance_conditions",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "can_collide",
                     "type": "bool",
                     "value": true
                 },
@@ -53,6 +58,17 @@
                     "name": "direction_y",
                     "type": "int",
                     "value": 1
+                },
+                {
+                    "name": "events",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "object_type",
+                    "propertyType": "ObjectType",
+                    "type": "string",
+                    "value": "None"
                 },
                 {
                     "name": "trigger",
@@ -135,6 +151,18 @@
                 "wangcolor",
                 "wangset"
             ]
+        },
+        {
+            "id": 18,
+            "name": "ObjectType",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "None",
+                "StairsUp",
+                "StairsDown"
+            ],
+            "valuesAsFlags": false
         },
         {
             "color": "#ffa0a0a4",

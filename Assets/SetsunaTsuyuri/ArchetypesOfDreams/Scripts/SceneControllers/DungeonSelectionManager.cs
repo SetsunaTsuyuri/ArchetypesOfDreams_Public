@@ -28,7 +28,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void Start()
         {
             // 戦闘者を移す
-            allies.TransferCombatantsSaveDataToContainers();
+            allies.TransferCombatantsRuntimeDataToContainers();
 
             // UI初期化
             ui.Initialize();

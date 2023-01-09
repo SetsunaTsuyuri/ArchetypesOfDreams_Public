@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,9 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 進行度によるマップイベント出現要因
+    /// 進行度によるマップイベント出現条件
     /// </summary>
-    public abstract class ProgressionTrigger : IAppearanceTrigger
+    public abstract class ProgressionCondition : IAppearanceCondition
     {
         /// <summary>
         /// 式の種類
@@ -37,30 +38,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public int Parameter { get; private set; } = 0;
 
-        /// <summary>
-        /// コンストラクター
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="formula"></param>
-        /// <param name="parameter"></param>
-        public ProgressionTrigger(int? id, FormulaType? formula, int? parameter)
+        public ProgressionCondition(string[] columns)
         {
-            // ID
-            if (id.HasValue)
+            if (int.TryParse(columns[1], out int id))
             {
-                Id = id.Value;
+                Id = id;
             }
 
-            // 式
-            if (formula.HasValue)
+            if (Enum.TryParse(columns[2], out FormulaType formula))
             {
-                Formula = formula.Value;
+                Formula = formula;
             }
 
-            // パラメーター
-            if (parameter.HasValue)
+            if (int.TryParse(columns[3], out int parameter))
             {
-                Parameter = parameter.Value;
+                Parameter = parameter;
             }
         }
 

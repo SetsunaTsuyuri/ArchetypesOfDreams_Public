@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -8,8 +7,58 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 戦闘者のデータ
     /// </summary>
     [System.Serializable]
-    public abstract class CombatantData : DataWithIdAndName
+    public abstract class CombatantData : NameDescriptionData
     {
+        /// <summary>
+        /// 感情属性
+        /// </summary>
+        public Attribute.Emotion Emotion = Attribute.Emotion.None;
+
+        /// <summary>
+        /// 最大HP
+        /// </summary>
+        public int HP = 1000;
+
+        /// <summary>
+        /// 最大DP
+        /// </summary>
+        public int DP = 100;
+
+        /// <summary>
+        /// 最大GP
+        /// </summary>
+        public int GP = 10;
+
+        /// <summary>
+        /// 力
+        /// </summary>
+        public int Power = 100;
+
+        /// <summary>
+        /// 技
+        /// </summary>
+        public int Technique = 100;
+
+        /// <summary>
+        /// 素早さ
+        /// </summary>
+        public int Speed = 100;
+
+        /// <summary>
+        /// 命中
+        /// </summary>
+        public int Accuracy = 100;
+
+        /// <summary>
+        /// 回避
+        /// </summary>
+        public int Evasion = 0;
+
+        /// <summary>
+        /// 習得スキル
+        /// </summary>
+        public SkillAcquisitionData[] Skills = { };
+
         /// <summary>
         /// スプライト
         /// </summary>
@@ -35,48 +84,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public Vector2 EnemyUIPositionOffset { get; private set; } = Vector2.zero;
 
         /// <summary>
-        /// ステータス
-        /// </summary>
-        [field: SerializeField]
-        public BasicStatusData Status { get; private set; } = null;
-
-        /// <summary>
-        /// STR依存スキル
-        /// </summary>
-        [field: SerializeField]
-        public int[] StrengthSkills { get; private set; } = null;
-
-        /// <summary>
-        /// TEC依存スキル
-        /// </summary>
-        [field: SerializeField]
-        public int[] TechniqueSkills { get; private set; } = null;
-
-        /// <summary>
-        /// 特殊スキル
-        /// </summary>
-        [field: SerializeField]
-        public int[] SpecialSkills { get; private set; } = null;
-
-        /// <summary>
-        /// 精神
-        /// </summary>
-        [field: SerializeField]
-        public SoulData[] Souls { get; private set; } = null;
-
-        /// <summary>
-        /// STR依存武器の属性
-        /// </summary>
-        [field: SerializeField]
-        public Attribute.StrengthWeapon StrengthWeapon { get; private set; }
-
-        /// <summary>
-        /// TEC依存武器の属性
-        /// </summary>
-        [field: SerializeField]
-        public Attribute.TechniqueWeapon TechniqueWeapon { get; private set; }
-
-        /// <summary>
         /// 通常攻撃の属性
         /// </summary>
         [field: SerializeField]
@@ -85,8 +92,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 敵として倒したときに得られる経験値
         /// </summary>
-        [field: SerializeField]
-        public int RewardExperience { get; private set; } = 0;
+        public int RewardExperience = 100;
 
         /// <summary>
         /// 顔スプライトまたはスプライトを取得する
@@ -94,17 +100,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public Sprite GetFaceSpriteOrSprite()
         {
-            Sprite result;
-            if (FaceSprite)
-            {
-                result = FaceSprite;
-            }
-            else
-            {
-                result = Sprite;
-            }
-
-            return result;
+            Sprite sprite = FaceSprite ? FaceSprite : Sprite;
+            return sprite;
         }
     }
 }

@@ -123,7 +123,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             Attribute.Attack userAttack = SkillAttribute switch
             {
-                Attribute.Skill.PowerSkill => Attribute.Attack.Strength,
+                Attribute.Skill.PowerSkill => Attribute.Attack.Power,
                 Attribute.Skill.TechniqueSkill => Attribute.Attack.Technique,
                 _ => Attribute.Attack.Mix,
             };

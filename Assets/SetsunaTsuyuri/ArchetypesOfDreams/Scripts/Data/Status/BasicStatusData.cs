@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -13,31 +12,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// HP
         /// </summary>
-        [field: SerializeField]
-        public int HP { get; private set; }
+        public int HP = 1000;
 
         /// <summary>
         /// DP
         /// </summary>
-        [field: SerializeField]
-        public int DP { get; private set; }
+        public int DP = 0;
 
         /// <summary>
         /// 力
         /// </summary>
-        [field: SerializeField]
-        public int Power { get; private set; }
+        public int Power = 100;
 
         /// <summary>
         /// 技
         /// </summary>
-        [field: SerializeField]
-        public int Technique { get; private set; }
+        public int Technique = 100;
 
         /// <summary>
         /// 素早さ
         /// </summary>
-        [field: SerializeField]
-        public int Speed { get; private set; }
+        public int Speed = 100;
+
+        /// <summary>
+        /// 命中
+        /// </summary>
+        public int Accuracy = 100;
+
+        /// <summary>
+        /// 回避
+        /// </summary>
+        public int Evasion = 0;
     }
 }

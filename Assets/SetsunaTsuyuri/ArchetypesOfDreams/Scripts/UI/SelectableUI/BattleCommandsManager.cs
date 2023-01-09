@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -91,7 +91,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 battle.Actor.Combatant.LastSelected = Skills.Button;
                 battle.BattleUI.Skills.Select();
             });
-            Skills.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Skills));
+            Skills.AddTrrigerEntry(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Skills));
 
             // アイテム
             Items.AddOnClickListener(() =>
@@ -99,7 +99,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 battle.Actor.Combatant.LastSelected = Items.Button;
                 battle.BattleUI.Items.Select();
             });
-            Items.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Items));
+            Items.AddTrrigerEntry(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Items));
 
             Hide();
         }
@@ -131,7 +131,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Purification.gameObject.SetActive(actor is DreamWalker);
             if (Purification.isActiveAndEnabled)
             {
-                ActionModel purificationSkill = new(MasterData.Skills.Purification);
+                ActionModel purificationSkill = new(MasterData.GetSkillData(BasicSkillType.Purification));
                 Purification.UpdateButton(purificationSkill, battle);
             }
             else
@@ -143,7 +143,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Change.gameObject.SetActive(actor is Nightmare);
             if (Change.isActiveAndEnabled)
             {
-                ActionModel changeSkill = new(MasterData.Skills.Change);
+                ActionModel changeSkill = new(MasterData.GetSkillData(BasicSkillType.Change));
                 Change.UpdateButton(changeSkill, battle);
             }
             else
@@ -152,7 +152,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 防御ボタン
-            ActionModel defenseSkill = new(MasterData.Skills.Defense);
+            ActionModel defenseSkill = new(MasterData.GetSkillData(BasicSkillType.Defense));
             Defense.UpdateButton(defenseSkill, battle);
 
             // アイテムボタン

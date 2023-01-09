@@ -17,9 +17,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Start()
         {
-            // セーブデータの戦闘者を味方コンテナへ移す
             AllyContainersManager allies = GetComponentInChildren<AllyContainersManager>();
-            allies.TransferCombatantsSaveDataToContainers();
+
+            // 戦闘者配列を味方コンテナへ移す
+            allies.TransferCombatantsRuntimeDataToContainers();
 
             // 味方全員を全回復する
             allies.InitializeCombatantsStatus();
@@ -28,10 +29,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             SaveDataManager.SaveAuto();
 
             // BGMを再生する
-            AudioManager.PlayBgm("自室");
+            AudioManager.PlayBgm(BgmType.MyRoom);
 
-            // メニューをセットアップし、選択する
+            // メニューをセットアップする
             menu.SetUp();
+
+            // メニューを選択する
             menu.Select();
         }
     }

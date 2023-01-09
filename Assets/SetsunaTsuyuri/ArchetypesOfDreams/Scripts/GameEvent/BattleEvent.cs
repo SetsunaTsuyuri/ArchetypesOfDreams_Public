@@ -18,16 +18,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int EnemyGroupId { get; set; } = 1;
 
         /// <summary>
-        /// 勝利後、フェードインする
-        /// </summary>
-        [field: SerializeField]
-        public bool RequestsFadeInAfterWin { get; set; } = true;
-
-        /// <summary>
         /// ボスとの戦闘である
         /// </summary>
         [field: SerializeField]
         public bool IsBossBattle { get; set; } = false;
+
+        public BattleEvent(string[] columns)
+        {
+            if (int.TryParse(columns[1], out int enemyGroupId))
+            {
+                EnemyGroupId = enemyGroupId;
+            }
+
+            if (columns.Length > 2
+                && bool.TryParse(columns[2], out bool isBossBattle))
+            {
+                IsBossBattle = isBossBattle;
+            }
+        }
 
         public UniTask GetUniTask(CancellationToken token)
         {

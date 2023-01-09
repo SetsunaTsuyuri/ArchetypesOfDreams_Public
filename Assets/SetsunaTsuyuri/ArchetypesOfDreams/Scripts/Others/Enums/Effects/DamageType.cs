@@ -5,7 +5,14 @@
     /// </summary>
     public enum DamageType
     {
-        Damage = 0, // ダメージ
-        Recovery = 1, // 回復
+        /// <summary>
+        /// ダメージ
+        /// </summary>
+        Damage = 0,
+
+        /// <summary>
+        /// 回復
+        /// </summary>
+        Healing = 1
     }
 }

@@ -19,26 +19,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             SetUp();
 
             ShowOrHideAllButtons(false);
-            bool[] openDungeons = RuntimeData.OpenDungeons;
-            for (int i = 0; i < openDungeons.Length; i++)
+
+            DungeonData[] selectableDungeons = MasterData.GetSelectableDungeons();
+
+            for (int i = 0; i < selectableDungeons.Length; i++)
             {
                 // ダンジョンデータ
-                DungeonData dungeon = MasterData.Dungeons[i];
+                DungeonData dungeon = selectableDungeons[i];
 
                 // ダンジョンボタン
                 DungeonButton button = _buttons[i];
 
-                // 選択できないダンジョンは非アクティブかつ選択不能にしてコンティニューする
-                if (dungeon.CannotBeSelected)
-                {
-                    button.SetInteractable(false);
-                    button.Hide();
-                    continue;
-                }
-
-                // それをアクティブにして、さらに開放されているダンジョンを受け持つならデータを与えて有効化する
+                // ボタンをアクティブにして、さらに開放されているダンジョンを受け持つならデータを与えて有効化する
                 button.gameObject.SetActive(true);
-                if (openDungeons[i])
+                if (VariableData.SelectableDungeons[dungeon.Id])
                 {
                     button.SetUp(dungeon, description);
                     button.SetInteractable(true);

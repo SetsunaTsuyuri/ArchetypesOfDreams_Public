@@ -5,9 +5,9 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// マップイベントオブジェクトの出現要因
+    /// マップイベントオブジェクトの出現条件
     /// </summary>
-    public interface IAppearanceTrigger
+    public interface IAppearanceCondition
     {
         /// <summary>
         /// 条件を満たしているかどうか評価する

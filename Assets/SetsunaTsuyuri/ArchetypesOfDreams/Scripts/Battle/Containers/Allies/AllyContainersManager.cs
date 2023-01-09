@@ -57,6 +57,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
+        /// <summary>
+        /// 勝利時の処理
+        /// </summary>
+        /// <param name="experience">経験値</param>
+        public void OnWin(int experience)
+        {
+            Combatant[] combatants = GetAllCombatants();
+            foreach (var combatant in combatants)
+            {
+                combatant.OnWin(experience);
+            }
+        }
+
         public override bool CanFight()
         {
             // 戦闘可能な夢渡りが存在する
@@ -66,16 +79,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// セーブデータに保存された戦闘者配列をコンテナに移す
+        /// 保存された戦闘者配列をコンテナに移す
         /// </summary>
-        public void TransferCombatantsSaveDataToContainers()
+        public void TransferCombatantsRuntimeDataToContainers()
         {
             // コンテナ初期化
             GetAllContainers().Initialize();
 
             // ロード
-            AddCombatants(Members, RuntimeData.Allies);
-            AddCombatants(ReserveMembers, RuntimeData.ReserveAllies);
+            AddCombatants(Members, VariableData.Allies);
+            AddCombatants(ReserveMembers, VariableData.ReserveAllies);
         }
 
         /// <summary>
@@ -98,13 +111,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .Where(x => x.ContainsCombatant())
                 .Select(x => x.Combatant);
 
-            RuntimeData.SetAllies(allies);
+            VariableData.SetAllies(allies);
 
             var reserveAllies = ReserveMembers
                 .Where(x => x.ContainsCombatant())
                 .Select(x => x.Combatant);
 
-            RuntimeData.SetReserveAllies(reserveAllies);
+            VariableData.SetReserveAllies(reserveAllies);
         }
 
         public override AllyContainer FindAvailable()
@@ -134,8 +147,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public CombatantContainer[] GetPurifiedEnemyAndAllMembers()
         {
-            List<CombatantContainer> result = new List<CombatantContainer>();
-            result.Add(PurifiedEnemy);
+            List<CombatantContainer> result = new List<CombatantContainer>
+            {
+                PurifiedEnemy
+            };
             result.AddRange(Members);
             result.AddRange(ReserveMembers);
 
@@ -149,8 +164,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool CanInjectReserveMembersIntoMainMembers()
         {
             bool result =
-                Members.Any(x => !x.ContainsCombatant()) &&
-                ReserveMembers.Any(x => x.ContainsCombatant());
+                Members.Any(x => !x.ContainsCombatant())
+                && ReserveMembers.Any(x => x.ContainsCombatant());
 
             return result;
         }
@@ -203,15 +218,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 経験値を増やす
+        /// 歩いたときの処理
         /// </summary>
-        /// <param name="value"></param>
-        public void AddExperience(int value)
+        public void OnWalk()
         {
             Combatant[] combatants = GetAllCombatants();
             foreach (var combatant in combatants)
             {
-                combatant.Experience += value;
+                combatant.OnWalk();
             }
         }
     }

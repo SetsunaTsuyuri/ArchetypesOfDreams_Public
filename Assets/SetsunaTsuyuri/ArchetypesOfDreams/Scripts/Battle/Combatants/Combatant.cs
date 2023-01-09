@@ -230,16 +230,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public abstract bool CanBeReleased();
 
         /// <summary>
-        /// 生命力の割合を取得する
+        /// HPの割合を取得する
         /// </summary>
         /// <returns></returns>
         public float GetHPRate()
         {
-            return GetStatusRate(CurrentHP, MaxHP);
+            return (float)CurrentHP / MaxHP;
         }
 
         /// <summary>
-        /// 生命力の減少率を取得する
+        /// HPの減少率を取得する
         /// </summary>
         /// <returns></returns>
         public float GetHPReductionRate()
@@ -248,50 +248,48 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 夢想力の割合を取得する
+        /// DPの割合を取得する
         /// </summary>
         /// <returns></returns>
-        public float GetDreamRate()
+        public float GetDPRate()
         {
-            return GetStatusRate(CurrentDP, GameSettings.Combatants.MaxDP);
+            return (float)CurrentDP / GameSettings.Combatants.MaxDP;
         }
 
         /// <summary>
-        /// 夢想力の減少率を取得する
+        /// DPの減少率を取得する
         /// </summary>
         /// <returns></returns>
-        public float GetDreamReductionRate()
+        public float GetDPReductionRate()
         {
-            return 1.0f - GetDreamRate();
+            return 1.0f - GetDPRate();
         }
 
         /// <summary>
-        /// 精神力の割合を取得する
+        /// SPの割合を取得する
         /// </summary>
         /// <returns></returns>
         public float GetSPRate()
         {
-            return GetStatusRate(CurrentSP, MaxSP);
+            return (float)CurrentGP / MaxGP;
         }
 
         /// <summary>
-        /// 精神力の減少率を取得する
+        /// SPの減少率を取得する
         /// </summary>
         /// <returns></returns>
-        public float GetSoulReductionRate()
+        public float GetSPReductionRate()
         {
             return 1.0f - GetSPRate();
         }
 
         /// <summary>
-        /// ステータスの割合を取得する
+        /// 歩いたときの処理
         /// </summary>
-        /// <param name="remaining">現在値</param>
-        /// <param name="max">最大値</param>
-        /// <returns></returns>
-        private float GetStatusRate(int remaining, int max)
+        public void OnWalk()
         {
-            return remaining / max;
+            // DPを1回復する
+            CurrentDP++;
         }
 
         /// <summary>

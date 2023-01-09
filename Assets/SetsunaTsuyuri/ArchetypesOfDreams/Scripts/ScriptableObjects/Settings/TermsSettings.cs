@@ -16,7 +16,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public string Level { get; private set; } = "Lv.";
 
-
         /// <summary>
         /// 感情属性アイコンの名前
         /// </summary>

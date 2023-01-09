@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// シナリオデータ集
     /// </summary>
     [CreateAssetMenu(fileName = "Scenarios", menuName = "Data/Scenarios")]
-    public class ScenarioDataCollection : DataGroup<ScenarioData>
+    public class ScenarioDataGroup : DataGroup<ScenarioData>
     {
         /// <summary>
         /// 汎用シナリオ集

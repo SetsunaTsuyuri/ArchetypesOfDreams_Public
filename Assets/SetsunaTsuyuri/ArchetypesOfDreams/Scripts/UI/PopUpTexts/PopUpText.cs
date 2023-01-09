@@ -45,6 +45,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 表示する
         /// </summary>
+        /// <param name="position">位置</param>
         /// <param name="text">文字列</param>
         /// <param name="color">色</param>
         public void Show(Vector3 position, string text, Color color)
@@ -92,7 +93,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="position">位置</param>
         /// <param name="text">文字列</param>
         /// <param name="color">色</param>
-        public void DoFlashingSequence(Vector3 position, string text, Color color)
+        public void DoBlinkingSequence(Vector3 position, string text, Color color)
         {
             // 表示する
             Show(position, text, color);

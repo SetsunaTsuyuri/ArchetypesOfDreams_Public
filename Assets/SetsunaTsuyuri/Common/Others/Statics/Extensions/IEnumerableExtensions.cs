@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace SetsunaTsuyuri
 {
@@ -12,65 +10,76 @@ namespace SetsunaTsuyuri
     public static class IEnumerableExtensions
     {
         /// <summary>
-        /// 要素をランダムに並び変える
+        /// 無作為に並び変える
         /// </summary>
-        /// <typeparam name="T">型</typeparam>
-        /// <param name="collection">コレクション</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
         /// <returns></returns>
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
+        public static IOrderedEnumerable<T> OrderByRandom<T>(this IEnumerable<T> source)
         {
-            return collection.OrderBy(i => Guid.NewGuid());
+            return source.OrderBy(_ => Guid.NewGuid());
+        }
+
+        /// <summary>
+        /// 無作為に並び変える
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IOrderedEnumerable<T> ThenByRandom<T>(this IOrderedEnumerable<T> source)
+        {
+            return source.ThenBy(_ => Guid.NewGuid());
         }
 
         /// <summary>
         /// 指定した型と同じ要素を取得する
         /// </summary>
-        /// <typeparam name="T">型</typeparam>
-        /// <param name="collection">コレクション</param>
-        /// <param name="type">型</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public static T GetSameType<T>(this IEnumerable<T> collection, Type type)
+        public static T GetSameType<T>(this IEnumerable<T> source, Type type)
         {
-            return collection.FirstOrDefault(v => v.GetType() == type);
+            return source.FirstOrDefault(x => x.GetType() == type);
         }
 
         /// <summary>
         /// 指定した型と同じ要素が存在する
         /// </summary>
-        /// <typeparam name="T">型</typeparam>
-        /// <param name="collection">コレクション</param>
-        /// <param name="type">型</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public static bool ExistsSameType<T>(this IEnumerable<T> collection, Type type)
+        public static bool ExistsSameType<T>(this IEnumerable<T> source, Type type)
         {
-            return collection.Any(s => s.GetType() == type);
+            return source.Any(x => x.GetType() == type);
         }
 
         /// <summary>
         /// 範囲外を指定している
         /// </summary>
-        /// <typeparam name="T">型</typeparam>
-        /// <param name="collection">コレクション</param>
-        /// <param name="index">索引</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
         /// <returns></returns>
-        public static bool OutOfRange<T>(this IEnumerable<T> collection, int index)
+        public static bool OutOfRange<T>(this IEnumerable<T> source, int index)
         {
-            return index < 0 || index >= collection.Count();
+            return index < 0 || index >= source.Count();
         }
 
         /// <summary>
         /// 指定した要素または初期値を取得する
         /// </summary>
-        /// <typeparam name="T">型</typeparam>
-        /// <param name="collecion">コレクション</param>
-        /// <param name="index">索引</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
         /// <returns></returns>
-        public static T GetValueOrDefault<T>(this IEnumerable<T> collecion, int index)
+        public static T GetValueOrDefault<T>(this IEnumerable<T> source, int index)
         {
             T result = default;
-            if (!collecion.OutOfRange(index))
+            if (!source.OutOfRange(index))
             {
-                result = collecion.ElementAt(index);
+                result = source.ElementAt(index);
             }
 
             return result;
@@ -79,19 +88,19 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// 指定した要素を取得する
         /// </summary>
-        /// <typeparam name="T">型</typeparam>
-        /// <param name="collection">コレクション</param>
-        /// <param name="index">索引</param>
-        /// <param name="value">値</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public static bool TryGetValue<T>(this IEnumerable<T> collection, int index, out T value)
+        public static bool TryGetValue<T>(this IEnumerable<T> source, int index, out T value)
         {
             value = default;
             bool result = false;
 
-            if (!collection.OutOfRange(index))
+            if (!source.OutOfRange(index))
             {
-                value = collection.ElementAt(index);
+                value = source.ElementAt(index);
                 result = true;
             }
 

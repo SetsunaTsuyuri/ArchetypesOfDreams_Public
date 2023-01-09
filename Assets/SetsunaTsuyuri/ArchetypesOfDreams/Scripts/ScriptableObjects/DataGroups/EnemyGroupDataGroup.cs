@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 敵グループのデータ集
     /// </summary>
     [CreateAssetMenu(menuName = "Data/EnemyGroups")]
-    public class EnemyGroupDataCollection : DataGroup<EnemyGroupData> { }
+    public class EnemyGroupDataGroup : DataGroup<EnemyGroupData> { }
 }

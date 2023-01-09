@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using System;
 
 namespace SetsunaTsuyuri
 {
@@ -34,7 +31,7 @@ namespace SetsunaTsuyuri
         /// オブジェクトを取得する
         /// </summary>
         /// <param name="onGot"></param>
-        public TPooledObject Get(UnityAction<TPooledObject> onGot)
+        public TPooledObject Get(Action<TPooledObject> onGot)
         {
             IsAvailable = false;
             onGot?.Invoke(PooledObject);
@@ -45,7 +42,7 @@ namespace SetsunaTsuyuri
         /// オブジェクトを解放する
         /// </summary>
         /// <param name="onReleased"></param>
-        public void Release(UnityAction<TPooledObject> onReleased)
+        public void Release(Action<TPooledObject> onReleased)
         {
             IsAvailable = true;
             onReleased?.Invoke(PooledObject);

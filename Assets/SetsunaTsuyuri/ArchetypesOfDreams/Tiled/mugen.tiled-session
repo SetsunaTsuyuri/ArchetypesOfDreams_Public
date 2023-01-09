@@ -3,17 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/map2.json",
+    "activeFile": "maps/001_prologue.json",
     "expandedProjectPaths": [
+        "maps",
         ".",
-        "tilesets",
-        "maps"
+        "tilesets"
     ],
     "file.lastUsedOpenFilter": "すべてのファイル (*)",
     "fileStates": {
-        "://automap-tiles.tsx": {
-            "scaleInDock": 1
-        },
         ":/automap-tiles.tsx": {
             "scaleInDock": 1
         },
@@ -46,6 +43,50 @@
         },
         "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/tilesets/tileset.tsx": {
             "scaleInDock": 1
+        },
+        "maps/001_prologue.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.082109375,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 319.2838062233774,
+                "y": 319.7458667244242
+            }
+        },
+        "maps/101.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.082109375,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 319.2838062233774,
+                "y": 322.5182297307054
+            }
+        },
+        "maps/201.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.082109375,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 319.2838062233774,
+                "y": 320.669987726518
+            }
+        },
+        "maps/301.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.082109375,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 319.2838062233774,
+                "y": 320.669987726518
+            }
         },
         "maps/map.json": {
             "expandedObjectLayers": [
@@ -88,7 +129,23 @@
                 "y": 320.66998772651795
             }
         },
+        "maps/prologue.json": {
+            "scale": 1.082109375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 321.13204822756484,
+                "y": 320.66998772651795
+            }
+        },
         "maps/test.json": {
+            "scale": 1.082109375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 320.20792722547117,
+                "y": 320.66998772651795
+            }
+        },
+        "tilesets/101.json": {
             "scale": 1.082109375,
             "selectedLayer": 0,
             "viewCenter": {
@@ -101,7 +158,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.exportedFilePath": "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/Tiled/maps",
+    "last.exportedFilePath": "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/ArchetypesOfDreams/Tiled/maps",
     "last.imagePath": "C:/Users/vantan/Desktop/Tiled/mugen/tilesets",
     "last.objectTypesPath": "C:/Users/vantan/Desktop/Tiled/mugen/maps/propertytypes.json",
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
@@ -109,22 +166,27 @@
     "map.renderOrder": null,
     "map.width": 20,
     "openFiles": [
-        "tilesets/tileset.tsx",
-        "maps/map.json",
-        "maps/map2.json"
+        "maps/001_prologue.json",
+        "maps/201.json",
+        "maps/301.json",
+        "maps/101.json"
     ],
     "project": "mugen.tiled-project",
-    "property.type": "bool",
+    "property.type": "ObjectType",
     "recentFiles": [
-        "tilesets/tileset.tsx",
+        "maps/101.json",
+        "maps/301.json",
+        "maps/201.json",
+        "maps/001_prologue.json",
         "maps/map.json",
+        "tilesets/tileset.tsx",
+        "tilesets/101.json",
+        "maps/prologue.json",
         "maps/map2.json",
         "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/map.json",
         "maps/test.json",
-        "maps/map.tmj",
-        "C:/Users/vantan/UnityProjects/ArchetypesOfDreams/Assets/SetsunaTsuyuri/map.tmj",
-        "maps/map.tmx",
-        "C:/Users/vantan/Desktop/mugen_copied/maps/map.tmx"
+        "maps/map.tmj"
     ],
+    "textEdit.monospace": true,
     "tileset.lastUsedFormat": "tsx"
 }

@@ -14,7 +14,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 最低成功率
         /// </summary>
         [field: SerializeField]
-        public int MinSuccessRate { get; private set; } = 1;
+        public int MinSuccessRate { get; private set; } = 0;
 
         /// <summary>
         /// 最高成功率
@@ -29,16 +29,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int LevelDifferenceCorrection { get; private set; } = 10;
 
         /// <summary>
-        /// 共感力による成功率補正
-        /// </summary>
-        [field: SerializeField]
-        public float EmpathyCorrection { get; private set; } = 1.0f;
-
-        /// <summary>
         /// 生命力減少による成功率補正
         /// </summary>
         [field: SerializeField]
-        public float LifeReductionCorrection { get; private set; } = 2.0f;
+        public float LifeReductionCorrection { get; private set; } = 1.0f;
 
         /// <summary>
         /// クラッシュ状態のときの成功率補正

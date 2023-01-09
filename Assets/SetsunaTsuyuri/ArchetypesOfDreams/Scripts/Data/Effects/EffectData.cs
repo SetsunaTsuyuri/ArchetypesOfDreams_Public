@@ -25,13 +25,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ダメージ
         /// </summary>
         [Serializable]
-        public class Damage
+        public class DamageEffect
         {
             /// <summary>
             /// 影響を受けるステータス
             /// </summary>
             [field: SerializeField]
-            public Affected Affected { get; private set; } = Affected.Hp;
+            public Affected Affected { get; private set; } = Affected.HP;
 
             /// <summary>
             /// ダメージの種類
@@ -68,24 +68,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// </summary>
             [field: SerializeField]
             public bool DontToZero { get; private set; } = false;
-
-            /// <summary>
-            /// ダメージを与える効果である
-            /// </summary>
-            /// <returns></returns>
-            public bool IsDamage()
-            {
-                return DamageType == DamageType.Damage;
-            }
-
-            /// <summary>
-            /// 回復させる効果である
-            /// </summary>
-            /// <returns></returns>
-            public bool IsRecovery()
-            {
-                return DamageType == DamageType.Recovery;
-            }
         }
 
         /// <summary>
@@ -165,10 +147,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public TargetSelectionType TargetSelection { get; private set; } = TargetSelectionType.Single;
 
         /// <summary>
-        /// ダメージと回復
+        /// ダメージ効果
         /// </summary>
-        [field: SerializeField]
-        public Damage[] Damages { get; private set; } = { };
+        public DamageEffect[] DamageEffects = { };
 
         /// <summary>
         /// ステータス効果
@@ -177,9 +158,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public StatusEffect[] StatusEffects { get; private set; } = { };
 
         /// <summary>
-        /// エフェクト待機時間
+        /// アニメーションID
         /// </summary>
-        public float EffectWaitDuration = 0.0f;
+        public int AnimationId = 0;
 
         /// <summary>
         /// エフェクトとSE
@@ -232,7 +213,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 弱点を突いた場合に与える追加精神ダメージ
         /// </summary>
         [field: SerializeField]
-        public int SoulDamage { get; private set; } = 1;
+        public int ExtraGPDamage { get; private set; } = 1;
 
         /// <summary>
         /// 命中率
@@ -252,7 +233,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool AffectStatus()
         {
-            return Damages.Length > 0;
+            return DamageEffects.Length > 0;
         }
 
         /// <summary>

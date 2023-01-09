@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 戦闘者を格納するコンテナ
     /// </summary>
-    public class CombatantContainer : MonoBehaviour, IInitializable
+    public abstract class CombatantContainer : MonoBehaviour, IInitializable
     {
         /// <summary>
         /// ID
@@ -59,6 +60,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 onTargetFlagSet.Invoke(this);
             }
         }
+
+        public event Action<CombatantContainer> OnDamageEvent = null;
 
         /// <summary>
         /// 戦闘者が設定されたときのゲームイベント
@@ -122,7 +125,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 行動した
         /// </summary>
         /// <param name="model">行動内容</param>
-        public void OnAction(ActionModel model)
+        public virtual void OnAction(ActionModel model)
         {
             if (onAction)
             {
@@ -146,6 +149,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public virtual void OnDamage()
         {
+            OnDamageEvent?.Invoke(this);
+
             if (onDamage)
             {
                 onDamage.Invoke(this);

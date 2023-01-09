@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri
@@ -10,9 +10,9 @@ namespace SetsunaTsuyuri
     {
         Title,
         MyRoom,
-        Dungeon,
         NormalBattle,
-        BossBattle
+        BossBattle,
+        Dungeon
     }
 
     /// <summary>

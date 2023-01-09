@@ -85,10 +85,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
 
     /// <summary>
-    /// ステータス異常のデータ
+    /// ステータス効果のデータ
     /// </summary>
     [System.Serializable]
-    public class StatusEffectData : DataWithIdAndName
+    public class StatusEffectData : NameDescriptionData
     {
         /// <summary>
         /// アイコンの文字
@@ -128,7 +128,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動不能時に解除される
         /// </summary>
-        public bool IsRemovedOnInabiltyToAct = false;
+        public bool IsRemovedOnInabilityToAct = false;
 
         /// <summary>
         /// 力依存の攻撃倍率
@@ -161,14 +161,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int DPChangeValue = 0;
 
         /// <summary>
-        /// SP増減値
+        /// GP増減値
         /// </summary>
-        public int SPChangeValue = 0;
+        public int GPChangeValue = 0;
 
         /// <summary>
         /// 命中
         /// </summary>
-        public int Hit = 0;
+        public int Accuracy = 0;
 
         /// <summary>
         /// 回避
@@ -178,7 +178,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// クリティカル命中
         /// </summary>
-        public int CriticalHit = 0;
+        public int CriticalAccuracy = 0;
 
         /// <summary>
         /// クリティカル回避

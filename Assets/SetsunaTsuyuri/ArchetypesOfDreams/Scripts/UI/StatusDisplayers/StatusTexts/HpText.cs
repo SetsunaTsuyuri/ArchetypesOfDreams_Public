@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// HPの表示
     /// </summary>
-    public class HpText : StatusText<int>
+    public class HPText : StatusText<int>
     {
         protected override void UpdateView()
         {

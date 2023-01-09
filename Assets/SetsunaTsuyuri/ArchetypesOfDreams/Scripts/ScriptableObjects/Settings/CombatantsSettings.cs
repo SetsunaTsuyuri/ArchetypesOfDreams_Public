@@ -53,10 +53,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxDP { get; private set; } = 100;
 
         /// <summary>
-        /// 最大SP
+        /// 最大GP
         /// </summary>
         [field: SerializeField]
-        public int MaxSP { get; private set; } = 100;
+        public int MaxGP { get; private set; } = 100;
 
         /// <summary>
         /// 最大待機時間
@@ -65,22 +65,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxWaitTime { get; private set; } = 10000;
 
         /// <summary>
-        /// 1ターンごとの夢想力増加量
-        /// </summary>
-        [field: SerializeField]
-        public int AmoutOfIncreaseInDreamPerTurn { get; private set; } = 10;
-
-        /// <summary>
         /// 1ターン毎の精神力回復量
         /// </summary>
         [field: SerializeField]
         public int AmoutOfSoulRecoverdPerTurn { get; private set; } = 1;
-
-        /// <summary>
-        /// 防御状態のときの被ダメージ倍率
-        /// </summary>
-        [field: SerializeField]
-        public float DefendingDamageCorrection { get; private set; } = 0.5f;
 
         /// <summary>
         /// クラッシュ状態のときの与ダメージ・回復倍率
@@ -101,21 +89,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public float CriticalDamageCorrection { get; private set; } = 1.5f;
 
         /// <summary>
-        /// クリティカルヒットしたときの精神力減少値
+        /// クリティカルヒットしたときのGPダメージ
         /// </summary>
         [field: SerializeField]
-        public int CriticalSoulDamage { get; private set; } = 1;
+        public int CriticalGPDamage { get; private set; } = 1;
 
         /// <summary>
         /// 最大ダメージ・回復量
         /// </summary>
         [field: SerializeField]
-        public int MaxDamageAndRecovery { get; private set; } = 99999999;
+        public int MaxDamageAndHealing { get; private set; } = 99999999;
 
         /// <summary>
         /// クラッシュ状態が継続するターン数
         /// </summary>
         [field: SerializeField]
         public int CrushTurns { get; private set; } = 2;
+
+        /// <summary>
+        /// 勝利後のHP回復率
+        /// </summary>
+        [field: SerializeField]
+        public float HPHealingRateOnWin { get; private set; } = 0.25f;
     }
 }

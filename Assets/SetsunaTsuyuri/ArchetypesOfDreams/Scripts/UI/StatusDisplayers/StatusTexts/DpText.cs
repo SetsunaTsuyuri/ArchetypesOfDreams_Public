@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// DPの表示
     /// </summary>
-    public class DpText : StatusText<int>
+    public class DPText : StatusText<int>
     {
         protected override void UpdateView()
         {

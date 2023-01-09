@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri
@@ -17,21 +16,6 @@ namespace SetsunaTsuyuri
         public static bool JudgeByPercentage(int value)
         {
             return value > Random.Range(0, 100);
-        }
-
-        /// <summary>
-        /// ランダムな値を取得する
-        /// </summary>
-        /// <param name="basicValue">基本値</param>
-        /// <param name="min">最小倍率</param>
-        /// <param name="max">最大倍率</param>
-        /// <returns></returns>
-        public static int GetRandomValue(int basicValue, float min, float max)
-        {
-            float multiplier = Random.Range(min, max);
-            int result = Mathf.FloorToInt(basicValue * multiplier);
-
-            return result;
         }
     }
 }

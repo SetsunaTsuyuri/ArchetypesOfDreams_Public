@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -28,7 +28,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private NightmareData NightmareData
         {
-            get => MasterData.Nightmares[DataId];
+            get => MasterData.GetNightmareData(DataId);
         }
 
         public override CombatantData Data
@@ -43,18 +43,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (purifier is DreamWalker dreamWalker && !HasBossResistance)
             {
                 // 成功率
-                float rate = NightmareData.PurificationSuccessRate;
+                result = NightmareData.PurificationSuccessRate;
 
                 // レベル差補正
                 if (dreamWalker.Level > Level)
                 {
-                    rate += (dreamWalker.Level - Level) * GameSettings.Purification.LevelDifferenceCorrection;
+                    result += (dreamWalker.Level - Level) * GameSettings.Purification.LevelDifferenceCorrection;
                 }
 
-                // 共感力補正
-                rate += dreamWalker.Empathy * GameSettings.Purification.EmpathyCorrection;
+                float rate = result;
 
-                // HP補正
+                // HP減少による補正
                 rate *= 1.0f + (GetHPReductionRate() * GameSettings.Purification.LifeReductionCorrection);
 
                 // クラッシュ補正

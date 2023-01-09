@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,10 +14,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         Camera _mainCamera = null;
 
+        /// <summary>
+        /// キャンバスのレクトトランスフォーム
+        /// </summary>
+        RectTransform _canvasRect = null; 
+
         protected override void Awake()
         {
             base.Awake();
             _mainCamera = Camera.main;
+            _canvasRect = _canvas.GetComponent<RectTransform>();
         }
 
         /// <summary>
@@ -37,11 +43,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnPositionSet(CombatantContainer container)
         {
             EnemyUI ui = uiArray[container.Id];
-            ui.transform.position = RectTransformUtility.WorldToScreenPoint(
+
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(
                 _mainCamera,
                 container.transform.position
                 + (Vector3)GameSettings.Enemies.UIPositionOffset
                 + (Vector3)container.Combatant.Data.EnemyUIPositionOffset);
+
+            if(RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screenPoint, _mainCamera, out Vector2 localPoint))
+            {
+                ui.transform.localPosition = localPoint;
+            }
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.Events;
 using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -59,17 +58,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動終了後の処理
         /// </summary>
-        /// <param name="battle">戦闘の内容</param>
-        public void OnActionEnd(BattleManager battle)
+        /// <param name="battle"></param>
+        /// <param name="token"></param>
+        public async UniTask OnActionEnd(BattleManager battle, CancellationToken token)
         {
             // ステータス変化の更新
-            UpdateStatusChange(battle);
+            await UpdateStatusChange(battle, token);
 
             // ステータス効果の更新
             UpdateStatusEffects();
-
-            // 夢想力増加
-            CurrentDP += GameSettings.Combatants.AmoutOfIncreaseInDreamPerTurn;
 
             // 行動内容
             ActionModel action = battle.ActorAction;
@@ -98,8 +95,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // ステータス更新
             RefreshStatus();
 
-            // 精神力初期化
-            InitializeSoul();
+            // GP回復
+            RecoverGP();
+        }
+
+        /// <summary>
+        /// 勝利時の処理
+        /// </summary>
+        /// <param name="experience">経験値</param>
+        public void OnWin(int experience)
+        {
+            // 経験値増加
+            Experience += experience;
+
+            // HP回復
+            int reductionHP = MaxHP - CurrentHP;
+            if (reductionHP > 0)
+            {
+                int healing = Mathf.CeilToInt(reductionHP * GameSettings.Combatants.HPHealingRateOnWin);
+                CurrentHP += healing;
+            }
         }
 
         /// <summary>
@@ -118,8 +133,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 // クラッシュ状態から復帰する
                 Condition = Attribute.Condition.Normal;
-                ChangeSoul();
-                RecoverSp();
+                RecoverGP();
             }
         }
 
@@ -142,37 +156,41 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ステータス変化の更新処理
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        private void UpdateStatusChange(BattleManager battle)
+        /// <param name="token"></param>
+        private async UniTask UpdateStatusChange(BattleManager battle, CancellationToken token)
         {
+            // HP
             int hpChange = MathUtility.Percent(MaxHP, HPChangeRate);
             if (HPChangeRate < 0)
             {
-                Result.AddHpDamage(Mathf.Abs(hpChange));
+                Result.AddHPDamage(Mathf.Abs(hpChange));
             }
             else if (HPChangeRate > 0)
             {
-                Result.AddHpRecovery(Mathf.Abs(hpChange));
+                Result.AddHPHealing(Mathf.Abs(hpChange));
             }
 
+            // DP
             if (DPChangeValue < 0)
             {
-                Result.AddDpDamage(Mathf.Abs(DPChangeValue));
+                Result.AddDPDamage(Mathf.Abs(DPChangeValue));
             }
             else if (DPChangeValue > 0)
             {
-                Result.AddDpRecovery(Mathf.Abs(DPChangeValue));
+                Result.AddDPHealing(Mathf.Abs(DPChangeValue));
             }
 
-            if (SPChangeValue < 0)
+            // GP
+            if (GPChangeValue < 0)
             {
-                Result.AddSpDamage(Mathf.Abs(SPChangeValue));
+                Result.AddGPDamage(Mathf.Abs(GPChangeValue));
             }
-            else if (SPChangeValue > 0)
+            else if (GPChangeValue > 0)
             {
-                Result.AddHpRecovery(Mathf.Abs(SPChangeValue));
+                Result.AddHPHealing(Mathf.Abs(GPChangeValue));
             }
 
-            ApplyActionResult(battle, battle.GetCancellationTokenOnDestroy()).Forget();
+            await ApplyActionResult(battle, token);
         }
 
         /// <summary>
@@ -181,7 +199,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public int GetBasicWaitTime()
         {
-            return GameSettings.Combatants.MaxWaitTime / Agility;
+            return GameSettings.Combatants.MaxWaitTime / Speed;
         }
 
         /// <summary>
@@ -215,9 +233,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     // 上書き
                     case Attribute.Stack.OverWritten:
                         sameIdStatusEffect.RemainingTurns = data.Turns;
-                        break;
-
-                    default:
                         break;
                 }
             }
@@ -421,21 +436,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (Result.IsDamage())
             {
                 // HP
-                if (Result.HpDamage > 0)
+                if (Result.HPDamage > 0)
                 {
-                    CurrentHP -= Result.HpDamage.Value;
+                    CurrentHP -= Result.HPDamage.Value;
                 }
 
                 // DP
-                if (Result.DpDamage > 0)
+                if (Result.DPDamage > 0)
                 {
-                    CurrentDP -= Result.DpDamage.Value;
+                    CurrentDP -= Result.DPDamage.Value;
                 }
 
-                // SP
-                if (Result.SpDamage > 0)
+                // GP
+                if (Result.GPDamage > 0)
                 {
-                    CurrentSP -= Result.SpDamage.Value;
+                    CurrentGP -= Result.GPDamage.Value;
                 }
 
                 // 1以上のダメージがある場合
@@ -445,44 +460,44 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 }
 
                 // ダメージイベント
-                if (Container)
+                Container.OnDamage();
+
+                // ★暫定
+                if (CurrentHP == 0)
                 {
-                    Container.OnDamage();
+                    await UniTask.Delay(200);
                 }
             }
 
             // 回復
-            if (Result.IsRecovery())
+            if (Result.IsHealing())
             {
                 // 生命力
-                if (Result.HpRecovery > 0)
+                if (Result.HPHealing > 0)
                 {
-                    CurrentHP += Result.HpRecovery.Value;
+                    CurrentHP += Result.HPHealing.Value;
                 }
 
                 // 夢想力
-                if (Result.DpRecovery > 0)
+                if (Result.DPHealing > 0)
                 {
-                    CurrentDP += Result.DpRecovery.Value;
+                    CurrentDP += Result.DPHealing.Value;
                 }
 
                 // 精神力
-                if (Result.SpRecovery > 0)
+                if (Result.GPHealing > 0)
                 {
-                    CurrentSP += Result.SpRecovery.Value;
+                    CurrentGP += Result.GPHealing.Value;
                 }
 
                 // 1以上の回復がある場合
-                if (Result.IsOneOrOverRecovery())
+                if (Result.IsOneOrOverHealing())
                 {
                     AudioManager.PlaySE("回復");
                 }
 
                 // イベント
-                if (Container)
-                {
-                    Container.OnRecovery();
-                }
+                Container.OnRecovery();
             }
 
             // ステータス効果追加
@@ -587,7 +602,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             Condition = Attribute.Condition.Normal;
             WaitTime = GetBasicWaitTime();
-            InitializeSoul();
+            RecoverGP();
         }
 
         /// <summary>
@@ -655,7 +670,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     continue;
                 }
 
-                // HP・DP・SPへの影響がある場合
+                // HP・DP・GPへの影響がある場合
                 if (effect.AffectStatus())
                 {
                     // 攻撃的な効果の場合
@@ -669,26 +684,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     }
 
                     // ダメージ・回復量を決定する
-                    foreach (var status in effect.Damages)
+                    foreach (var status in effect.DamageEffects)
                     {
                         DecideDamageOrRecovery(action, target, status);
                     }
 
-                    // 追加SPダメージを決定する
-                    if (!target.IsCrushed() && target.Result.HpDamage > 0)
+                    // 追加GPダメージを決定する
+                    if (!target.IsCrushed() && target.Result.HPDamage > 0)
                     {
-                        int damage = DecideExtraSpDamage(target, effect);
+                        int damage = DecideExtraGPDamage(target, effect);
                         if (damage > 0)
                         {
-                            target.Result.AddSpDamage(damage);
+                            target.Result.AddGPDamage(damage);
                         }
                     }
                 }
 
                 // クラッシュ判定
                 if (!target.IsCrushed() &&
-                    target.Result.SpDamage.HasValue &&
-                    target.CurrentSP - target.Result.SpDamage <= 0)
+                    target.Result.GPDamage.HasValue &&
+                    target.CurrentGP - target.Result.GPDamage <= 0)
                 {
                     target.Result.Crushed = true;
                 }
@@ -749,7 +764,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 命中率
-            int hit = Hit + effect.Hit - target.Evasion;
+            int hit = Accuracy + effect.Hit - target.Evasion;
 
             // 判定
             bool result = RandomUtility.JudgeByPercentage(hit);
@@ -793,16 +808,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="action">行動内容</param>
         /// <param name="target">対象</param>
         /// <param name="status">ダメージデータ</param>
-        private void DecideDamageOrRecovery(ActionModel action, Combatant target, EffectData.Damage status)
+        private void DecideDamageOrRecovery(ActionModel action, Combatant target, EffectData.DamageEffect status)
         {
             // 値にステータス効果を適用する
-            void ApplyStatusEffect(ref int value, float strength, float technique)
+            void ApplyStatusEffect(ref int value, float power, float technique)
             {
                 float rate = action.GetAttack() switch
                 {
-                    Attribute.Attack.Strength => strength,
+                    Attribute.Attack.Power => power,
                     Attribute.Attack.Technique => technique,
-                    Attribute.Attack.Mix => strength + technique,
+                    Attribute.Attack.Mix => power + technique,
                     _ => 1.0f
                 };
                 MathUtility.Multiply(ref value, rate);
@@ -827,7 +842,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 }
 
                 // 相手のクラッシュ補正
-                if (target.IsCrushed() && status.IsDamage())
+                if (target.IsCrushed() && status.DamageType == DamageType.Damage)
                 {
                     MathUtility.Multiply(ref value, GameSettings.Combatants.GivingDamageCorrectionWhenCrush);
                 }
@@ -865,10 +880,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             switch (status.Affected)
             {
                 // HP
-                case Affected.Hp:
+                case Affected.HP:
 
                     // ダメージ
-                    if (status.IsDamage())
+                    if (status.DamageType == DamageType.Damage)
                     {
                         // ゼロにしない場合
                         if (status.DontToZero && value >= target.CurrentHP)
@@ -876,19 +891,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                             value = target.CurrentHP - 1;
                         }
 
-                        target.Result.AddHpDamage(value);
+                        target.Result.AddHPDamage(value);
                     }
                     else // 回復
                     {
-                        target.Result.AddHpRecovery(value);
+                        target.Result.AddHPHealing(value);
                     }
                     break;
 
                 // DP
-                case Affected.Dp:
+                case Affected.DP:
 
                     // ダメージ
-                    if (status.IsDamage())
+                    if (status.DamageType == DamageType.Damage)
                     {
                         // ゼロにしない場合
                         if (status.DontToZero && value >= target.CurrentDP)
@@ -896,31 +911,31 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                             value = target.CurrentDP - 1;
                         }
 
-                        target.Result.AddDpDamage(value);
+                        target.Result.AddDPDamage(value);
                     }
                     else //回復
                     {
-                        target.Result.AddDpRecovery(value);
+                        target.Result.AddDPHealing(value);
                     }
                     break;
 
-                // SP
-                case Affected.Sp:
+                // GP
+                case Affected.GP:
 
                     // ダメージ
-                    if (status.IsDamage())
+                    if (status.DamageType == DamageType.Damage)
                     {
                         // ゼロにしない場合
-                        if (status.DontToZero && value >= target.CurrentSP)
+                        if (status.DontToZero && value >= target.CurrentGP)
                         {
-                            value = target.CurrentSP - 1;
+                            value = target.CurrentGP - 1;
                         }
 
-                        target.Result.AddSpDamage(value);
+                        target.Result.AddGPDamage(value);
                     }
                     else // 回復
                     {
-                        target.Result.AddSpRecovery(value);
+                        target.Result.AddGPHealing(value);
                     }
                     break;
 
@@ -936,7 +951,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="status">ダメージデータ</param>
         /// <param name="target">対象</param>
         /// <returns></returns>
-        private int DecideBasicValue(Attribute.Attack attack, EffectData.Damage status, Combatant target)
+        private int DecideBasicValue(Attribute.Attack attack, EffectData.DamageEffect status, Combatant target)
         {
             int result = 0;
 
@@ -967,17 +982,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 攻撃属性
             switch (attack)
             {
-                // STR依存
-                case Attribute.Attack.Strength:
+                // 力依存
+                case Attribute.Attack.Power:
                     value = Power;
                     break;
 
-                // TEC依存
+                // 技依存
                 case Attribute.Attack.Technique:
                     value = Technique;
                     break;
 
-                // STR・TEC混合
+                // 混合
                 case Attribute.Attack.Mix:
                     value = (Power + Technique) / 2;
                     break;
@@ -994,34 +1009,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private int DecideBasicValueByRate(Affected affected, Combatant target)
         {
-            int result = 0;
-
-            // 影響を与えるステータス
-            switch (affected)
+            return affected switch
             {
-                case Affected.Hp:
-                    result = target.MaxHP;
-                    break;
-
-                case Affected.Dp:
-                    result = GameSettings.Combatants.MaxDP;
-                    break;
-
-                case Affected.Sp:
-                    result = target.MaxSP;
-                    break;
-            }
-
-            return result;
+                Affected.HP => target.MaxHP,
+                Affected.DP => target.MaxDP,
+                Affected.GP=> target.MaxGP,
+                _ => 0
+            };
         }
 
         /// <summary>
-        /// 追加SPダメージを決定する
+        /// 追加GPダメージを決定する
         /// </summary>
         /// <param name="target">対象</param>
         /// <param name="effect">効果</param>
         /// <returns></returns>
-        private int DecideExtraSpDamage(Combatant target, EffectData effect)
+        private int DecideExtraGPDamage(Combatant target, EffectData effect)
         {
             int damage = 0;
 
@@ -1029,18 +1032,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             switch (target.Result.Effectiveness)
             {
                 case Attribute.Effectiveness.Weakness:
-                    damage += effect.SoulDamage;
+                    damage += effect.ExtraGPDamage;
                     break;
 
                 case Attribute.Effectiveness.SuperWeakness:
-                    damage += target.CurrentSP;
+                    damage += target.CurrentGP;
                     break;
             }
 
             // クリティカル
             if (target.Result.Critical)
             {
-                damage += GameSettings.Combatants.CriticalSoulDamage;
+                damage += GameSettings.Combatants.CriticalGPDamage;
             }
 
             return damage;

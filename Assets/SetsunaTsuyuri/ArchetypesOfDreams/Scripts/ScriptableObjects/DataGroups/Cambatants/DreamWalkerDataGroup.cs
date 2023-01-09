@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 夢渡りのデータ集
     /// </summary>
     [CreateAssetMenu(menuName = "Data/Combatants/DreamWalkers")]
-    public class DreamWalkerDataCollection : DataGroup<DreamWalkerData> { }
+    public class DreamWalkerDataGroup : DataGroup<DreamWalkerData> { }
 }

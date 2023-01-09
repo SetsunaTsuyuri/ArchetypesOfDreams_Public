@@ -34,7 +34,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="propertyName"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public static TValue GetPropertyValue<TValue>(JToken jToken, string propertyName, TValue defaultValue)
+        public static TValue GetPropertyValue<TValue>(JToken jToken, string propertyName, TValue defaultValue = default)
         {
             TValue result = defaultValue;
 

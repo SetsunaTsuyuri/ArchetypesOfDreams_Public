@@ -14,16 +14,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class ScenarioEvent : IGameEvent
     {
         /// <summary>
-        /// シナリオの属性
-        /// </summary>
-        [field: SerializeField]
-        public Attribute.Scenario ScenarioAttribute { get; private set; } = Attribute.Scenario.MainStory;
-
-        /// <summary>
         /// ID
         /// </summary>
         [field: SerializeField]
         public int Id { get; set; } = 1;
+
+        public ScenarioEvent(string[] columns)
+        {
+            if (int.TryParse(columns[1], out int id))
+            {
+                Id = id;
+            }
+        }
 
         public UniTask GetUniTask(CancellationToken token)
         {

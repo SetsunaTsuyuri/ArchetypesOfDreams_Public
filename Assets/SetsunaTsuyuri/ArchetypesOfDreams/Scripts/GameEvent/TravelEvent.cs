@@ -14,10 +14,30 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class TravelEvent : IGameEvent
     {
         /// <summary>
-        /// 移動先のマップID
+        /// 移動先のダンジョンID
         /// </summary>
         [field: SerializeField]
-        public int MapId { get; set; } = -1;
+        public int DungeonId { get; set; } = -1;
+
+        /// <summary>
+        /// 位置
+        /// </summary>
+        [field: SerializeField]
+        public PlayerInitialPositionType Position { get; set; } = PlayerInitialPositionType.Start;
+
+        public TravelEvent(string[] columns)
+        {
+            if (int.TryParse(columns[1], out int id))
+            {
+                DungeonId = id;
+            }
+
+            if (columns.Length > 2
+                && Enum.TryParse(columns[2], out PlayerInitialPositionType position))
+            {
+                Position = position;
+            }
+        }
 
         public UniTask GetUniTask(CancellationToken token)
         {
@@ -30,7 +50,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool DestinationIsMyRoom()
         {
-            return MapId == -1;
+            return DungeonId == -1;
         }
     }
 }

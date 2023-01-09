@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
@@ -34,6 +33,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [SerializeField]
         GameObject _wallPrefab = null;
+
+        /// <summary>
+        /// 上り階段
+        /// </summary>
+        [SerializeField]
+        GameObject _stairsUp = null;
+
+        /// <summary>
+        /// 下り階段
+        /// </summary>
+        [SerializeField]
+        GameObject _StairsDown = null;
 
         /// <summary>
         /// 名前
@@ -249,7 +260,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// マップイベントオブジェクトを取得する
         /// </summary>
         /// <param name="position">位置</param>
-        /// <param name="trigger">起動条件</param>
+        /// <param name="trigger">トリガー</param>
         /// <returns></returns>
         public MapEventObject GetMapEventObject(Vector2Int position, MapEventTriggerType trigger)
         {
@@ -259,17 +270,44 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// マップイベントオブジェクトの取得を試みる
+        /// </summary>
+        /// <param name="position">位置</param>
+        /// <param name="trigger">トリガー</param>
+        /// <param name="mapEventObject">マップイベントオブジェクト</param>
+        /// <returns></returns>
+        public bool TryGetMapEventObject(Vector2Int position, MapEventTriggerType trigger, out MapEventObject mapEventObject)
+        {
+            mapEventObject = GetMapEventObject(position, trigger);
+            return mapEventObject;
+        }
+
+        /// <summary>
         /// マップイベントオブジェクトを取得する
         /// </summary>
         /// <param name="position">位置</param>
-        /// <param name="trigger">起動条件</param>
-        /// <param name="collides">他のオブジェクトと衝突する</param>
+        /// <param name="trigger">トリガー</param>
+        /// <param name="canCollide">他のオブジェクトと衝突可能か</param>
         /// <returns></returns>
-        public MapEventObject GetMapEventObject(Vector2Int position, MapEventTriggerType trigger, bool collides)
+        public MapEventObject GetMapEventObject(Vector2Int position, MapEventTriggerType trigger, bool canCollide)
         {
             return Events
                 .Where(x => x.Trigger == trigger)
-                .FirstOrDefault(x => x.Position == position && x.Exists() && x.Collides == collides);
+                .FirstOrDefault(x => x.Position == position && x.Exists() && x.CanCollide == canCollide);
+        }
+
+        /// <summary>
+        /// マップイベントオブジェクトを取得する
+        /// </summary>
+        /// <param name="position">位置</param>
+        /// <param name="trigger"><トリガー/param>
+        /// <param name="canCollide">他のオブジェクトと衝突可能か</param>
+        /// <param name="mapEventObject">マップイベントオブジェクト</param>
+        /// <returns></returns>
+        public bool TryGetMapEventObject(Vector2Int position, MapEventTriggerType trigger, bool canCollide, out MapEventObject mapEventObject)
+        {
+            mapEventObject = GetMapEventObject(position, trigger, canCollide);
+            return mapEventObject;
         }
 
         /// <summary>
@@ -281,7 +319,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Vector2Int position = Vector2Int.zero;
             Vector2Int direcition = Vector2Int.up;
 
-            MapEventObject start = Events.FirstOrDefault(x => x.Type == MapEventObjectType.Start);
+            MapEventType mapEventObjectType = VariableData.PlayerInitialPosition switch
+            {
+                PlayerInitialPositionType.Start => MapEventType.Start,
+                PlayerInitialPositionType.Goal => MapEventType.Goal,
+                _ => MapEventType.Start
+            };
+
+            MapEventObject start = Events.FirstOrDefault(x => x.Type == mapEventObjectType);
             if (start)
             {
                 position = start.Position + start.Direction;
@@ -399,6 +444,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Vector3Int positon = new(x, 0, z);
 
             return positon;
+        }
+
+        /// <summary>
+        /// マップイベントオブジェクトのプレハブを取得する
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public GameObject GetMapEventObjectPrefab(MapEventObjectType type)
+        {
+            return type switch
+            {
+                MapEventObjectType.StairsUp => _stairsUp,
+                MapEventObjectType.StairsDown => _StairsDown,
+                _ => null
+            };
         }
     }
 }

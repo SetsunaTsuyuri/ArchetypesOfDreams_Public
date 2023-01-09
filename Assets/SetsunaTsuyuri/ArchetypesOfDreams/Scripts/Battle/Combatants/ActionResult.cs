@@ -37,32 +37,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// HPダメージ
         /// </summary>
-        public int? HpDamage { get; set; } = null;
+        public int? HPDamage { get; set; } = null;
 
         /// <summary>
         /// DPダメージ
         /// </summary>
-        public int? DpDamage { get; set; } = null;
+        public int? DPDamage { get; set; } = null;
 
         /// <summary>
-        /// SPダメージ
+        /// GPダメージ
         /// </summary>
-        public int? SpDamage { get; set; } = null;
+        public int? GPDamage { get; set; } = null;
 
         /// <summary>
         /// HP回復
         /// </summary>
-        public int? HpRecovery { get; set; } = null;
+        public int? HPHealing { get; set; } = null;
 
         /// <summary>
         /// DP回復
         /// </summary>
-        public int? DpRecovery { get; set; } = null;
+        public int? DPHealing { get; set; } = null;
 
         /// <summary>
-        /// SP回復
+        /// GP回復
         /// </summary>
-        public int? SpRecovery { get; set; } = null;
+        public int? GPHealing { get; set; } = null;
 
         /// <summary>
         /// 追加ステータス効果リスト
@@ -100,13 +100,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             Critical = false;
 
-            HpDamage = null;
-            DpDamage = null;
-            SpDamage = null;
+            HPDamage = null;
+            DPDamage = null;
+            GPDamage = null;
 
-            HpRecovery = null;
-            DpRecovery = null;
-            SpRecovery = null;
+            HPHealing = null;
+            DPHealing = null;
+            GPHealing = null;
 
             Purified = null;
 
@@ -123,7 +123,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool IsDamage()
         {
-            return HpDamage.HasValue || DpDamage.HasValue || SpDamage.HasValue;
+            return HPDamage.HasValue || DPDamage.HasValue || GPDamage.HasValue;
         }
 
         /// <summary>
@@ -132,40 +132,40 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool IsOneOrOverDamage()
         {
-            return HpDamage > 0 || DpDamage > 0 || SpDamage > 0;
+            return HPDamage > 0 || DPDamage > 0 || GPDamage > 0;
         }
 
         /// <summary>
         /// 回復がある
         /// </summary>
         /// <returns></returns>
-        public bool IsRecovery()
+        public bool IsHealing()
         {
-            return HpRecovery.HasValue || DpRecovery.HasValue || SpRecovery.HasValue;
+            return HPHealing.HasValue || DPHealing.HasValue || GPHealing.HasValue;
         }
 
         /// <summary>
         /// 1以上の回復がある
         /// </summary>
         /// <returns></returns>
-        public bool IsOneOrOverRecovery()
+        public bool IsOneOrOverHealing()
         {
-            return HpRecovery > 0 || DpRecovery > 0 || SpRecovery > 0;
+            return HPHealing > 0 || DPHealing > 0 || GPHealing > 0;
         }
 
         /// <summary>
         /// HPダメージを増やす
         /// </summary>
         /// <param name="value">値</param>
-        public void AddHpDamage(int value)
+        public void AddHPDamage(int value)
         {
-            if (HpDamage.HasValue)
+            if (HPDamage.HasValue)
             {
-                HpDamage += value;
+                HPDamage += value;
             }
             else
             {
-                HpDamage = value;
+                HPDamage = value;
             }
         }
 
@@ -173,15 +173,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// HP回復を増やす
         /// </summary>
         /// <param name="value">値</param>
-        public void AddHpRecovery(int value)
+        public void AddHPHealing(int value)
         {
-            if (HpRecovery.HasValue)
+            if (HPHealing.HasValue)
             {
-                HpRecovery += value;
+                HPHealing += value;
             }
             else
             {
-                HpRecovery = value;
+                HPHealing = value;
             }
         }
 
@@ -189,15 +189,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// DPダメージを増やす
         /// </summary>
         /// <param name="value">値</param>
-        public void AddDpDamage(int value)
+        public void AddDPDamage(int value)
         {
-            if (DpDamage.HasValue)
+            if (DPDamage.HasValue)
             {
-                DpDamage += value;
+                DPDamage += value;
             }
             else
             {
-                DpDamage = value;
+                DPDamage = value;
             }
         }
 
@@ -205,47 +205,47 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// DP回復を増やす
         /// </summary>
         /// <param name="value">値</param>
-        public void AddDpRecovery(int value)
+        public void AddDPHealing(int value)
         {
-            if (DpRecovery.HasValue)
+            if (DPHealing.HasValue)
             {
-                DpRecovery += value;
+                DPHealing += value;
             }
             else
             {
-                DpRecovery = value;
+                DPHealing = value;
             }
         }
 
         /// <summary>
-        /// SPダメージを増やす
+        /// GPダメージを増やす
         /// </summary>
         /// <param name="value">値</param>
-        public void AddSpDamage(int value)
+        public void AddGPDamage(int value)
         {
-            if (SpDamage.HasValue)
+            if (GPDamage.HasValue)
             {
-                SpDamage += value;
+                GPDamage += value;
             }
             else
             {
-                SpDamage = value;
+                GPDamage = value;
             }
         }
 
         /// <summary>
-        /// SP回復を増やす
+        /// GP回復を増やす
         /// </summary>
         /// <param name="value">値</param>
-        public void AddSpRecovery(int value)
+        public void AddGPHealing(int value)
         {
-            if (SpRecovery.HasValue)
+            if (GPHealing.HasValue)
             {
-                SpRecovery += value;
+                GPHealing += value;
             }
             else
             {
-                SpRecovery = value;
+                GPHealing = value;
             }
         }
     }

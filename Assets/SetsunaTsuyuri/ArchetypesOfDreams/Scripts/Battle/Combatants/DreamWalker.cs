@@ -22,7 +22,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public DreamWalkerData DreamWalkerData
         {
-            get => MasterData.DreamWalkers[DataId];
+            get => MasterData.GetDreamWalkerData(DataId);
         }
 
         public override CombatantData Data

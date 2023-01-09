@@ -62,17 +62,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// <returns>戦闘可能なコンテナ配列</returns>
             private CombatantContainer[] DecideOrderOfActions(CombatantContainer[] fightables)
             {
+                // 優先順位
+                // 待機時間が小さい→味方である→IDが小さい
                 CombatantContainer[] order = fightables
                     .OrderBy(x => x.Combatant.WaitTime)
-                    .ThenBy(x => x is not AllyContainer)
+                    .ThenByDescending(x => x is AllyContainer)
                     .ThenBy(x => x.Id)
                     .ToArray();
 
                 return order;
             }
-
         }
-
-
     }
 }

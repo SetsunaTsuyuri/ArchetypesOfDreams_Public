@@ -52,7 +52,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void CreateEnemies(BattleEvent battleEvent)
         {
             int id = battleEvent.EnemyGroupId;
-            EnemyGroupData enemyGroupData = MasterData.EnemyGroups[id];
+            EnemyGroupData enemyGroupData = MasterData.GetEnemyGroupData(id);
 
             // 敵を作る
             CreateEnemies(enemyGroupData);

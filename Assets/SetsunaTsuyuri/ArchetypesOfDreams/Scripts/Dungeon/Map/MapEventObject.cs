@@ -11,7 +11,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// マップイベントの種類
     /// </summary>
-    public enum MapEventObjectType
+    public enum MapEventType
     {
         /// <summary>
         /// なし
@@ -32,6 +32,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 終了地点
         /// </summary>
         Goal = 3
+    }
+
+    /// <summary>
+    /// マップイベントオブジェクトの種類
+    /// </summary>
+    public enum MapEventObjectType
+    {
+        /// <summary>
+        /// なし
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 上り階段
+        /// </summary>
+        StairsUp = 1,
+
+        /// <summary>
+        /// 下り階段
+        /// </summary>
+        StairsDown = 2
     }
 
     /// <summary>
@@ -69,7 +90,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 種類
         /// </summary>
         [field: SerializeField]
-        public MapEventObjectType Type { get; private set; } = MapEventObjectType.None;
+        public MapEventType Type { get; private set; } = MapEventType.None;
+
+        /// <summary>
+        /// 見た目の種類
+        /// </summary>
+        [field: SerializeField]
+        public MapEventObjectType ObjectType { get; private set; } = MapEventObjectType.None;
 
         /// <summary>
         /// イベントの起動条件
@@ -81,7 +108,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 出現条件リスト
         /// </summary>
         [field: SerializeReference]
-        public List<IAppearanceTrigger> AppearanceTriggers { get; set; } = new();
+        public List<IAppearanceCondition> AppearanceConditions { get; set; } = new();
 
         /// <summary>
         /// イベントリスト
@@ -110,9 +137,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             bool result = true;
 
-            foreach (var trigger in AppearanceTriggers)
+            foreach (var condition in AppearanceConditions)
             {
-                if (!trigger.Evaluate())
+                if (!condition.Evaluate())
                 {
                     result = false;
                     break;
@@ -125,38 +152,45 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// セットアップする
         /// </summary>
-        /// <param name="mapEventObject">マップイベントオブジェクトのJToken</param>
+        /// <param name="jToken">マップイベントオブジェクトのJToken</param>
         /// <param name="map">マップ</param>
-        public void SetUp(JToken mapEventObject, Map map)
+        public void SetUp(JToken jToken, Map map)
         {
+            // 出現条件
+            string appearanceConditions = TiledMapUtility.GetPropertyValue(jToken, "appearance_conditions", string.Empty);
+            AddConditionsOrEvents(appearanceConditions, AddAppearanceCondition);
+
             //// 種類とゲームオブジェクトの名前
-            string type = TiledMapUtility.GetPropertyValue(mapEventObject, "type", string.Empty);
-            if (Enum.TryParse(type, out MapEventObjectType result))
+            string type = TiledMapUtility.GetPropertyValue(jToken, "type", string.Empty);
+            if (Enum.TryParse(type, out MapEventType result))
             {
                 Type = result;
                 gameObject.name = type;
             }
 
             // 大きさ
-            int width = GetSizeOrPositionValue(mapEventObject, "width", map.CellSize);
-            int height = GetSizeOrPositionValue(mapEventObject, "height", map.CellSize);
+            int width = GetSizeOrPositionValue(jToken, "width", map.CellSize);
+            int height = GetSizeOrPositionValue(jToken, "height", map.CellSize);
             SizeExtension = new(width, height);
 
             // 位置
-            int positionX = GetSizeOrPositionValue(mapEventObject, "x", map.CellSize);
-            int positionY = GetSizeOrPositionValue(mapEventObject, "y", map.CellSize);
+            int positionX = GetSizeOrPositionValue(jToken, "x", map.CellSize);
+            int positionY = GetSizeOrPositionValue(jToken, "y", map.CellSize);
             Position = new(positionX, positionY);
 
             // 向き
-            int directionX = TiledMapUtility.GetPropertyValue(mapEventObject, "direction_x", 0);
-            int directionY = TiledMapUtility.GetPropertyValue(mapEventObject, "direction_y", 1);
+            int directionX = TiledMapUtility.GetPropertyValue(jToken, "direction_x", 0);
+            int directionY = TiledMapUtility.GetPropertyValue(jToken, "direction_y", 1);
             Direction = new(directionX, directionY);
 
+            // オブジェクトタイプ
+            ObjectType = TiledMapUtility.GetPropertyValue(jToken, "object_type", MapEventObjectType.None);
+
             // 起動条件
-            Trigger = TiledMapUtility.GetPropertyValue(mapEventObject, "trigger", MapEventTriggerType.None);
+            Trigger = TiledMapUtility.GetPropertyValue(jToken, "trigger", MapEventTriggerType.None);
 
             // 他のオブジェクトと衝突するか
-            Collides = TiledMapUtility.GetPropertyValue(mapEventObject, "collides", true);
+            CanCollide = TiledMapUtility.GetPropertyValue(jToken, "can_collide", true);
 
             // 進入可能なセルの種類
             //AccessibleCells = 
@@ -164,146 +198,95 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 移動パターン
             // 不動、プレイヤー追跡等
 
-            // プロパティ
-            JToken properties = mapEventObject["properties"];
-            foreach (var property in properties)
-            {
-                if (property["propertytype"] is not null)
-                {
-                    AddEventOrExtraTrigger(property);
-                }
-            }
+            // イベント
+            string events = TiledMapUtility.GetPropertyValue(jToken, "events", string.Empty);
+            AddConditionsOrEvents(events, AddEvent);
+
             // トランスフォーム
             UpdateTransform();
+
+            // オブジェクト作成
+            CreateObject(map);
         }
 
         /// <summary>
         /// 大きさまたは位置の値を取得する
         /// </summary>
-        /// <param name="mapEvent">マップイベントのJToken</param>
+        /// <param name="jToken">マップイベントのJToken</param>
         /// <param name="valueName">値の名前</param>
         /// <param name="cellSize">セルの大きさ</param>
         /// <returns></returns>
-        private int GetSizeOrPositionValue(JToken mapEvent, string valueName, int cellSize)
+        private int GetSizeOrPositionValue(JToken jToken, string valueName, int cellSize)
         {
-            int value = Mathf.FloorToInt(mapEvent[valueName].Value<float>()) / cellSize;
+            int value = Mathf.FloorToInt(jToken[valueName].Value<float>()) / cellSize;
             return value;
+        }
+
+        /// <summary>
+        /// 出現条件またはイベントを追加する
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="action"></param>
+        private void AddConditionsOrEvents(string script, Action<string[]> action)
+        {
+            string[] rows = script.Split("\n");
+            foreach (var row in rows)
+            {
+                string[] columns = row.Split(" ");
+                action?.Invoke(columns);
+            }
+        }
+
+        /// <summary>
+        /// 出現条件を追加する
+        /// </summary>
+        /// <param name="columns"></param>
+        private void AddAppearanceCondition(string[] columns)
+        {
+            IAppearanceCondition appearanceTrigger = columns[0] switch
+            {
+                "Story" => new StoryCondition(columns),
+                _ => null
+            };
+
+            if (appearanceTrigger is not null)
+            {
+                AppearanceConditions.Add(appearanceTrigger);
+            }
         }
 
         /// <summary>
         /// イベントを追加する
         /// </summary>
-        /// <param name="property">プロパティ</param>
-        /// <returns></returns>
-        private void AddEventOrExtraTrigger(JToken property)
+        /// <param name="columns"></param>
+        private void AddEvent(string[] columns)
         {
-            string propertyType = property?["propertytype"]?.ToString();
-            JToken values = property?["value"];
-
-            switch (propertyType)
+            IGameEvent gameEvent = columns[0] switch
             {
-                case "Battle":
-                    IGameEvent battle = CreateBattleEvent(values);
-                    Events.Add(battle);
-                    break;
+                "Battle" => new BattleEvent(columns),
+                "Scenario" => new ScenarioEvent(columns),
+                "Travel" => new TravelEvent(columns),
+                "Story" => new StoryEvent(columns),
+                _ => null
+            };
 
-                case "Scenario":
-                    IGameEvent scenario = CreateScenarioEvent(values);
-                    Events.Add(scenario);
-                    break;
-
-                case "Flags":
-                    IGameEvent flags = CreateStoryEvent(values);
-                    Events.Add(flags);
-                    break;
-
-                case "Travel":
-                    IGameEvent travel = CreateTravelEvent(values);
-                    Events.Add(travel);
-                    break;
-
-                case "StoryTrigger":
-                    IAppearanceTrigger stroyTrigger = CreateStoryTrigger(values);
-                    AppearanceTriggers.Add(stroyTrigger);
-                    break;
-
-                default:
-                    break;
+            if (gameEvent is not null)
+            {
+                Events.Add(gameEvent);
             }
         }
 
         /// <summary>
-        /// バトルイベントを作る
+        /// オブジェクトを作る
         /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        private IGameEvent CreateBattleEvent(JToken values)
+        /// <param name="map">マップ</param>
+        private void CreateObject(Map map)
         {
-            BattleEvent battleEvent = new()
+            GameObject prefab = map.GetMapEventObjectPrefab(ObjectType);
+            if (prefab != null)
             {
-                EnemyGroupId = values["id"]?.ToObject<int>() ?? 0,
-                IsBossBattle = values["is_boss_battle"]?.ToObject<bool>() ?? false
-            };
-
-            return battleEvent;
-        }
-
-        /// <summary>
-        /// シナリオイベントを作る
-        /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        private IGameEvent CreateScenarioEvent(JToken values)
-        {
-            ScenarioEvent scenarioEvent = new()
-            {
-                Id = values["id"]?.ToObject<int>() ?? 0
-            };
-
-            return scenarioEvent;
-        }
-
-        /// <summary>
-        /// フラグイベントを作る
-        /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        private IGameEvent CreateStoryEvent(JToken values)
-        {
-            StoryEvent storyEvent = new();
-
-            return storyEvent;
-        }
-
-        /// <summary>
-        /// 場所移動イベントを作る
-        /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        private IGameEvent CreateTravelEvent(JToken values)
-        {
-            TravelEvent travelEvent = new()
-            {
-                MapId = values["map_id"]?.ToObject<int>() ?? -1
-            };
-
-            return travelEvent;
-        }
-
-        /// <summary>
-        /// ストーリートリガーを作る
-        /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        private IAppearanceTrigger CreateStoryTrigger(JToken values)
-        {
-            int? id = values["id"]?.ToObject<int>();
-            ProgressionTrigger.FormulaType? formula = values["Formula"]?.ToObject<ProgressionTrigger.FormulaType>();
-            int? parameter = values["parameter"]?.ToObject<int>();
-
-            StoryTrigger storyTrigger = new(id, formula, parameter);
-
-            return storyTrigger;
+                Instantiate(prefab, transform);
+            }
         }
     }
 }

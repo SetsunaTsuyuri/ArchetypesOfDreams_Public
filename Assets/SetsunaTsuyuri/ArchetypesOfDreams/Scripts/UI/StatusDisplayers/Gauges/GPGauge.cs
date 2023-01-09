@@ -6,13 +6,13 @@ using UnityEngine.UI;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 精神力ゲージ
+    /// GPゲージ
     /// </summary>
-    public class SpGauge : StatusGauge
+    public class GPGauge : StatusGauge
     {
         protected override (int, int) GetValues(Combatant combatant)
         {
-            return (combatant.CurrentSP, combatant.MaxSP);
+            return (combatant.CurrentGP, combatant.MaxGP);
         }
     }
 }

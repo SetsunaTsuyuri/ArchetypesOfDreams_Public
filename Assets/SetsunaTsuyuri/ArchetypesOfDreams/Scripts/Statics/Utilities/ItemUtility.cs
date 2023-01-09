@@ -16,7 +16,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static bool HasAnyUsableItem()
         {
-            bool result = RuntimeData.Items
+            bool result = VariableData.Items
                 .Where(x => x > 0)
                 .Any();
 
@@ -40,7 +40,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static int GetNumberOfItems(int id)
         {
-            return RuntimeData.Items[id];
+            return VariableData.Items[id];
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="value">獲得数</param>
         public static void ObtainItem(int id, int value = 1)
         {
-            RuntimeData.Items[id] += value;
+            VariableData.Items[id] += value;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="value">消費数</param>
         public static void ConsumeItem(int id, int value = 1)
         {
-            RuntimeData.Items[id] -= value;
+            VariableData.Items[id] -= value;
         }
 
         /// <summary>
@@ -71,15 +71,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static ActionModel[] GetActionModels()
         {
             List<ActionModel> actions = new();
-            int[] items = RuntimeData.Items;
+            int[] items = VariableData.Items;
             for (int i = 0; i < items.Length; i++)
             {
                 if (items[i] > 0)
                 {
-                    ActionModel action = new(MasterData.Items[i]);
+                    ActionModel action = new(MasterData.GetItemData(i));
                     actions.Add(action);
                 }
-
             }
             return actions.ToArray();
         }

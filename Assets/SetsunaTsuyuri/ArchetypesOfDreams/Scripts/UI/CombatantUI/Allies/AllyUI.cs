@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -19,6 +20,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.Awake();
 
             ColorChanger = GetComponentInChildren<ImageColorChanger>(true);
+        }
+
+        /// <summary>
+        /// ダメージを受けたときの処理
+        /// </summary>
+        /// <param name="_"></param>
+        public void OnDamage(CombatantContainer _)
+        {
+            Vector3 punch = GameSettings.Allies.DamagePunch;
+            float duration = GameSettings.Allies.DamagePunchDuration;
+            int vibrato = GameSettings.Allies.DamagePunchVibrato;
+
+            transform
+                .DOPunchPosition(punch, duration, vibrato)
+                .SetLink(gameObject);
         }
     }
 }

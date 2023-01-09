@@ -16,7 +16,7 @@ namespace SetsunaTsuyuri.Scenario
         /// 出演者たちのデータ
         /// </summary>
         [SerializeField]
-        ActorDataCollection actorDataCollection = null;
+        ActorDataGroup actorDataGroup = null;
 
         /// 演者リスト
         /// </summary>
@@ -108,7 +108,7 @@ namespace SetsunaTsuyuri.Scenario
         {
             string result = string.Empty;
 
-            ActorData data = actorDataCollection.GetDataOrDefault(command.Name);
+            ActorData data = actorDataGroup.GetDataOrDefault(command.Name);
             if (data != null)
             {
                 result = data.DisplayName;
@@ -125,7 +125,7 @@ namespace SetsunaTsuyuri.Scenario
         public Actor FindAndSetData(CommandData command)
         {
             // データ
-            ActorData data = actorDataCollection.GetDataOrDefault(command.Name);
+            ActorData data = actorDataGroup.GetDataOrDefault(command.Name);
 
             // 演者
             Actor actor;

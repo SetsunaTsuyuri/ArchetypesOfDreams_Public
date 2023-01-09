@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.Scenario
     /// 背景のデータ集
     /// </summary>
     [CreateAssetMenu(fileName = "Backgrounds", menuName = "SetsunaTsuyuri/Scenario/Data/Backgrounds")]
-    public class BackgroundDataCollection : SpriteDataCollection<BackgroundData> { }
+    public class BackgroundDataGroup : SpriteDataGroup<BackgroundData> { }
 }

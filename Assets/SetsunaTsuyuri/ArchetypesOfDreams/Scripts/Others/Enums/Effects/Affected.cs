@@ -5,8 +5,8 @@
     /// </summary>
     public enum Affected
     {
-        Hp = 0,
-        Dp = 1,
-        Sp = 2
+        HP = 0,
+        DP = 1,
+        GP = 2
     }
 }

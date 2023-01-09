@@ -14,9 +14,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     }
 
     /// <summary>
-    /// ゲーム実行中、常に保持するデータ
+    /// プレイヤーの初期位置の種類
     /// </summary>
-    public class RuntimeData : Singleton<RuntimeData>, IInitializable
+    public enum PlayerInitialPositionType
+    {
+        Start = 0,
+        Goal = 1
+    }
+
+    /// <summary>
+    /// ゲーム実行中に変動するデータ
+    /// </summary>
+    public class VariableData : Singleton<VariableData>, IInitializable
     {
         /// <summary>
         /// 味方
@@ -45,6 +54,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 精貨
+        /// </summary>
+        int _spiritCoins = 0;
+
+        /// <summary>
+        /// 精貨
+        /// </summary>
+        public static int SpiritCoins
+        {
+            get => Instance._spiritCoins;
+            set => Instance._spiritCoins = Math.Clamp(value, 0, GameSettings.Other.MaxSpiritCoins);
+        }
+
+        /// <summary>
         /// アイテム所持数
         /// </summary>
         int[] _items = null;
@@ -59,17 +82,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ダンジョン開放フラグ
+        /// 選択可能なダンジョンフラグ
         /// </summary>
-        bool[] _openDungeons = null;
+        bool[] _selectableDungeons = null;
 
         /// <summary>
-        /// ダンジョン開放フラグ
+        /// 選択可能なダンジョンフラグ
         /// </summary>
-        public static bool[] OpenDungeons
+        public static bool[] SelectableDungeons
         {
-            get => Instance._openDungeons;
-            set => Instance._openDungeons = value;
+            get => Instance._selectableDungeons;
+            set => Instance._selectableDungeons = value;
         }
 
         /// <summary>
@@ -115,36 +138,52 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// プレイするダンジョンのデータ
+        /// プレイするダンジョンID
         /// </summary>
-        DungeonData _dungeonToPlay = null;
+        int _dungeonId = 0;
 
         /// <summary>
-        /// プレイするダンジョンのデータ
+        /// プレイするダンジョンID
         /// </summary>
-        public static DungeonData DungeonToPlay
+        public static int DungeonId
         {
-            get => Instance._dungeonToPlay;
-            set => Instance._dungeonToPlay = value;
+            get => Instance._dungeonId;
+            set => Instance._dungeonId = value;
+        }
+
+        /// <summary>
+        /// プレイヤーの初期位置
+        /// </summary>
+        PlayerInitialPositionType _playerInitialPosition = PlayerInitialPositionType.Start;
+
+        /// <summary>
+        /// プレイヤーの初期位置
+        /// </summary>
+        public static PlayerInitialPositionType PlayerInitialPosition
+        {
+            get => Instance._playerInitialPosition;
+            set => Instance._playerInitialPosition = value;
         }
 
         public override void Initialize()
         {
-            _items = new int[MasterData.Items.Count()];
+            // アイテム
+            _items = new int[MasterData.CountItems()];
 
-            int dungeonNumber = MasterData.Dungeons.Count();
-            _openDungeons = new bool[dungeonNumber];
+            // ダンジョン
+            int dungeonNumber = MasterData.CountDungeons();
+            _selectableDungeons = new bool[dungeonNumber];
             _clearedDungeons = new bool[dungeonNumber];
             _obtainedTreasures = new bool[30];
 
+            // ストーリー
             int storyNumber = Enum.GetValues(typeof(StoryType)).Length;
             _stroyProgressions = new int[storyNumber];
-
-            _dungeonToPlay = MasterData.Dungeons[0];
 
             _allies.Clear();
             _resrveAllies.Clear();
 
+            // 味方パーティ
             Combatant player = new DreamWalker()
             {
                 DataId = 0,
@@ -153,11 +192,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             player.Initialize();
             Allies.Add(player);
 
-            Items[0] = 3;
-            Items[1] = 2;
-            Items[2] = 1;
-            Items[3] = 1;
-            Items[4] = 2;
+            // アイテム
+            Items[0] = 100;
+            Items[1] = 100;
+            Items[2] = 100;
+            Items[4] = 100;
+
+            // 選択可能なダンジョン
+            _selectableDungeons[1] = true;
         }
 
         /// <summary>

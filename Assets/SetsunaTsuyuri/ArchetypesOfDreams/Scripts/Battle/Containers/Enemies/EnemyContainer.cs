@@ -60,15 +60,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EnemySprite = GetComponentInChildren<EnemySprite>();
         }
 
-        /// <summary>
-        /// 健康状態が設定されたときの処理
-        /// </summary>
         public override void OnConditionSet()
         {
             base.OnConditionSet();
 
             // 敵スプライトの健康状態設定時の処理
             EnemySprite.OnConditionSet(Combatant);
+        }
+
+        public override void OnAction(ActionModel model)
+        {
+            base.OnAction(model);
+
+            EnemySprite.Blink();
         }
 
         public override void OnDamage()
@@ -122,7 +126,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="level">レベル</param>
         public void CreateNightmare(int id, int level)
         {
-            NightmareData nightmareData = MasterData.Nightmares[id];
+            NightmareData nightmareData = MasterData.GetNightmareData(id);
             if (nightmareData is not null)
             {
                 Nightmare nightmare = new()
@@ -145,7 +149,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void CreateEnemyNightmare(EnemyData enemyData, int level)
         {
             // IDを元にデータを取得する
-            NightmareData nightmareData = MasterData.Nightmares[enemyData.Id];
+            NightmareData nightmareData = MasterData.GetNightmareData(enemyData.Id);
 
             // ナイトメアを作る
             Nightmare nightmare = new Nightmare()

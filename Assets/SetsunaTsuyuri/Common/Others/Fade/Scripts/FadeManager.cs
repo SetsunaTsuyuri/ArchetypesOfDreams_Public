@@ -82,6 +82,8 @@ namespace SetsunaTsuyuri
         {
             image = GetComponentInChildren<Image>();
             image.sprite = sprite;
+            image.material = fadeIn;
+            image.material.SetFloat("_Alpha", 1.0f);
         }
 
         /// <summary>
@@ -156,7 +158,7 @@ namespace SetsunaTsuyuri
                 await UniTask.Yield(token);
                 time += Time.deltaTime;
             }
-            material.SetFloat("_Alpha", 1);
+            material.SetFloat("_Alpha", 1.0f);
         }
     }
 }

@@ -33,12 +33,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         Tweener targetedColor = null;
 
+        /// <summary>
+        /// 点滅シーケンス
+        /// </summary>
+        Sequence _blinking = null;
+
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
             defaultColor = spriteRenderer.color;
             defaultLocalScaleX = transform.localScale.x;
             defaultLocalScaleY = transform.localScale.y;
+
+            _blinking = CreateBlinkingSequence();
         }
 
         /// <summary>
@@ -86,6 +93,30 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                         GameSettings.VisualEffects.EnemyFadeDuration);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 点滅シーケンスを作る
+        /// </summary>
+        private Sequence CreateBlinkingSequence()
+        {
+            return DOTween.Sequence()
+                .AppendCallback(() => spriteRenderer.material.SetFloat("_Blinking", 1.0f))
+                .AppendInterval(0.075f)
+                .AppendCallback(() => spriteRenderer.material.SetFloat("_Blinking", 0.0f))
+                .AppendInterval(0.075f)
+                .SetLoops(2)
+                .SetLink(gameObject)
+                .SetAutoKill(false)
+                .Pause();
+        }
+
+        /// <summary>
+        /// 点滅する
+        /// </summary>
+        public void Blink()
+        {
+            _blinking.Restart();
         }
 
         /// <summary>

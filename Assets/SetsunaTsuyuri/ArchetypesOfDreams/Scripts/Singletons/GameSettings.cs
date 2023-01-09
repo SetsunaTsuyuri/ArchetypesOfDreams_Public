@@ -28,6 +28,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 味方の設定
+        /// </summary>
+        AlliesSettings _allies = null;
+
+        /// <summary>
+        /// 味方の設定
+        /// </summary>
+        public static AlliesSettings Allies
+        {
+            get => Instance._allies;
+        } 
+
+        /// <summary>
         /// 敵の設定
         /// </summary>
         EnemiesSettings _enemies = null;
@@ -41,16 +54,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// マップの設定
+        /// マップオブジェクトの設定
         /// </summary>
-        MapsSettings _maps = null;
+        MapObjectsSettings _mapObjects = null;
 
         /// <summary>
-        /// マップの設定
+        /// マップオブジェクトの設定
         /// </summary>
-        public static MapsSettings Maps
+        public static MapObjectsSettings MapObjects
         {
-            get => Instance._maps;
+            get => Instance._mapObjects;
         }
 
         /// <summary>
@@ -157,11 +170,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._terms;
         }
 
+        /// <summary>
+        /// その他の設定
+        /// </summary>
+        OtherSettings _other = null;
+
+        public static OtherSettings Other
+        {
+            get => Instance._other;
+        }
+
         public override void Initialize()
         {
             _combatants = Resources.Load<CombatantsSettings>(s_path + "Combatants");
+            _allies = Resources.Load<AlliesSettings>(s_path + "Allies");
             _enemies = Resources.Load<EnemiesSettings>(s_path + "Enemies");
-            _maps = Resources.Load<MapsSettings>(s_path + "Maps");
+            _mapObjects = Resources.Load<MapObjectsSettings>(s_path + "MapObjects");
             _items = Resources.Load<ItemsSettings>(s_path + "Items");
             _emotions = Resources.Load<EmotionsSettings>(s_path + "Emotions");
             _effectiveness = Resources.Load<EffectivenessSettings>(s_path + "Effectiveness");
@@ -170,6 +194,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _popUpTexts = Resources.Load<PopUpTextsSettings>(s_path + "PopUpTexts");
             _purification = Resources.Load<PurificationSettings>(s_path + "Purification");
             _terms = Resources.Load<TermsSettings>(s_path + "Terms");
+            _other = Resources.Load<OtherSettings>(s_path + "Other");
         }
 
         /// <summary>

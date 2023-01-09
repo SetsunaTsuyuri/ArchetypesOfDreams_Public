@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.Events;
 
 namespace SetsunaTsuyuri
 {
@@ -22,12 +18,12 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// オブジェクトが取得された際の処理
         /// </summary>
-        readonly UnityAction<T> _onGot = null;
+        readonly Action<T> _onGot = null;
 
         /// <summary>
         /// オブジェクトが解放された際の処理
         /// </summary>
-        readonly UnityAction<T> _onReleased = null;
+        readonly Action<T> _onReleased = null;
 
         /// <summary>
         /// コンストラクター
@@ -36,7 +32,7 @@ namespace SetsunaTsuyuri
         /// <param name="onGot">取得する際に呼ばれる関数</param>
         /// <param name="onReleased">解放する際に呼ばれる関数</param>
         /// <param name="poolCapatity">プールする数</param>
-        public ObjectPool(Func<T> create, UnityAction<T> onGot, UnityAction<T> onReleased, int poolCapatity)
+        public ObjectPool(Func<T> create, Action<T> onGot, Action<T> onReleased, int poolCapatity)
         {
             _containers = CreateObjects(create, poolCapatity);
             _onGot = onGot;
@@ -70,10 +66,16 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         public T Get()
         {
+            T pooledObject = null;
+            
             PooledObjectContainer<T> container = _containers
                 .FirstOrDefault(x => x.IsAvailable);
 
-            T pooledObject = container.Get(_onGot);
+            if (container is not null)
+            {
+                pooledObject = container.Get(_onGot);
+            }
+
             return pooledObject;
         }
 

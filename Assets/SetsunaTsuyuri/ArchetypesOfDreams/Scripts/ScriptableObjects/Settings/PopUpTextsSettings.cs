@@ -44,7 +44,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 回復の色
         /// </summary>
         [field: SerializeField]
-        public Color RecoveryColor { get; private set; } = Color.green;
+        public Color HealingColor { get; private set; } = Color.green;
 
         /// <summary>
         /// 失敗の色
@@ -59,16 +59,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public string MissText { get; private set; } = "MISS";
 
         /// <summary>
-        /// 夢想力のダメージ・回復表示の接頭辞
+        /// DPダメージ・回復表示の接頭辞
         /// </summary>
         [field: SerializeField]
         public string DPPrefix { get; private set; } = "DP";
 
         /// <summary>
-        /// 精神力のダメージ・回復表示の接頭辞
+        /// GPダメージ・回復表示の接頭辞
         /// </summary>
         [field: SerializeField]
-        public string SPPrefix { get; private set; } = "SP";
+        public string GPPrefix { get; private set; } = "SP";
 
         /// <summary>
         /// 点滅表示のフェード時間

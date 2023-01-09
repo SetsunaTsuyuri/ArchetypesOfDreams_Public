@@ -31,13 +31,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             if (Allies.CanFight())
             {
-                Debug.Log("味方の勝ち");
+                Allies.OnWin(RewardExperience);
 
-                // 味方経験値増加
-                Allies.AddExperience(RewardExperience);
+                _result = BattleResultType.Win;
+                Debug.Log("味方の勝ち");
             }
             else
             {
+                _result = BattleResultType.Lose;
                 Debug.Log("敵の勝ち");
             }
 

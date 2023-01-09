@@ -13,6 +13,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 説明文のUI
         /// </summary>
+        [field: SerializeField]
         public DescriptionUIManager Description { get; private set; } = null;
 
         /// <summary>
@@ -56,7 +57,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Skills = GetComponentInChildren<SkillButtonsManager>(true);
             Items = GetComponentInChildren<ItemButtonsManager>(true);
 
-            Description = GetComponentInChildren<DescriptionUIManager>(true);
             OrderOfActions = GetComponentInChildren<OrderOfActionsDisplayer>(true);
         }
 

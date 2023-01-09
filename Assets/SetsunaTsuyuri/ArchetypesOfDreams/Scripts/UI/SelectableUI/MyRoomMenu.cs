@@ -57,12 +57,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.SetUp();
 
             // 冒険ボタンのセットアップ
-            adventureButton.AddOnClickListener(() => SceneChangeManager.ChangeScene(SceneNames.DungeonSelection));
-            adventureButton.AddTrriger(EventTriggerType.Select, (_) => description.SetText(adventureDescription));
+            adventureButton.AddOnClickListener(() => SceneChangeManager.StartChange(SceneNames.DungeonSelection));
+            adventureButton.AddTrrigerEntry(EventTriggerType.Select, (_) => description.SetText(adventureDescription));
 
             // セーブボタンのセットアップ
             saveButton.AddOnClickListener(() => saveDataMenu.UpdateButtonsAndSelect(SaveDataCommandType.Save));
-            saveButton.AddTrriger(EventTriggerType.Select, (_) => description.SetText(saveDescription));
+            saveButton.AddTrrigerEntry(EventTriggerType.Select, (_) => description.SetText(saveDescription));
         }
     }
 }

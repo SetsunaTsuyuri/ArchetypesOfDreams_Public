@@ -8,13 +8,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 物語の進行度による起動条件
     /// </summary>
     [System.Serializable]
-    public class StoryTrigger : ProgressionTrigger
+    public class StoryCondition : ProgressionCondition
     {
-        public StoryTrigger(int? id, FormulaType? formula, int? parameter) : base(id, formula, parameter) { }
+        public StoryCondition(string[] columns) : base(columns) { }
 
         public override int GetValue()
         {
-            return RuntimeData.StoryProgressions[Id];
+            return VariableData.StoryProgressions[Id];
         }
     }
 }

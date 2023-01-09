@@ -35,13 +35,13 @@ namespace SetsunaTsuyuri
             return Data.Length;
         }
 
-        protected virtual void OnValidate()
-        {
-            // IDを設定する
-            for (int i = 0; i < Data.Length; i++)
-            {
-                Data[i].Id = i;
-            }
-        }
+        //protected virtual void OnValidate()
+        //{
+        //    // IDを設定する
+        //    for (int i = 0; i < Data.Length; i++)
+        //    {
+        //        Data[i].Id = i;
+        //    }
+        //}
     }
 }

@@ -61,8 +61,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             BattleResultType result = await battle.ExecuteEventBattle(battleEvent, token);
 
             // 勝利後のフェードイン
-            if (result == BattleResultType.Win
-                && battleEvent.RequestsFadeInAfterWin)
+            if (result == BattleResultType.Win)
             {
                 await FadeManager.FadeIn(token);
             }
@@ -82,18 +81,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             int id = scenarioEvent.Id;
-            Attribute.Scenario attribute = scenarioEvent.ScenarioAttribute;
 
             // csvテキストアセットを取得する
-            TextAsset csv;
-            if (attribute == Attribute.Scenario.MainStory)
-            {
-                csv = MasterData.Scenarios[id].CSVText;
-            }
-            else
-            {
-                csv = MasterData.Scenarios.CommonScenarios.GetValueOrDefault(attribute);
-            }
+            TextAsset csv = MasterData.GetScenarioData(id).CSVText;
 
             // フェードイン
             await FadeManager.FadeIn(token);
@@ -115,16 +105,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             if (travelEvent.DestinationIsMyRoom())
             {
-                // 自室シーンに移動する
-                SceneChangeManager.ChangeScene(SceneNames.MyRoom);
+                // 自室シーンに移行する
+                SceneChangeManager.StartChange(SceneNames.MyRoom);
             }
             else
             {
-                // マップID
-                int id = travelEvent.MapId;
-                RuntimeData.DungeonToPlay = MasterData.Dungeons[id];
-                
-                SceneChangeManager.ChangeScene(SceneNames.Dungeon);
+                // ダンジョンシーンに移行する
+                VariableData.DungeonId = travelEvent.DungeonId;
+                VariableData.PlayerInitialPosition = travelEvent.Position;
+                SceneChangeManager.StartChange(SceneNames.Dungeon);
             }
         }
 

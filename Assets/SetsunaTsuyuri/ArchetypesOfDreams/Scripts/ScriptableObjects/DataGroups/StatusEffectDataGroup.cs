@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// ステータス効果データ集
     /// </summary>
     [CreateAssetMenu(fileName = "StatusEffects", menuName = "Data/StatusEffects")]
-    public class StatusEffectDataCollection : DataGroup<StatusEffectData> { }
+    public class StatusEffectDataGroup : DataGroup<StatusEffectData> { }
 }

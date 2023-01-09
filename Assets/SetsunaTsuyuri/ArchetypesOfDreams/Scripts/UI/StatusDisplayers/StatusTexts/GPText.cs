@@ -6,9 +6,9 @@ using TMPro;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// SPの表示
+    /// GPの表示
     /// </summary>
-    public class SpText : StatusText<int>
+    public class GPText : StatusText<int>
     {
         protected override void UpdateView()
         {
@@ -17,7 +17,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         protected override int GetValue(Combatant combatant)
         {
-            return combatant.CurrentSP;
+            return combatant.CurrentGP;
         }
     }
 }

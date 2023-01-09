@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using SetsunaTsuyuri.Scenario;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -13,12 +12,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public partial class Dungeon : MonoBehaviour
     {
-        /// <summary>
-        /// UI
-        /// </summary>
-        [SerializeField]
-        Canvas _ui = null;
-
         /// <summary>
         /// 戦闘の管理者
         /// </summary>
@@ -29,13 +22,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 味方コンテナの管理者
         /// </summary>
         [SerializeField]
-        AllyContainersManager allies = null;
-
-        /// <summary>
-        /// シナリオの管理者
-        /// </summary>
-        [SerializeField]
-        ScenarioManager scenario = null;
+        AllyContainersManager _allies = null;
 
         /// <summary>
         /// カメラ
@@ -50,10 +37,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         CameraController _miniMapCamera = null;
 
         /// <summary>
+        /// ミニマップ
+        /// </summary>
+        [SerializeField]
+        GameUI _miniMap = null;
+
+        /// <summary>
         /// プレイヤー
         /// </summary>
         [SerializeField]
         Player _player = null;
+
+        /// <summary>
+        /// ダンジョンデータ
+        /// </summary>
+        DungeonData _data = null;
 
         /// <summary>
         /// マップ
@@ -76,6 +74,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [SerializeField]
         int _enemiesEncounterValueIncrease = 0;
 
+
+        /// <summary>
+        /// ランダムエンカウントを許可する
+        /// </summary>
+        bool _allowRandomEncounter = false;
+
         /// <summary>
         /// 敵遭遇値がこの値以上になると戦闘が発生する
         /// </summary>
@@ -91,10 +95,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             State = new(this);
             State.Add<MapEventsResolution>();
+            State.Add<RandomEncounter>();
             State.Add<PlayerControl>();
+            State.Add<ReservedMapEventsResolution>();
             State.Add<PlayerTransformRotation>();
             State.Add<MapObjectsTransformMove>();
-            State.Add<RandomEncounter>();
 
             Map = GetComponentInChildren<Map>(true);
         }
@@ -106,18 +111,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             AudioManager.PlayBgm(BgmType.Dungeon);
 
             State.StartChange<MapEventsResolution>(this);
-
-            // プレイ開始
-            //Play(this.GetCancellationTokenOnDestroy()).Forget();
         }
 
         private void SetUp()
         {
-            // セーブデータの戦闘者を味方コンテナへ移す
-            allies.TransferCombatantsSaveDataToContainers();
+            // データを設定する
+            int id = VariableData.DungeonId;
+            _data = MasterData.GetDungeonData(id);
+
+            // 選択可能なダンジョンであれば選択画面で選べるようにする
+            if (!_data.CannotBeSelected)
+            {
+                VariableData.SelectableDungeons[id] = true;
+            }
+
+            // 戦闘者を味方コンテナへ移す
+            _allies.TransferCombatantsRuntimeDataToContainers();
 
             // jsonからマップを作る
-            string json = RuntimeData.DungeonToPlay.MapJson.text;
+            string json = _data.MapJson.text;
             Map.SetUp(json);
 
             // プレイヤーを開始位置に置く
@@ -139,31 +151,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             State.Update();
         }
 
-        /// <summary>
-        /// マップイベント解決
-        /// </summary>
         public class MapEventsResolution : UniTaskStateMachine<Dungeon>.State
         {
             public override async UniTask EnterAsync(Dungeon context, CancellationToken token)
             {
-                MapEventObject mapEvent = context._reservedMapEventObject;
-                if (mapEvent)
-                {
-                    await mapEvent.ResolveEvents(token);
-                }
-                context._reservedMapEventObject = null;
-                //------------------------------------------------------------------------------------------------
-                // 全てのマップオブジェクトの中から、イベント起動条件「プレイヤーに接触」のものを抽出する
-                // さらにその中から、プレイヤーに接触しているもの(イベント床のイメージ)を抽出する(近いものが優先)
-                // 順番に実行する
-                //var a = dungeon.Map.Objects
-                //    .Where(x => x.)
-                // イベントを解決する
-                //await GameCommandsManager.ResolveCommands(null, token);
-                //------------------------------------------------------------------------------------------------
+                Map map = context.Map;
+                Player player = context._player;
 
-                // プレイヤー操作を開始する
-                context.State.SetNextState<PlayerControl>();
+                Vector2Int previousPlayerPosition = player.Position;
+
+                if (map.TryGetMapEventObject(player.Position, MapEventTriggerType.Touch, out MapEventObject mapEventObject))
+                {
+                    await mapEventObject.ResolveEvents(token);
+
+                    if (player.Position != previousPlayerPosition)
+                    {
+                        context.State.SetNextState<MapEventsResolution>();
+                    }
+                    else
+                    {
+                        context.State.SetNextState<PlayerControl>();
+                    }
+                }
+                else if (context._allowRandomEncounter)
+                {
+                    context.State.SetNextState<RandomEncounter>();
+                }
+                else
+                {
+                    context.State.SetNextState<PlayerControl>();
+                }
             }
         }
 
@@ -176,28 +193,31 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 // プレイヤーの操作を有効にする
                 context._player.EnableInput();
+
+                // ランダムエンカウントを許可する
+                context._allowRandomEncounter = true;
             }
 
             public override void Update(Dungeon context)
             {
                 Player player = context._player;
 
-                // 【移動】
+                // 移動
                 if (player.WantsToMove())
                 {
                     OnMove(context);
                 }
-                // 【回転】
+                // 回転
                 else if (player.WantsToRotate())
                 {
                     OnRotation(context);
                 }
-                // 【調べる】
+                // 調べる
                 else if (player.WantsToCheck)
                 {
                     OnCheck(context);
                 }
-                // 【メニュー】
+                // メニュー
             }
 
             public override void Exit(Dungeon context)
@@ -209,69 +229,106 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// <summary>
             /// 移動
             /// </summary>
-            /// <param name="dungeon"></param>
-            private void OnMove(Dungeon dungeon)
+            /// <param name="context"></param>
+            private void OnMove(Dungeon context)
             {
-                Player player = dungeon._player;
-                Map map = dungeon.Map;
+                Player player = context._player;
+                Map map = context.Map;
 
                 if (player.CanMove(map))
                 {
                     // 移動する
                     player.Move();
 
+                    // 歩いたときの処理
+                    context._allies.OnWalk();
+
                     // マップオブジェクトのトランスフォーム移動を開始する
-                    dungeon.State.StartChange<MapObjectsTransformMove>(dungeon);
+                    context.State.StartChange<MapObjectsTransformMove>(context);
                 }
-                else if (player.GetMapEventObject(map, MapEventTriggerType.Touch, out MapEventObject mapEventObject))
+                else if (player.TryGetMapEventObject(map, MapEventTriggerType.Touch, out MapEventObject mapEventObject))
                 {
                     // 起動するイベントを予約する
-                    dungeon._reservedMapEventObject = mapEventObject;
+                    context._reservedMapEventObject = mapEventObject;
 
                     // マップイベントの処理を開始する
-                    dungeon.State.StartChange<MapEventsResolution>(dungeon);
+                    context.State.StartChange<ReservedMapEventsResolution>(context);
                 }
             }
 
             /// <summary>
             /// 回転
             /// </summary>
-            /// <param name="dungeon"></param>
-            private void OnRotation(Dungeon dungeon)
+            /// <param name="context"></param>
+            private void OnRotation(Dungeon context)
             {
                 // 回転する
-                dungeon._player.Rotate();
+                context._player.Rotate();
 
                 // プレイヤーのトランスフォーム回転を開始する
-                dungeon.State.StartChange<PlayerTransformRotation>(dungeon);
+                context.State.StartChange<PlayerTransformRotation>(context);
             }
 
             /// <summary>
             /// 調査
             /// </summary>
-            /// <param name="dungeon"></param>
-            private void OnCheck(Dungeon dungeon)
+            /// <param name="context"></param>
+            private void OnCheck(Dungeon context)
             {
-                Player player = dungeon._player;
-                Map map = dungeon.Map;
+                Player player = context._player;
+                Map map = context.Map;
 
-                if (player.GetMapEventObject(map, MapEventTriggerType.Check, out MapEventObject mapEvent))
+                if (player.TryGetMapEventObject(map, MapEventTriggerType.Check, out MapEventObject mapEvent))
                 {
                     // 起動するイベントを予約する
-                    dungeon._reservedMapEventObject = mapEvent;
+                    context._reservedMapEventObject = mapEvent;
 
                     // マップイベントの処理を開始する
-                    dungeon.State.StartChange<MapEventsResolution>(dungeon);
+                    context.State.StartChange<ReservedMapEventsResolution>(context);
                 }
             }
 
             /// <summary>
             /// メニュー
             /// </summary>
-            /// <param name="dungeon"></param>
-            private void OnMenu(Dungeon dungeon)
+            /// <param name="context"></param>
+            private void OnMenu(Dungeon context)
             {
 
+            }
+        }
+
+        /// <summary>
+        /// 予約済みマップイベント解決
+        /// </summary>
+        public class ReservedMapEventsResolution : UniTaskStateMachine<Dungeon>.State
+        {
+            public override async UniTask EnterAsync(Dungeon context, CancellationToken token)
+            {
+                MapEventObject mapEventObject = context._reservedMapEventObject;
+                if (mapEventObject)
+                {
+                    Vector2Int previousPlayerPosition = context._player.Position;
+
+                    await mapEventObject.ResolveEvents(token);
+                    context._reservedMapEventObject = null;
+
+                    if (context._player.Position != previousPlayerPosition)
+                    {
+                        // マップイベントを解決する
+                        context.State.SetNextState<MapEventsResolution>();
+                    }
+                    else
+                    {
+                        // プレイヤー操作を開始する
+                        context.State.SetNextState<PlayerControl>();
+                    }
+                }
+                else
+                {
+                    // プレイヤー操作を開始する
+                    context.State.SetNextState<PlayerControl>();
+                }
             }
         }
 
@@ -286,8 +343,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 UniTask rotation = context._player.CreateTransformRotationUniTask(token);
                 await rotation;
 
-                // マップイベントを解決する
-                context.State.SetNextState<MapEventsResolution>();
+                // プレイヤー操作を開始する
+                context.State.SetNextState<PlayerControl>();
             }
         }
 
@@ -305,17 +362,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // その他マップオブジェクトの移動
                 // 配列にしてWhenAll
 
-                if (context._player.GetMapEventObject(context.Map, MapEventTriggerType.Touch, out MapEventObject mapEventObject))
-                {
-                    context._reservedMapEventObject = mapEventObject;
-                    context.State.SetNextState<MapEventsResolution>();
-                }
-                else
-                {
-                    // ランダムエンカウントの処理
-                    context.State.SetNextState<RandomEncounter>();
-                }
-
+                context.State.SetNextState<MapEventsResolution>();
             }
         }
 
@@ -347,8 +394,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     // 非アクティブにする
                     context.gameObject.SetActive(false);
 
-                    // ダンジョンUIを非表示にする
-                    context._ui.enabled = false;
+                    // ミニマップを無効化する
+                    context._miniMap.Hide();
 
                     // 戦闘を行う
                     BattleResultType result = await context._battle.ExecuteRandomBattle(context.Map, token);
@@ -357,7 +404,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     if (result == BattleResultType.Lose)
                     {
                         // マイルームに戻る
-                        SceneChangeManager.ChangeScene(SceneNames.MyRoom);
+                        SceneChangeManager.StartChange(SceneNames.MyRoom);
                     }
                     else
                     {
@@ -368,20 +415,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                         // カメラをプレイヤー視点にする
                         context._cameraController.Target = context._player.transform;
 
-                        // UIを表示する
-                        context._ui.enabled = true;
-
                         // BGMを再生する
                         AudioManager.LoadBgm(1.0f);
 
                         // フェードイン
                         await FadeManager.FadeIn(token);
-                        context.State.SetNextState<MapEventsResolution>();
+
+                        // ミニマップをフェードインする
+                        context._miniMap.FadeIn();
+
+                        context.State.SetNextState<PlayerControl>();
                     }
                 }
                 else
                 {
-                    context.State.SetNextState<MapEventsResolution>();
+                    context.State.SetNextState<PlayerControl>();
                 }
             }
 

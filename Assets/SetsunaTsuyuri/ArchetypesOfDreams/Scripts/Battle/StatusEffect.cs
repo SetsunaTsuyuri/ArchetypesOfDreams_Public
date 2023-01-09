@@ -26,7 +26,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="turns">有効ターン数</param>
         public StatusEffect(int id, int turns)
         {
-            Data = MasterData.StatusEffects[id];
+            Data = MasterData.GetStatusEffectData(id);
             RemainingTurns = turns;
         }
     }

@@ -71,7 +71,7 @@ namespace SetsunaTsuyuri
             {
                 // 選ばれたとき、自身を最後に選ばれたボタンとする
                 int index = i;
-                _buttons[i].AddTrriger(EventTriggerType.Select, _ =>
+                _buttons[i].AddTrrigerEntry(EventTriggerType.Select, _ =>
                 {
                     _lastSelected = _buttons[index].Button;
                 });
@@ -79,7 +79,7 @@ namespace SetsunaTsuyuri
                 // キャンセルされたとき、前のUIに戻る
                 if (Previous != null)
                 {
-                    _buttons[i].AddTrriger(EventTriggerType.Cancel, _ =>
+                    _buttons[i].AddTrrigerEntry(EventTriggerType.Cancel, _ =>
                     {
                         Previous.Select();
                         Hide();

@@ -37,6 +37,9 @@ namespace SetsunaTsuyuri
         /// </summary>
         protected Singleton(){}
 
+        /// <summary>
+        /// 初期化する
+        /// </summary>
         public virtual void Initialize() { }
     }
 }

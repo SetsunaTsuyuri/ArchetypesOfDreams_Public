@@ -82,46 +82,55 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => _currentDP;
             protected set
             {
-                _currentDP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxDP);
+                _currentDP = Mathf.Clamp(value, 0, MaxDP);
             }
         }
 
         /// <summary>
-        /// 初期DP
+        /// 最大DP
         /// </summary>
-        public int InitialDP { get; protected set; } = 0;
+        int _maxDP = 0;
 
-        /// <summary>
-        /// 現在SP
-        /// </summary>
-        int _currentSP = 0;
-
-        /// <summary>
-        /// 現在SP
-        /// </summary>
-        public int CurrentSP
+        public int MaxDP
         {
-            get => _currentSP;
+            get => _maxDP;
             protected set
             {
-                _currentSP = Mathf.Clamp(value, 0, MaxSP);
+                _maxDP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxDP);
             }
         }
 
         /// <summary>
-        /// 最大SP
+        /// 現在GP
         /// </summary>
-        int _maxSP = 0;
+        int _currentGP = 0;
 
         /// <summary>
-        /// 最大SP
+        /// 現在GP
         /// </summary>
-        public int MaxSP
+        public int CurrentGP
         {
-            get => _maxSP;
+            get => _currentGP;
             protected set
             {
-                _maxSP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxSP);
+                _currentGP = Mathf.Clamp(value, 0, MaxGP);
+            }
+        }
+
+        /// <summary>
+        /// 最大GP
+        /// </summary>
+        int _maxGP = 0;
+
+        /// <summary>
+        /// 最大GP
+        /// </summary>
+        public int MaxGP
+        {
+            get => _maxGP;
+            protected set
+            {
+                _maxGP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxGP);
             }
         }
 
@@ -138,7 +147,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 素早さ
         /// </summary>
-        public int Agility { get; protected set; } = 0;
+        public int Speed { get; protected set; } = 0;
 
         /// <summary>
         /// 感情属性
@@ -183,7 +192,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 命中
         /// </summary>
-        public int Hit { get; protected set; } = 0;
+        public int Accuracy { get; protected set; } = 0;
 
         /// <summary>
         /// 回避
@@ -211,14 +220,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int DPChangeValue { get; protected set; } = 0;
 
         /// <summary>
-        /// SP増減値
+        /// GP増減値
         /// </summary>
-        public int SPChangeValue { get; protected set; } = 0;
-
-        /// <summary>
-        /// 精神配列の索引
-        /// </summary>
-        public int CurrentSoulIndex { get; protected set; } = 0;
+        public int GPChangeValue { get; protected set; } = 0;
 
         /// <summary>
         /// ステータスを初期化する
@@ -228,9 +232,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             RefreshStatus();
 
             Condition = Attribute.Condition.Normal;
-            RecoverHp();
-            RecoverSp();
-            InitializeDp();
+            RecoverHP();
+            RecoverDP();
+            RecoverGP();
         }
 
         /// <summary>
@@ -240,7 +244,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             HPChangeRate = 0;
             DPChangeValue = 0;
-            SPChangeValue = 0;
+            GPChangeValue = 0;
             CriticalHit = 0;
             CriticalEvasion = 0;
 
@@ -261,37 +265,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 return;
             }
 
-            // 最大HP
-            MaxHP = Data.Status.HP;
-
-            // 初期DP
-            InitialDP = Data.Status.DP;
-
-            SoulData soul = GetCurrentSoulData();
-
-            // 最大SP
-            MaxSP = soul.Max;
-
             // 感情属性
-            Emotion = soul.Emotion;
+            Emotion = Data.Emotion;
 
-            // STR
-            Power = Data.Status.Power;
+            // 最大HP
+            MaxHP = Data.HP;
 
-            // TEC
-            Technique = Data.Status.Technique;
+            // 最大DP
+            MaxDP = Data.DP;
 
-            // AGI
-            Agility = Data.Status.Speed;
+            // 最大GP
+            MaxGP = Data.GP;
 
-            // STR依存武器スキルIDリスト
-            _strengthSkillIdList = new List<int>(Data.StrengthSkills);
+            // 力
+            Power = Data.Power;
 
-            // TEC依存武器スキルIDリスト
-            _techniqueSkillIdList = new List<int>(Data.TechniqueSkills);
+            // 技
+            Technique = Data.Technique;
 
-            // 特殊スキルIDリスト
-            _specialSkillIdList = new List<int>(Data.SpecialSkills);
+            // 素早さ
+            Speed = Data.Speed;
+
+            // 命中
+            Accuracy = Data.Accuracy;
+
+            // 回避
+            Evasion = Data.Evasion;
         }
 
         /// <summary>
@@ -303,13 +302,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             float multiplier = 1.0f + ((Level - 1) * GameSettings.Combatants.AmountOfIncreaseInStatusPerLevel);
 
             // 最大HP
-            MaxHP = Mathf.FloorToInt(Data.Status.HP * multiplier);
+            MaxHP = Mathf.FloorToInt(Data.HP * multiplier);
 
-            // STR
-            Power = Mathf.FloorToInt(Data.Status.Power * multiplier);
+            // 力
+            Power = Mathf.FloorToInt(Data.Power * multiplier);
 
-            // TEC
-            Technique = Mathf.FloorToInt(Data.Status.Technique * multiplier);
+            // 技
+            Technique = Mathf.FloorToInt(Data.Technique * multiplier);
         }
 
         /// <summary>
@@ -335,17 +334,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // DP増減値
             DPChangeValue += data.DPChangeValue;
 
-            // SP増減値
-            SPChangeValue += data.SPChangeValue;
+            // GP増減値
+            GPChangeValue += data.GPChangeValue;
 
             // 命中
-            Hit += data.Hit;
+            Accuracy += data.Accuracy;
 
             // 回避
             Evasion += data.Evasion;
 
             // クリティカル命中
-            CriticalHit += data.CriticalHit;
+            CriticalHit += data.CriticalAccuracy;
 
             // クリティカル回避
             CriticalEvasion += data.CriticalEvasion;
@@ -357,113 +356,47 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void SetSkillsBasedOnIdList()
         {
             // 通常攻撃
-            NormalAttack = new(MasterData.Skills.NormalAttack, Data.NormalAttack);
+            NormalAttack = new(MasterData.GetSkillData(BasicSkillType.Attack), Data.NormalAttack);
 
             // スキルリスト
             List<ActionModel> skillList = new();
 
-            // スキルを追加する関数
-            void AddSkills(List<int> idList, Attribute.Skill skillAttribute)
+            foreach (var skillAcquisition in Data.Skills)
             {
-                foreach (var id in idList)
+                if (skillAcquisition.AcquisitionLevel >= Level)
                 {
-                    SkillData data = MasterData.Skills[id];
-                    ActionModel skill = new(data, skillAttribute);
-
+                    SkillData skillData = MasterData.GetSkillData(skillAcquisition.SkillId);
+                    ActionModel skill = new(skillData, Attribute.Skill.PowerSkill);
                     skillList.Add(skill);
                 }
             }
-
-            // 力依存スキルを加える
-            AddSkills(_strengthSkillIdList, Attribute.Skill.PowerSkill);
-
-            // 技依存スキルを加える
-            AddSkills(_techniqueSkillIdList, Attribute.Skill.TechniqueSkill);
-
-            // 特殊スキルを加える
-            AddSkills(_specialSkillIdList, Attribute.Skill.Special);
 
             // 配列に入れる
             Skills = skillList.ToArray();
         }
 
         /// <summary>
-        /// スキルを取得する
-        /// </summary>
-        /// <param name="attack">攻撃属性</param>
-        /// <returns></returns>
-        public ActionModel[] GetSkills(Attribute.Attack attack)
-        {
-            ActionModel[] result = Skills
-                .Where(x => x.GetAttack() == attack)
-                .ToArray();
-
-            return result;
-        }
-
-        /// <summary>
         /// HPを全回復する
         /// </summary>
-        public void RecoverHp()
+        public void RecoverHP()
         {
             CurrentHP = MaxHP;
         }
 
         /// <summary>
-        /// SPを全回復する
+        /// DPを全回復する
         /// </summary>
-        public void RecoverSp()
+        public void RecoverDP()
         {
-            CurrentSP = MaxSP;
+            CurrentDP = MaxDP;
         }
 
         /// <summary>
-        /// DPを初期値に設定する
+        /// GPを全回復する
         /// </summary>
-        public void InitializeDp()
+        public void RecoverGP()
         {
-            CurrentDP = InitialDP;
-        }
-
-        /// <summary>
-        /// 現在の精神データを取得する
-        /// </summary>
-        /// <returns></returns>
-        public SoulData GetCurrentSoulData()
-        {
-            SoulData soulData = Data.Souls[CurrentSoulIndex];
-            return soulData;
-        }
-
-        /// <summary>
-        /// 精神を初期化する
-        /// </summary>
-        public void InitializeSoul()
-        {
-            ChangeSoul(0);
-            RecoverSp();
-        }
-
-        /// <summary>
-        /// 精神を変更する
-        /// </summary>
-        public void ChangeSoul()
-        {
-            // 次のインデックスへ 最後のインデックスへ到達したら最初に戻る
-            int nextIndex = (CurrentSoulIndex + 1) % Data.Souls.Length;
-            ChangeSoul(nextIndex);
-        }
-
-        /// <summary>
-        /// 精神を変更する
-        /// </summary>
-        /// <param name="index">索引</param>
-        public void ChangeSoul(int index)
-        {
-            CurrentSoulIndex = index;
-
-            // ステータス更新
-            RefreshStatus();
+            CurrentGP = MaxGP;
         }
 
         /// <summary>

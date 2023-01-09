@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -13,7 +12,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 浄化成功率
         /// </summary>
-        [field: SerializeField]
-        public int PurificationSuccessRate { get; private set; }
+        public int PurificationSuccessRate = 50;
     }
 }

@@ -55,11 +55,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// カメラのトランスフォーム
         /// </summary>
         [SerializeField]
-        Transform _cameraTransform = null; 
+        Transform _cameraTransform = null;
 
         /// <summary>
         /// 味方の管理者
         /// </summary>
+        [field: SerializeField]
         public AllyContainersManager Allies { get; private set; } = null;
 
         /// <summary>
@@ -98,19 +99,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public StateMachine<BattleManager> State { get; private set; } = null;
 
         /// <summary>
-        /// ゲームコマンド
-        /// </summary>
-        GameCommand gameCommand = null;
-
-        /// <summary>
         /// 戦闘が終わった
         /// </summary>
         public bool IsOver { get; private set; } = false;
 
+        /// <summary>
+        /// 戦闘結果
+        /// </summary>
+        BattleResultType _result = BattleResultType.Win;
+
         private void Awake()
         {
-            Allies = GetComponentInChildren<AllyContainersManager>();
-            Enemies = GetComponentInChildren<EnemyContainersManager>();
+            Enemies = GetComponentInChildren<EnemyContainersManager>(true);
 
             SetUpStateMachine();
 
@@ -178,7 +178,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Enemies.CreateEnemies(map, Allies);
 
             // 通常戦闘BGMを再生する
-            AudioManager.PlayBgm("通常戦闘");
+            AudioManager.PlayBgm(BgmType.NormalBattle);
 
             return await ExecuteBattle(token);
         }
@@ -221,35 +221,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 戦闘終了まで待つ
             await UniTask.WaitUntil(() => IsOver, cancellationToken: token);
 
-            BattleResultType result = BattleResultType.Win;
-            return result;
-        }
-
-        /// <summary>
-        /// 戦闘を行う
-        /// </summary>
-        /// <param name="command">ゲームコマンド</param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public async UniTask ExecuteBattle(GameCommand command, CancellationToken token)
-        {
-            // 休眠状態以外の場合は戦闘を行わない
-            if (!(State.Current is Sleep))
-            {
-                return;
-            }
-
-            // 初期化する
-            Initialize();
-
-            // ゲームコマンド
-            gameCommand = command;
-
-            // 準備状態へ移行する
-            State.Change<Preparation>();
-
-            // 戦闘終了まで待つ
-            await UniTask.WaitUntil(() => IsOver, cancellationToken: token);
+            return _result;
         }
 
         /// <summary>

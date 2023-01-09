@@ -78,7 +78,7 @@ namespace SetsunaTsuyuri
                         {
                             SaveDataManager.Load(Id);
                         }
-                        SceneChangeManager.ChangeScene(SceneNames.MyRoom);
+                        SceneChangeManager.StartChange(SceneNames.MyRoom);
                         break;
                 }
             });

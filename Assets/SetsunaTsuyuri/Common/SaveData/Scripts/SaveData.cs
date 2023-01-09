@@ -10,7 +10,7 @@ namespace SetsunaTsuyuri
     /// セーブデータ
     /// </summary>
     [Serializable]
-    public class SaveData : IInitializable
+    public class SaveData
     {
         /// <summary>
         /// セーブデータID
@@ -49,10 +49,10 @@ namespace SetsunaTsuyuri
         public int[] StroyProgressions { get; set; } = { };
 
         /// <summary>
-        /// ダンジョン開放フラグ配列
+        /// 選択可能なダンジョンフラグ配列
         /// </summary>
         [field: SerializeField]
-        public bool[] OpenDungeons { get; set; } = { };
+        public bool[] SelectableDungeons { get; set; } = { };
 
         /// <summary>
         /// ダンジョンクリアフラグ配列
@@ -66,21 +66,6 @@ namespace SetsunaTsuyuri
         [field: SerializeField]
         public bool[] ObtainedTreasures { get; set; } = { };
 
-        public SaveData()
-        {
-            Initialize();
-        }
-
-        public void Initialize()
-        {
-            Items = new int[MasterData.Items.Count()];
-
-            int dungeonNumber = MasterData.Dungeons.Count();
-            OpenDungeons = new bool[dungeonNumber];
-            ClearedDungeons = new bool[dungeonNumber];
-            ObtainedTreasures = new bool[30];
-        }
-
         /// <summary>
         /// セーブする
         /// </summary>
@@ -90,13 +75,14 @@ namespace SetsunaTsuyuri
             Id = id;
             DateTime = System.DateTime.Now.ToString();
 
-            Copy(RuntimeData.Allies, Allies);
-            Copy(RuntimeData.ReserveAllies, ReserveAllies);
-            Copy(RuntimeData.Items, Items);
-            Copy(RuntimeData.StoryProgressions, StroyProgressions);
-            Copy(RuntimeData.OpenDungeons, OpenDungeons);
-            Copy(RuntimeData.ClearedDungeons, ClearedDungeons);
-            Copy(RuntimeData.ObtainedTreasures, ObtainedTreasures);
+            Copy(VariableData.Allies, Allies);
+            Copy(VariableData.ReserveAllies, ReserveAllies);
+
+            Items = Copy(VariableData.Items);
+            StroyProgressions = Copy(VariableData.StoryProgressions);
+            SelectableDungeons = Copy(VariableData.SelectableDungeons);
+            ClearedDungeons = Copy(VariableData.ClearedDungeons);
+            ObtainedTreasures = Copy(VariableData.ObtainedTreasures);
         }
 
         /// <summary>
@@ -104,33 +90,43 @@ namespace SetsunaTsuyuri
         /// </summary>
         public void Load()
         {
-            Copy(Allies, RuntimeData.Allies);
-            Copy(ReserveAllies, RuntimeData.ReserveAllies);
-            Copy(Items, RuntimeData.Items);
-            Copy(StroyProgressions, RuntimeData.StoryProgressions);
-            Copy(OpenDungeons, RuntimeData.OpenDungeons);
-            Copy(ClearedDungeons, RuntimeData.ClearedDungeons);
-            Copy(ObtainedTreasures, RuntimeData.ObtainedTreasures);
+            Copy(Allies, VariableData.Allies);
+            Copy(ReserveAllies, VariableData.ReserveAllies);
+
+            Overwrite(Items, VariableData.Items);
+            Overwrite(StroyProgressions, VariableData.StoryProgressions);
+            Overwrite(SelectableDungeons, VariableData.SelectableDungeons);
+            Overwrite(ClearedDungeons, VariableData.ClearedDungeons);
+            Overwrite(ObtainedTreasures, VariableData.ObtainedTreasures);
         }
 
         /// <summary>
         /// コピーする
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        private void Copy<T>(T[] from, T[] to) where T : struct
+        /// <param name="source"></param>
+        /// <returns></returns>
+        private T[] Copy<T>(T[] source) where T : struct
         {
-            int min = Math.Min(from.Length, to.Length);
-
-            for (int i = 0; i < min; i++)
-            {
-                to[i] = from[i];
-            }
+            T[] destination = new T[source.Length];
+            Array.Copy(source, destination, source.Length);
+            return destination;
         }
 
         /// <summary>
-        /// コピーする
+        /// 上書きする
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        private void Overwrite<T>(T[] from, T[] to) where T : struct
+        {
+            int min = Math.Min(from.Length, to.Length);
+            Array.Copy(from, to, min);
+        }
+
+        /// <summary>
+        /// 戦闘者リストをコピーする
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>

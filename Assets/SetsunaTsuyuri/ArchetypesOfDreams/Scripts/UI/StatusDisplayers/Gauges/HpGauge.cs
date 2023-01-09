@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// HPゲージ
     /// </summary>
-    public class HpGauge : StatusGauge
+    public class HPGauge : StatusGauge
     {
         protected override (int, int) GetValues(Combatant combatant)
         {

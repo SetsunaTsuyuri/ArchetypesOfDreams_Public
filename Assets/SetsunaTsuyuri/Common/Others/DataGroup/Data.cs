@@ -12,7 +12,6 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// ID
         /// </summary>
-        [field: SerializeField]
-        public int Id { get; set; }
+        public int Id = 0;
     }
 }

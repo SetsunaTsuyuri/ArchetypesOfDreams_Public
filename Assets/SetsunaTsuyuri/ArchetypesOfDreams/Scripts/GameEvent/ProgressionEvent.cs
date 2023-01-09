@@ -39,6 +39,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public int Parameter { get; set; } = 0;
 
+        public ProgressionEvent(string[] columns)
+        {
+            if (int.TryParse(columns[1], out int id))
+            {
+                Id = id;
+            }
+
+            if (Enum.TryParse(columns[2], out FormulaType formula))
+            {
+                Formula = formula;
+            }
+
+            if (int.TryParse(columns[3], out int parameter))
+            {
+                Parameter = parameter;
+            }
+        }
+
         public async UniTask Execute(CancellationToken token)
         {
             int value = GetValue();

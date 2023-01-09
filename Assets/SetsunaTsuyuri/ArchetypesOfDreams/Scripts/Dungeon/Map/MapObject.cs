@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -29,7 +27,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 他のマップオブジェクトと衝突する
         /// </summary>
         [field: SerializeField]
-        public bool Collides { get; set; } = false;
+        public bool CanCollide { get; set; } = false;
 
         /// <summary>
         /// 進入可能なセルの種類配列
@@ -60,7 +58,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // オブジェクトが存在しないか衝突しない場合に移動できる
             if (cell is not null
                 && cell.IsAccessible(this)
-                && (!other || (other && !other.Collides)))
+                && (!other || (other && !other.CanCollide)))
             {
                 result = true;
             }
@@ -95,9 +93,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public UniTask CreateTransformMoveUniTask(CancellationToken token)
         {
             Vector3 position = PositionToTransformPosition();
+            float duration = GameSettings.MapObjects.MoveDuration;
+            Ease ease = GameSettings.MapObjects.MoveEase;
 
-            UniTask move = transform.DOLocalMove(position, GameSettings.Maps.ObjectsMoveDuration)
-                .SetEase(Ease.Linear)
+            UniTask move = transform.DOLocalMove(position, duration)
+                .SetEase(ease)
                 .SetLink(gameObject)
                 .ToUniTask(cancellationToken: token);
 
@@ -112,10 +112,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public UniTask CreateTransformRotationUniTask(CancellationToken token)
         {
             Quaternion quaternion = DirectionToTransformRotation();
+            float duration = GameSettings.MapObjects.RotationDuration;
+            Ease ease = GameSettings.MapObjects.RotationEase;
 
-            float duration = GameSettings.Maps.ObjectsRotationDuration;
             UniTask rotation = transform.DOLocalRotateQuaternion(quaternion, duration)
-                .SetEase(Ease.OutQuad)
+                .SetEase(ease)
                 .SetLink(gameObject)
                 .ToUniTask(cancellationToken: token);
 

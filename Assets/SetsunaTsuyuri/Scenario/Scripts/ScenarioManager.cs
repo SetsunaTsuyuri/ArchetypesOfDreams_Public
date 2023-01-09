@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,10 +47,10 @@ namespace SetsunaTsuyuri.Scenario
         public float waitTimePerCharacter = 0.1f;
 
         /// <summary>
-        /// 背景のデータ
+        /// 背景データグループ
         /// </summary>
         [SerializeField]
-        BackgroundDataCollection backgrounds = null;
+        BackgroundDataGroup backgroundDataGroup = null;
 
         /// <summary>
         /// メッセージ速度
@@ -798,7 +798,7 @@ namespace SetsunaTsuyuri.Scenario
             Sprite sprite = null;
             if (!string.IsNullOrEmpty(name))
             {
-                sprite = backgrounds.GetDataOrDefault(name).BasicSprite;
+                sprite = backgroundDataGroup.GetDataOrDefault(name).BasicSprite;
             }
 
             await background.CrossFade(sprite, duration, token);

@@ -8,24 +8,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// アイテムデータ
     /// </summary>
     [System.Serializable]
-    public class ItemData : DataWithIdAndName
+    public class ItemData : NameDescriptionData
     {
         /// <summary>
         /// 価格
         /// </summary>
-        [field: SerializeField]
-        public int Price { get; private set; }
+        public int Price = 0;
 
         /// <summary>
         /// 使ってもなくならない
         /// </summary>
-        [field: SerializeField]
-        public bool IsReusable { get; private set; }
+        public bool IsReusable = false;
 
         /// <summary>
         /// 効果データ
         /// </summary>
-        [field: SerializeField]
-        public EffectData Effect { get; private set; }
+        public EffectData Effect = null;
     }
 }
