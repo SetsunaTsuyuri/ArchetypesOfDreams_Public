@@ -68,7 +68,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EnemySprite.OnConditionSet(Combatant);
         }
 
-        public override void OnAction(ActionModel model)
+        public override void OnAction(ActionInfo model)
         {
             base.OnAction(model);
 
@@ -88,7 +88,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="battle">戦闘の管理者</param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask OnPurified(BattleManager battle, CancellationToken token)
+        public async UniTask OnPurified(Battle battle, CancellationToken token)
         {
             // 敵スプライトの浄化時の処理
             EnemySprite.OnPurified();

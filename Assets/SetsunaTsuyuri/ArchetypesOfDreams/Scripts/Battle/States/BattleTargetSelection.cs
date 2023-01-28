@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 対象選択開始時のイベント
@@ -37,9 +37,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ターゲット選択
         /// </summary>
-        private class TargetSelection : StateMachine<BattleManager>.State
+        private class TargetSelection : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 if (context.ActorAction is null)
                 {
@@ -60,7 +60,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 context.onTargetSelectionEnter.Invoke(context);
             }
 
-            public override void Exit(BattleManager context)
+            public override void Exit(Battle context)
             {
                 // 対象候補コンテナの行動結果を初期化する
                 foreach (var targetable in context.Targetables)

@@ -162,27 +162,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 通常攻撃スキル
         /// </summary>
-        public ActionModel NormalAttack { get; protected set; } = null;
+        public ActionInfo NormalAttack { get; protected set; } = null;
 
         /// <summary>
         /// スキル配列
         /// </summary>
-        public ActionModel[] Skills { get; protected set; } = null;
-
-        /// <summary>
-        /// STR依存スキルIDリスト
-        /// </summary>
-        List<int> _strengthSkillIdList = new();
-
-        /// <summary>
-        /// TEC依存スキルIDリスト
-        /// </summary>
-        List<int> _techniqueSkillIdList = new();
-
-        /// <summary>
-        /// 特殊スキルIDリスト
-        /// </summary>
-        List<int> _specialSkillIdList = new();
+        public ActionInfo[] Skills { get; protected set; } = null;
 
         /// <summary>
         /// ステータス効果リスト
@@ -235,6 +220,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             RecoverHP();
             RecoverDP();
             RecoverGP();
+            WaitTime = 0;
         }
 
         /// <summary>
@@ -359,20 +345,31 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             NormalAttack = new(MasterData.GetSkillData(BasicSkillType.Attack), Data.NormalAttack);
 
             // スキルリスト
-            List<ActionModel> skillList = new();
+            List<ActionInfo> skillList = new();
 
             foreach (var skillAcquisition in Data.Skills)
             {
                 if (skillAcquisition.AcquisitionLevel >= Level)
                 {
                     SkillData skillData = MasterData.GetSkillData(skillAcquisition.SkillId);
-                    ActionModel skill = new(skillData, Attribute.Skill.PowerSkill);
+                    ActionInfo skill = new(skillData, Attribute.Skill.PowerSkill);
                     skillList.Add(skill);
                 }
             }
 
             // 配列に入れる
             Skills = skillList.ToArray();
+        }
+
+        /// <summary>
+        /// 習得スキルを取得する
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<int> GetAcquisitionSkillIds()
+        {
+            return Data.Skills
+                .Where(x => x.AcquisitionLevel >= Level)
+                .Select(x => x.SkillId);
         }
 
         /// <summary>

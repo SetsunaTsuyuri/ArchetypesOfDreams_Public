@@ -1,9 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using TMPro;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -13,24 +9,41 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class SkillButton : ActionButton
     {
         /// <summary>
-        /// コストの表示テキスト
+        /// 更新する
         /// </summary>
-        [field: SerializeField]
-        public TextMeshProUGUI Cost { get; set; } = null;
+        /// <param name="id">ID</param>
+        /// <param name="canBeUsed">使用できる</param>
+        public override void UpdateButton(int id, bool canBeUsed)
+        {
+            base.UpdateButton(id, canBeUsed);
+
+            SkillData skill = MasterData.GetSkillData(id);
+            Description = skill.Description;
+
+            if (Name)
+            {
+                Name.text = skill.Name;
+            }
+
+            if (Number)
+            {
+                Number.text = skill.Cost.ToString();
+            }
+        }
 
         /// <summary>
         /// 更新する
         /// </summary>
         /// <param name="action">行動</param>
         /// <param name="battle">戦闘の管理者</param>
-        public override void UpdateButton(ActionModel action, BattleManager battle)
+        public override void UpdateButton(ActionInfo action, Battle battle)
         {
             base.UpdateButton(action, battle);
 
             // コスト表示
-            if (Cost)
+            if (Number)
             {
-                Cost.text = action.ConsumptionDp.ToString();
+                Number.text = action.ConsumptionDP.ToString();
             }
         }
     }

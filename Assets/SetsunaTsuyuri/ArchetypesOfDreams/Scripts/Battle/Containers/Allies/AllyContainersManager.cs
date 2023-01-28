@@ -17,7 +17,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 味方UIの管理者
         /// </summary>
         [field: SerializeField]
-        public AllyUIManager AlliesUI { get; private set; } = null;
+        public AlliesUI AlliesUI { get; private set; } = null;
 
         /// <summary>
         /// 控えのメンバー
@@ -35,6 +35,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public CombatantContainer ToBeReleased { get; set; } = null;
 
+        /// <summary>
+        /// メニュー画面での最初の使用者
+        /// </summary>
+        /// <returns></returns>
+        public CombatantContainer MenuUser => Members[0];
+
         public override void OnBattleStart()
         {
             base.OnBattleStart();
@@ -43,6 +49,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 reserve.OnBattleStartReserve();
             }
+        }
+
+        protected override IEnumerable<CombatantContainer> GetContainers(TargetPosition position)
+        {
+            if (position == TargetPosition.Reserves)
+            {
+                return ReserveMembers;
+            }
+
+            return Members;
         }
 
         /// <summary>
@@ -81,10 +97,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 保存された戦闘者配列をコンテナに移す
         /// </summary>
-        public void TransferCombatantsRuntimeDataToContainers()
+        public void TransferCombatantsViriableDataToContainers()
         {
             // コンテナ初期化
-            GetAllContainers().Initialize();
+            var containers = GetAllContainers();
+            foreach (var container in containers)
+            {
+                container.Initialize();
+            }
 
             // ロード
             AddCombatants(Members, VariableData.Allies);
@@ -99,7 +119,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void AddCombatants(CombatantContainer[] containers, List<Combatant> combatants)
         {
             int min = Math.Min(containers.Length, combatants.Count);
-            for (int i = 0;i < min; i++)
+            for (int i = 0; i < min; i++)
             {
                 containers[i].Combatant = combatants[i];
             }
@@ -132,7 +152,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             return result;
         }
 
-        public override AllyContainer[] GetAllContainers()
+        public override IEnumerable<AllyContainer> GetAllContainers()
         {
             AllyContainer[] result = base.GetAllContainers()
                 .Concat(ReserveMembers)
@@ -222,6 +242,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void OnWalk()
         {
+            VariableData.Steps++;
+
             Combatant[] combatants = GetAllCombatants();
             foreach (var combatant in combatants)
             {

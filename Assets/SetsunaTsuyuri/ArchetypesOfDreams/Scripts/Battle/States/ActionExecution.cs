@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 行動の対象
@@ -16,9 +16,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動実行
         /// </summary>
-        private class ActionExecution : StateMachine<BattleManager>.State
+        private class ActionExecution : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 // 行動の対象を抽出する
                 context.Targets = context.Targetables
@@ -30,7 +30,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 context.ExecuteCombatantActionAsync(token).Forget();
             }
 
-            public override void Exit(BattleManager context)
+            public override void Exit(Battle context)
             {
                 // 対象フラグをリセットする
                 context.ResetTargetFlags();

@@ -5,9 +5,9 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 敵UIの管理者
+    /// 敵コンテナUIの管理UI
     /// </summary>
-    public class EnemyUIManager : CombatantContainerUIManager<EnemyUI, EnemyContainersManager, EnemyContainer>
+    public class EnemiesUI : CombatantContainersUI<EnemyUI, EnemyContainersManager, EnemyContainer>
     {
         /// <summary>
         /// メインカメラ
@@ -32,7 +32,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         public void OnPurified(CombatantContainer container)
         {
-            EnemyUI ui = uiArray[container.Id];
+            EnemyUI ui = _uiArray[container.Id];
             ui.DeactivateAndHide();
         }
 
@@ -42,7 +42,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         public void OnPositionSet(CombatantContainer container)
         {
-            EnemyUI ui = uiArray[container.Id];
+            EnemyUI ui = _uiArray[container.Id];
 
             Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(
                 _mainCamera,

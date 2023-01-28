@@ -1,17 +1,17 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 戦闘者の行動開始
         /// </summary>
-        private class ActionStart : StateMachine<BattleManager>.State
+        private class ActionStart : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 // 行動者が存在しない場合
                 if (!context.Actor)
@@ -38,7 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 else if (context.Actor.ContainsActionable()) // 行動可能な場合
                 {
                     // AIが使用するスキルを決定する
-                    context.ActorAction = context.Actor.Combatant.DecideTheSkillToBeUsed(context);
+                    context.ActorAction = context.Actor.Combatant.DecideAction(context);
                     if (context.ActorAction is not null)
                     {
                         // AIが対象を決定する

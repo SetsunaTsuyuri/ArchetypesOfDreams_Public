@@ -79,7 +79,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 対象選択開始時の処理
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void OnTargetSelectionEnter(BattleManager battle)
+        public void OnTargetSelectionEnter(Battle battle)
         {
             // プレイヤー操作が不可能、または交代、逃走する場合は中止する
             if (!battle.Actor.ContainsPlayerControlled())

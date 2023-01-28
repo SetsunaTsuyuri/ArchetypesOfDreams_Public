@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +9,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 戦闘者コンテナの管理者
     /// </summary>
     /// <typeparam name="TContainer">戦闘者コンテナの型</typeparam>
-    public abstract class CombatantContainersManager<TContainer> : MonoBehaviour, IInitializable
+    public abstract class CombatantContainersManager<TContainer> : MonoBehaviour, IInitializable, ICombatantContainerManager
         where TContainer : CombatantContainer
     {
         /// <summary>
@@ -21,16 +21,29 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void Awake()
         {
             // IDを割り振る
-            CombatantContainer[] containers = GetAllContainers();
+            CombatantContainer[] containers = GetAllContainers().ToArray();
             for (int i = 0; i < containers.Length; i++)
             {
                 containers[i].Id = i;
             }
         }
 
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        /// <param name="enemies">敵</param>
+        public void SetUp(ICombatantContainerManager enemies)
+        {
+            var containers = GetAllContainers();
+            foreach (var container in containers)
+            {
+                container.SetUp(this, enemies);
+            }
+        }
+
         public virtual void Initialize()
         {
-            CombatantContainer[] containers = GetAllContainers();
+            var containers = GetAllContainers();
             foreach (var container in containers)
             {
                 container.Initialize();
@@ -99,7 +112,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 全てのコンテナを取得する
         /// </summary>
         /// <returns></returns>
-        public virtual TContainer[] GetAllContainers()
+        public virtual IEnumerable<TContainer> GetAllContainers()
         {
             return Members;
         }
@@ -132,12 +145,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 戦闘可能なコンテナを取得する
         /// </summary>
         /// <returns></returns>
-        public TContainer[] GetFightables()
+        public IEnumerable<CombatantContainer> GetFightables()
         {
-            return Members
-                .Where(x => x.ContainsFightable())
-                .ToArray();
+            return Members.Where(x => x.ContainsFightable());
         }
+
+        public IEnumerable<CombatantContainer> GetNonEmptyContainers()
+        {
+            return GetAllContainers().Where(x => x.ContainsCombatant());
+        }
+
+        public IEnumerable<CombatantContainer> GetActionables()
+        {
+            return GetAllContainers().Where(x => x.ContainsActionable());
+        }
+
+        public bool ContainsTargetables(CombatantContainer user, EffectData effect)
+        {
+            return GetContainers(effect.TargetPosition)
+                .Any(x => (effect.CanTargetUser || x != user) && x.ContainsTargetable(effect.TargetCondition));
+        }
+
+        public IEnumerable<CombatantContainer> GetTargetables(CombatantContainer user, EffectData effect)
+        {
+            return GetContainers(effect.TargetPosition)
+                .Where(x => (effect.CanTargetUser || x != user) && x.ContainsTargetable(effect.TargetCondition));
+        }
+
+        /// <summary>
+        /// コンテナを取得する
+        /// </summary>
+        /// <param name="position">対象にできるコンテナの立場</param>
+        /// <returns></returns>
+        protected abstract IEnumerable<CombatantContainer> GetContainers(TargetPosition position);
 
         /// <summary>
         /// 行動対象にできるコンテナを取得する

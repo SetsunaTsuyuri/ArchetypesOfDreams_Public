@@ -11,15 +11,19 @@ namespace SetsunaTsuyuri
     public class SaveDataMenu : SelectableGameUI<SaveDataButton>
     {
         /// <summary>
+        /// コマンドタイプ
+        /// </summary>
+        [SerializeField]
+        SaveDataCommandType _commandType = SaveDataCommandType.Save;
+
+        /// <summary>
         /// ボタンのプレハブ
         /// </summary>
         [SerializeField]
         SaveDataButton buttonPrefab = null;
 
-        protected override void Awake()
+        public override void SetUp()
         {
-            base.Awake();
-
             // オートセーブ+セーブの数だけボタンを作り配列化する
             int numerOfButtons = SaveDataManager.Saves.Length + 1;
             _buttons = new SaveDataButton[numerOfButtons];
@@ -28,38 +32,41 @@ namespace SetsunaTsuyuri
                 SaveDataButton button = Instantiate(buttonPrefab, _layoutGroup.transform);
                 _buttons[i] = button;
             }
+
+            base.SetUp();
+
+            Hide();
         }
 
-        private void Start()
+        public override void BeSelected()
         {
-            // ボタンをセットアップする
-            SetUp();
+            UpdateButtons();
+            base.BeSelected();
+        }
 
-            // 隠す
+        public override void BeCanceled()
+        {
+            base.BeCanceled();
             Hide();
         }
 
         /// <summary>
-        /// 各ボタンを更新し、いずれかのボタンを選択状態にする
+        /// 各ボタンを更新する
         /// </summary>
-        /// <param name="command">セーブデータコマンド</param>
-        public void UpdateButtonsAndSelect(SaveDataCommandType command)
+        public void UpdateButtons()
         {
             // オートセーブ用ボタンのセットアップ
-            _buttons[0].SetUp(command, 0, true);
+            _buttons[0].SetUp(_commandType, 0, true);
 
             // セーブ用ボタンのセットアップ
             int saves = SaveDataManager.Saves.Length + 1;
             for (int i = 1; i < saves; i++)
             {
-                _buttons[i].SetUp(command, i - 1);
+                _buttons[i].SetUp(_commandType, i - 1, false);
             }
 
             // ナビゲーション更新
-            UpdateButtonNavigationsToLoop();
-
-            // 選択する
-            Select();
+            UpdateButtonNavigations();
         }
     }
 }

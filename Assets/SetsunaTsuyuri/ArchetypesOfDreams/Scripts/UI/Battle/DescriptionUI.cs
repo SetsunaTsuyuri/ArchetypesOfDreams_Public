@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 説明文の管理者
     /// </summary>
-    public class DescriptionUIManager : GameUI
+    public class DescriptionUI : GameUI
     {
         /// <summary>
         /// 説明文
@@ -44,7 +44,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 行動名を表示する
         /// </summary>
         /// <param name="action">行動内容</param>
-        public void DisplayActionName(ActionModel action)
+        public void DisplayActionName(ActionInfo action)
         {
             _text.alignment = TextAlignmentOptions.Center;
             _text.text = action.Name;

@@ -120,92 +120,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// スキルを有している
         /// </summary>
         /// <returns></returns>
-        public bool HasSkills()
+        public bool HasAnySkill()
         {
-            return Skills.Any();
-        }
-
-        /// <summary>
-        /// スキルを選択できる
-        /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        /// <returns></returns>
-        public bool CanSelectAnySkill(BattleManager battle)
-        {
-            return GetAvailableSkills(battle).Any();
-        }
-
-        /// <summary>
-        /// アイテムを選択できる
-        /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        /// <returns></returns>
-        public bool CanSelectAnyItem(BattleManager battle)
-        {
-            return ItemUtility.HasAnyUsableItem();
-        }
-
-        ///// <summary>
-        ///// 近接武器スキルを有している
-        ///// </summary>
-        ///// <returns></returns>
-        //public bool HasMeleeWeaponSkills()
-        //{
-        //    return _strengthSkillIdList.Count > 0;
-        //}
-
-        ///// <summary>
-        ///// 遠隔武器スキルを有している
-        ///// </summary>
-        ///// <returns></returns>
-        //public bool HasRangedWeaponSkills()
-        //{
-        //    return _techniqueSkillIdList.Count > 0;
-        //}
-
-        ///// <summary>
-        ///// 特殊スキルを有している
-        ///// </summary>
-        ///// <returns></returns>
-        //public bool HasSpecialSkills()
-        //{
-        //    return _specialSkillIdList.Count > 0;
-        //}
-
-        /// <summary>
-        /// 近接武器コマンドを選択できる
-        /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        /// <returns></returns>
-        public bool CanSelectAnyMeleeWeaponSkills(BattleManager battle)
-        {
-            return GetAvailableSkills(battle)
-                .Where(x => x.SkillAttribute == Attribute.Skill.PowerSkill)
-                .Any();
-        }
-
-        /// <summary>
-        /// 遠隔武器コマンドを選択できる
-        /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        /// <returns></returns>
-        public bool CanSelectAnyRangedWeaponSkills(BattleManager battle)
-        {
-            return GetAvailableSkills(battle)
-                .Where(x => x.SkillAttribute == Attribute.Skill.TechniqueSkill)
-                .Any();
-        }
-
-        /// <summary>
-        /// 特殊スキルコマンドを選択できる
-        /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        /// <returns></returns>
-        public bool CanSelectAnySpecialSkills(BattleManager battle)
-        {
-            return GetAvailableSkills(battle)
-                .Where(x => x.SkillAttribute == Attribute.Skill.Special)
-                .Any();
+            return Data.Skills.Any(x => x.AcquisitionLevel >= Level);
         }
 
         /// <summary>
@@ -288,6 +205,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void OnWalk()
         {
+            // HPを1回復する
+            CurrentHP++;
+
             // DPを1回復する
             CurrentDP++;
         }

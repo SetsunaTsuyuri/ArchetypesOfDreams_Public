@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 戦闘者の行動内容
     /// </summary>
-    public class ActionModel
+    public class ActionInfo
     {
         /// <summary>
         /// 名前
@@ -27,7 +27,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 消費DP
         /// </summary>
-        public int ConsumptionDp { get; set; } = 0;
+        public int ConsumptionDP { get; set; } = 0;
 
         /// <summary>
         /// 消費アイテムID
@@ -40,11 +40,35 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public readonly EffectData Effect = null;
 
         /// <summary>
+        /// スキルの行動内容を作る
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <returns></returns>
+        public static ActionInfo CreateSkillAction(int skillId)
+        {
+            SkillData skillData = MasterData.GetSkillData(skillId);
+            ActionInfo skillAction = new(skillData);
+            return skillAction;
+        }
+
+        /// <summary>
+        /// アイテムの行動内容を作る
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        public static ActionInfo CreateItemAction(int itemId)
+        {
+            ItemData itemData = MasterData.GetItemData(itemId);
+            ActionInfo itemAction = new(itemData);
+            return itemAction;
+        }
+
+        /// <summary>
         /// コンストラクター
         /// </summary>
         /// <param name="skill">スキルデータ</param>
         /// <param name="skillAttribute">スキル属性</param>
-        public ActionModel(SkillData skill, Attribute.Skill skillAttribute = Attribute.Skill.Common)
+        public ActionInfo(SkillData skill, Attribute.Skill skillAttribute = Attribute.Skill.Common)
         {
             // 名前
             Name = skill.Name;
@@ -53,7 +77,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Description = skill.Description;
 
             // 消費DP
-            ConsumptionDp = skill.Cost;
+            ConsumptionDP = skill.Cost;
 
             // スキル属性
             SkillAttribute = skillAttribute;
@@ -66,7 +90,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// コンストラクター
         /// </summary>
         /// <param name="item">アイテムデータ</param>
-        public ActionModel(ItemData item)
+        public ActionInfo(ItemData item)
         {
             // 名前
             Name = item.Name;
@@ -90,13 +114,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
         /// <returns></returns>
-        public bool CanBeExecuted(BattleManager battle)
+        public bool CanBeExecuted(Battle battle)
         {
             bool result = false;
 
             // 消費DPが足りていて、
             // なおかつ対象にできる戦闘者がいるもしくは対象を指定しない効果の場合
-            if (battle.Actor.Combatant.CurrentDP >= ConsumptionDp
+            if (battle.Actor.Combatant.CurrentDP >= ConsumptionDP
                 && battle.ExistsTargetableOrTargetPositionIsNone(Effect))
             {
                 // アイテムを消費する場合
@@ -116,7 +140,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 実際の攻撃属性を取得する
+        /// 攻撃属性を取得する
         /// </summary>
         /// <returns></returns>
         public Attribute.Attack GetAttack()
@@ -138,15 +162,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 実際の感情属性を取得する
+        /// 感情属性を取得する
         /// </summary>
-        /// <param name="actor">行動者</param>
+        /// <param name="user">使用者</param>
         /// <returns></returns>
-        public Attribute.Emotion GetEmotion(Combatant actor)
+        public Attribute.Emotion GetEmotion(Combatant user)
         {
             Attribute.Emotion result = Effect.Emotion switch
             {
-                Attribute.Emotion.User => actor.Emotion,
+                Attribute.Emotion.User => user.Emotion,
                 _ => Effect.Emotion
             };
 

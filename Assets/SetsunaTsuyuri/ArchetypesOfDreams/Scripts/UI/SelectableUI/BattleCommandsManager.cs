@@ -51,55 +51,55 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// セットアップする
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void SetUp(BattleManager battle)
+        public void SetUp(Battle battle)
         {
             SetUp();
 
             // イベント追加
             foreach (var button in _buttons)
             {
-                button.AddOnClickListener(() => SetInteractable(false));
+                button.AddPressedListener(() => SetInteractable(false));
             }
 
             // 通常攻撃
-            NormalAttack.AddOnClickListener(() =>
+            NormalAttack.AddPressedListener(() =>
             {
                 battle.Actor.Combatant.LastSelected = NormalAttack.Button;
             });
 
             // 浄化
-            Purification.AddOnClickListener(() =>
+            Purification.AddPressedListener(() =>
             {
                 battle.Actor.Combatant.LastSelected = Purification.Button;
             });
 
             // 交代
-            Change.AddOnClickListener(() =>
+            Change.AddPressedListener(() =>
             {
                 battle.Actor.Combatant.LastSelected = Change.Button;
             });
 
             // 防御
-            Defense.AddOnClickListener(() =>
+            Defense.AddPressedListener(() =>
             {
                 battle.Actor.Combatant.LastSelected = Defense.Button;
             });
 
             // スキル
-            Skills.AddOnClickListener(() =>
+            Skills.AddPressedListener(() =>
             {
                 battle.Actor.Combatant.LastSelected = Skills.Button;
-                battle.BattleUI.Skills.Select();
+                battle.BattleUI.Skills.BeSelected();
             });
-            Skills.AddTrrigerEntry(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Skills));
+            Skills.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Skills));
 
             // アイテム
-            Items.AddOnClickListener(() =>
+            Items.AddPressedListener(() =>
             {
                 battle.Actor.Combatant.LastSelected = Items.Button;
-                battle.BattleUI.Items.Select();
+                battle.BattleUI.Items.BeSelected();
             });
-            Items.AddTrrigerEntry(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Items));
+            Items.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Items));
 
             Hide();
         }
@@ -108,31 +108,31 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 各ボタンを更新する
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void UpdateButtons(BattleManager battle)
+        public void UpdateButtons(Battle battle)
         {
             // 行動者
-            Combatant actor = battle.Actor.Combatant;
+            CombatantContainer actor = battle.Actor;
+            Combatant combatant = battle.Actor.Combatant;
 
             // 通常攻撃ボタン
-            NormalAttack.UpdateButton(actor.NormalAttack, battle);
+            {
+                int id = (int)BasicSkillType.Attack;
+                bool canBeUsed = actor.CanUseSkill(id);
+                //NormalAttack.UpdateButton(id, canBeUsed);
+                NormalAttack.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
+            }
 
             // スキルボタン
-            Skills.gameObject.SetActive(actor.HasSkills());
-            if (Skills.isActiveAndEnabled)
-            {
-                Skills.SetInteractable(actor.CanSelectAnySkill(battle));
-            }
-            else
-            {
-                Skills.SetInteractable(false);
-            }
+            Skills.SetInteractable(actor.CanUseAnySkill());
 
             // 浄化ボタン
-            Purification.gameObject.SetActive(actor is DreamWalker);
+            Purification.gameObject.SetActive(combatant is DreamWalker);
             if (Purification.isActiveAndEnabled)
             {
-                ActionModel purificationSkill = new(MasterData.GetSkillData(BasicSkillType.Purification));
-                Purification.UpdateButton(purificationSkill, battle);
+                int id = (int)BasicSkillType.Purification;
+                bool canBeUsed = actor.CanUseSkill(id);
+                Purification.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
+                //Purification.UpdateButton(id, canBeUsed);
             }
             else
             {
@@ -140,11 +140,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 交代ボタン
-            Change.gameObject.SetActive(actor is Nightmare);
+            Change.gameObject.SetActive(combatant is Nightmare);
             if (Change.isActiveAndEnabled)
             {
-                ActionModel changeSkill = new(MasterData.GetSkillData(BasicSkillType.Change));
-                Change.UpdateButton(changeSkill, battle);
+                int id = (int)BasicSkillType.Change;
+                bool canBeUsed = actor.CanUseSkill(id);
+                Change.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
+                //Change.UpdateButton(id, canBeUsed);
             }
             else
             {
@@ -152,21 +154,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 防御ボタン
-            ActionModel defenseSkill = new(MasterData.GetSkillData(BasicSkillType.Defense));
-            Defense.UpdateButton(defenseSkill, battle);
+            {
+                int id = (int)BasicSkillType.Defense;
+                bool canBeUsed = actor.CanUseSkill(id);
+                Defense.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
+                //Defense.UpdateButton(id, canBeUsed);
+            }
 
             // アイテムボタン
-            Items.SetInteractable(actor.CanSelectAnyItem(battle));
+            Items.SetInteractable(actor.CanUseAnyItem());
 
             // ナビゲーション更新
-            UpdateButtonNavigationsToLoop();
+            UpdateButtonNavigations();
         }
 
         /// <summary>
         /// 引数で渡されたものが含まれていればそれを優先して選択する
         /// </summary>
         /// <param name="lastSelected">選択可能なもの</param>
-        public void Select(Selectable selectable)
+        public void BeSelected(Selectable selectable)
         {
             Show();
 

@@ -51,7 +51,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static async UniTask ResolveBattleEvent(BattleEvent battleEvent, CancellationToken token)
         {
-            BattleManager battle = BattleManager.InstanceInActiveScene;
+            Battle battle = Battle.InstanceInActiveScene;
             if (!battle)
             {
                 return;

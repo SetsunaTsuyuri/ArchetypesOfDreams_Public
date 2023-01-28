@@ -23,6 +23,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .Any(x => x.ContainsFightable());
         }
 
+        protected override IEnumerable<CombatantContainer> GetContainers(TargetPosition position)
+        {
+            return Members;
+        }
+
         /// <summary>
         /// ランダムエンカウントで出現する敵を作る
         /// </summary>

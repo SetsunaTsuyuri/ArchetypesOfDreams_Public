@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -10,20 +9,41 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class TitleMenu : SelectableGameUI<GameButton>
     {
         /// <summary>
-        /// セーブデータボタンの管理者
+        /// ニューゲームボタン
         /// </summary>
         [SerializeField]
-        SaveDataMenu saveDataMenu = null;
+        GameButton _newGameButton = null;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            saveDataMenu.Previous = this;
-        }
+        /// <summary>
+        /// ロードゲームボタン
+        /// </summary>
+        [SerializeField]
+        GameButton _loadGameButton = null;
 
-        private void Start()
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        /// <param name="savedataMenu">セーブデータメニュー</param>
+        public void SetUp(SelectableGameUIBase savedataMenu)
         {
-            SetUp();
+            base.SetUp();
+            
+            // ニューゲーム
+            _newGameButton.AddPressedListener(() =>
+            {
+                // 初期化する
+                VariableData.Instance.Initialize();
+
+                // 自室へ移動する
+                SceneChangeManager.StartChange(SceneType.MyRoom);
+            });
+
+            // ロードゲーム
+            _loadGameButton.AddPressedListener(() => Stack(typeof(SaveDataMenu)));
+
+            // TODO: オプション オプションメニューを開く
+
+            // TODO: クレジット クレジット画面を開く
         }
     }
 }

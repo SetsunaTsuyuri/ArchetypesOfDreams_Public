@@ -9,6 +9,17 @@ using Cysharp.Threading.Tasks;
 namespace SetsunaTsuyuri
 {
     /// <summary>
+    /// シーンの種類
+    /// </summary>
+    public enum SceneType
+    {
+        Title = 0,
+        MyRoom = 1,
+        DungeonSelection = 2,
+        Dungeon = 3
+    }
+
+    /// <summary>
     /// シーン遷移の管理者
     /// </summary>
     public class SceneChangeManager : Singleton<SceneChangeManager>, IInitializable
@@ -21,9 +32,20 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// シーンを変更する
         /// </summary>
-        /// <param name="sceneName">シーンの名前</param>
+        /// <param name="type">シーンの種類</param>
         /// <param name="callback">シーン変更後に呼び出す関数</param>
-        public static void StartChange(string sceneName, UnityAction<Scene, LoadSceneMode> callback = null)
+        public static void StartChange(SceneType type, UnityAction<Scene, LoadSceneMode> callback = null)
+        {
+            string name = type.ToString();
+            StartChange(name, callback);
+        }
+
+        /// <summary>
+        /// シーンを変更する
+        /// </summary>
+        /// <param name="name">シーンの名前</param>
+        /// <param name="callback">シーン変更後に呼び出す関数</param>
+        public static void StartChange(string name, UnityAction<Scene, LoadSceneMode> callback = null)
         {
             // シーン変更中なら中止する
             if (Instance._isChangingScene)
@@ -32,7 +54,7 @@ namespace SetsunaTsuyuri
             }
 
             CancellationTokenSource source = new();
-            Instance.ChangeSceneAsync(sceneName, callback, source.Token).Forget();
+            Instance.ChangeSceneAsync(name, callback, source.Token).Forget();
         }
 
         /// <summary>

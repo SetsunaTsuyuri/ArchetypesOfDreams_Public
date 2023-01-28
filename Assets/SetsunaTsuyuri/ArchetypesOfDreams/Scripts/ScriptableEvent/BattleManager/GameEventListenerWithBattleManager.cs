@@ -7,5 +7,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// ゲームイベントリスナー(戦闘の管理者)
     /// </summary>
-    public class GameEventListenerWithBattleManager : GameEventListenerWithArgument<BattleManager> { }
+    public class GameEventListenerWithBattleManager : GameEventListenerWithArgument<Battle> { }
 }

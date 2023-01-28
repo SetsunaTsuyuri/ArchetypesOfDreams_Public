@@ -28,13 +28,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void Start()
         {
             // 戦闘者を移す
-            allies.TransferCombatantsRuntimeDataToContainers();
+            allies.TransferCombatantsViriableDataToContainers();
 
             // UI初期化
             ui.Initialize();
 
             // ボタン選択
-            ui.DungeonButtons.Select();
+            ui.DungeonButtons.BeSelected();
         }
     }
 }

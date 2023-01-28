@@ -12,7 +12,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// パス
         /// </summary>
-        static readonly string s_path = "Settings/";
+        static readonly string s_path = "GameSettings/";
 
         /// <summary>
         /// 戦闘者の設定

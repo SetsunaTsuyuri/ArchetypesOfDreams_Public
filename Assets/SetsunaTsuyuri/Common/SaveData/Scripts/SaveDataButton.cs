@@ -56,7 +56,7 @@ namespace SetsunaTsuyuri
         {
             base.Awake();
 
-            AddOnClickListener(() =>
+            AddPressedListener(() =>
             {
                 switch (SaveDataMenu)
                 {
@@ -90,7 +90,7 @@ namespace SetsunaTsuyuri
         /// <param name="command">セーブデータコマンド</param>
         /// <param name="id">セーブデータID</param>
         /// <param name="isAutoSave">オートセーブ</param>
-        public void SetUp(SaveDataCommandType command, int id = 0, bool isAutoSave = false)
+        public void SetUp(SaveDataCommandType command, int id, bool isAutoSave)
         {
             SaveDataMenu = command;
             Id = id;

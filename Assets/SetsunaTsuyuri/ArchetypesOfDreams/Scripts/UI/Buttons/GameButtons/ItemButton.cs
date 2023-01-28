@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -11,22 +9,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class ItemButton : ActionButton
     {
         /// <summary>
-        /// 個数の表示テキスト
+        /// 更新する
         /// </summary>
-        [field: SerializeField]
-        public TextMeshProUGUI Remaining { get; set; } = null;
+        /// <param name="id">ID</param>
+        /// <param name="canBeUsed">使用できる</param>
+        public override void UpdateButton(int id, bool canBeUsed)
+        {
+            base.UpdateButton(id, canBeUsed);
+
+            ItemData item = MasterData.GetItemData(id);
+            Description = item.Description;
+
+            if (Name)
+            {
+                Name.text = item.Name;
+            }
+
+            if (Number)
+            {
+                Number.text = VariableData.ItemsDic[Id].ToString();
+            }
+        }
 
         /// <summary>
         /// 更新する
         /// </summary>
         /// <param name="action">行動内容</param>
         /// <param name="battle">戦闘の管理者</param>
-        public override void UpdateButton(ActionModel action, BattleManager battle)
+        public override void UpdateButton(ActionInfo action, Battle battle)
         {
             base.UpdateButton(action, battle);
 
             // 個数表示
-            if (Remaining)
+            if (Number)
             {
                 string text = GameSettings.Items.Infinity;
 
@@ -38,7 +53,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     text = remainning.ToString();
                 }
 
-                Remaining.text = text;
+                Number.text = text;
             }
         }
     }

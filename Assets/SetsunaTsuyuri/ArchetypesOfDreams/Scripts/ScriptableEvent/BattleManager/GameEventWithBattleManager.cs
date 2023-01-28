@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// ゲームイベント(戦闘の管理者)
     /// </summary>
     [CreateAssetMenu(menuName = "GameEvents/BattleManager")]
-    public class GameEventWithBattleManager : GameEventWithArgument<BattleManager> { }
+    public class GameEventWithBattleManager : GameEventWithArgument<Battle> { }
 }

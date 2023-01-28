@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using Cysharp.Threading.Tasks;
+using System.Linq;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -15,6 +14,34 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public abstract class CombatantContainer : MonoBehaviour, IInitializable
     {
         /// <summary>
+        /// 味方
+        /// </summary>
+        ICombatantContainerManager _allies = null;
+
+        /// <summary>
+        /// 味方
+        /// </summary>
+        public ICombatantContainerManager Allies
+        {
+            // TODO: 状態異常等により敵味方が入れ替わる
+            get => _allies;
+        }
+
+        /// <summary>
+        /// 敵
+        /// </summary>
+        ICombatantContainerManager _enemies = null;
+
+        /// <summary>
+        /// 敵
+        /// </summary>
+        public ICombatantContainerManager Enemies
+        {
+            // TODO: 状態異常等により敵味方が入れ替わる
+            get => _enemies;
+        }
+
+        /// <summary>
         /// ID
         /// </summary>
         public int Id { get; set; } = 0;
@@ -22,21 +49,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘者
         /// </summary>
-        Combatant combatant = null;
+        Combatant _combatant = null;
 
         /// <summary>
         /// 戦闘者
         /// </summary>
         public virtual Combatant Combatant
         {
-            get => combatant;
+            get => _combatant;
             set
             {
-                combatant = value;
+                _combatant = value;
 
-                if (combatant != null)
+                if (_combatant != null)
                 {
-                    combatant.Container = this;
+                    _combatant.Container = this;
                 }
 
                 onCombatantSet.Invoke(this);
@@ -46,17 +73,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 対象に含まれている
         /// </summary>
-        bool isTargeted = false;
+        bool _isTargeted = false;
 
         /// <summary>
         /// 対象に含まれている
         /// </summary>
         public virtual bool IsTargeted
         {
-            get => isTargeted;
+            get => _isTargeted;
             set
             {
-                isTargeted = value;
+                _isTargeted = value;
                 onTargetFlagSet.Invoke(this);
             }
         }
@@ -105,8 +132,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [SerializeField]
         GameEventWithCombatantContainer onRecovery = null;
 
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        /// <param name="allies">味方</param>
+        /// <param name="enemies">敵</param>
+        public void SetUp(ICombatantContainerManager allies, ICombatantContainerManager enemies)
+        {
+            _allies = allies;
+            _enemies = enemies;
+        }
+
         public void Initialize()
         {
+            if (Combatant is not null)
+            {
+                Combatant.Container = null;
+            }
+
             Combatant = null;
         }
 
@@ -124,12 +167,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動した
         /// </summary>
-        /// <param name="model">行動内容</param>
-        public virtual void OnAction(ActionModel model)
+        /// <param name="action">行動内容</param>
+        public virtual void OnAction(ActionInfo action)
         {
             if (onAction)
             {
-                onAction.Invoke(model);
+                onAction.Invoke(action);
             }
         }
 
@@ -323,6 +366,180 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool ContainsCrush()
         {
             return ContainsCombatant() && Combatant.IsCrushed();
+        }
+
+        /// <summary>
+        /// 何らかのスキルを持っている
+        /// </summary>
+        /// <returns></returns>
+        public bool HasAnySkill()
+        {
+            return Combatant.HasAnySkill();
+        }
+
+        /// <summary>
+        /// 何らかのスキルを使用できる
+        /// </summary>
+        /// <returns></returns>
+        public bool CanUseAnySkill()
+        {
+            var ids = Combatant.GetAcquisitionSkillIds();
+            bool result = ids.Any(x => CanUseSkill(x));
+            return result;
+        }
+
+        /// <summary>
+        /// 何らかのアイテムを使用できる
+        /// </summary>
+        /// <returns></returns>
+        public bool CanUseAnyItem()
+        {
+            var ids = ItemUtility.GetOwnedItemIds();
+            bool result = ids.Any(x => CanUseItem(x));
+            return result;
+        }
+
+        /// <summary>
+        /// スキルを使用できる
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public bool CanUseSkill(int id)
+        {
+            SkillData skill = MasterData.GetSkillData(id);
+            bool canConsumeDP = Combatant.CurrentDP >= skill.Cost;
+            return canConsumeDP && CanUse(skill.Effect);
+        }
+
+        /// <summary>
+        /// アイテムを使用できる
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public bool CanUseItem(int id)
+        {
+            ItemData item = MasterData.GetItemData(id);
+            return CanUse(item.Effect);
+        }
+
+        /// <summary>
+        /// 効果を使用できる
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public bool CanUse(EffectData effect)
+        {
+            bool result = effect.TargetPosition switch
+            {
+                TargetPosition.Enemies => ExistsTargetables(effect, Enemies),
+                TargetPosition.Allies => ExistsTargetables(effect, Allies),
+                TargetPosition.Both => ExistsTargetables(effect, Allies, Enemies),
+                TargetPosition.Oneself => true,
+                TargetPosition.Reserves => ExistsTargetables(effect, Allies),
+                _ => false
+            };
+
+            return result;
+        }
+
+        /// <summary>
+        /// 対象にできるコンテナが存在する
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <param name="containers"></param>
+        /// <returns></returns>
+        private bool ExistsTargetables(EffectData effect, ICombatantContainerManager containers)
+        {
+            bool result = false;
+
+            if (containers != null)
+            {
+                result = containers.ContainsTargetables(this, effect);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 対象にできるコンテナが存在する
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <param name="allies"></param>
+        /// <param name="enemies"></param>
+        /// <returns></returns>
+        private bool ExistsTargetables(EffectData effect, ICombatantContainerManager allies, ICombatantContainerManager enemies)
+        {
+            return ExistsTargetables(effect, allies) || ExistsTargetables(effect, enemies);
+        }
+
+        /// <summary>
+        /// 対象にできるコンテナを取得する
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <param name="allies"></param>
+        /// <param name="enemies"></param>
+        /// <returns></returns>
+        public List<CombatantContainer> GetTargetables(EffectData effect, ICombatantContainerManager allies, ICombatantContainerManager enemies)
+        {
+            List<CombatantContainer> targetables = new();
+
+            switch (effect.TargetPosition)
+            {
+                case TargetPosition.Enemies:
+                    AddTargetables(targetables, effect, enemies);
+                    break;
+
+                case TargetPosition.Allies:
+                    AddTargetables(targetables, effect, allies);
+                    break;
+
+                case TargetPosition.Both:
+                    AddTargetables(targetables, effect, allies);
+                    AddTargetables(targetables, effect, enemies);
+                    break;
+
+                case TargetPosition.Oneself:
+                    targetables.Add(this);
+                    break;
+
+                case TargetPosition.Reserves:
+                    AddTargetables(targetables, effect, allies);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return targetables;
+        }
+
+        /// <summary>
+        /// 対象にできるコンテナを追加する
+        /// </summary>
+        /// <param name="targetables"></param>
+        /// <param name="effect"></param>
+        /// <param name="containers"></param>
+        private void AddTargetables(List<CombatantContainer> targetables, EffectData effect, ICombatantContainerManager containers)
+        {
+            if (containers == null)
+            {
+                return;
+            }
+
+            var added = containers.GetTargetables(this, effect);
+            targetables.AddRange(added);
+        }
+
+        /// <summary>
+        /// メニューでの行動を行う
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="targets"></param>
+        /// <param name="onCompleted"></param>
+        public void ActInMenu(ActionInfo action, CombatantContainer[] targets, UnityAction onCompleted)
+        {
+            CancellationToken token = this.GetCancellationTokenOnDestroy();
+            Combatant.Act(action, targets, token, onCompleted).Forget();
         }
     }
 }

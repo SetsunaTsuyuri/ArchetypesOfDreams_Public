@@ -15,7 +15,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// セットアップする
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void SetUp(BattleManager battle)
+        public void SetUp(Battle battle)
         {
             Previous = battle.BattleUI.BattleCommands;
 
@@ -29,11 +29,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Hide();
         }
 
+        public override void BeCanceled()
+        {
+            base.BeCanceled();
+
+            Hide();
+        }
+
         /// <summary>
         /// ボタンを更新する
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public virtual void UpdateButtons(BattleManager battle)
+        public virtual void UpdateButtons(Battle battle)
         {
             // 一旦、全てのボタンを隠す
             ShowOrHideAllButtons(false);

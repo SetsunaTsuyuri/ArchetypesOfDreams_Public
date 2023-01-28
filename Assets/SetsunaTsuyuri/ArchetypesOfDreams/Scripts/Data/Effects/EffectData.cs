@@ -147,6 +147,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public TargetSelectionType TargetSelection { get; private set; } = TargetSelectionType.Single;
 
         /// <summary>
+        /// 使用者自身を対象にできる
+        /// </summary>
+        public bool CanTargetUser = true;
+
+        /// <summary>
         /// ダメージ効果
         /// </summary>
         public DamageEffect[] DamageEffects = { };

@@ -1,9 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Events;
 using Cysharp.Threading.Tasks;
+
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -60,7 +61,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="battle"></param>
         /// <param name="token"></param>
-        public async UniTask OnActionEnd(BattleManager battle, CancellationToken token)
+        public async UniTask OnActionEnd(Battle battle, CancellationToken token)
         {
             // ステータス変化の更新
             await UpdateStatusChange(battle, token);
@@ -69,7 +70,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             UpdateStatusEffects();
 
             // 行動内容
-            ActionModel action = battle.ActorAction;
+            ActionInfo action = battle.ActorAction;
 
             // 行動していた場合
             if (action is not null)
@@ -112,6 +113,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             int reductionHP = MaxHP - CurrentHP;
             if (reductionHP > 0)
             {
+                // 復活
+                if (IsKnockedOut())
+                {
+                    BeRevived();
+                }
+
                 int healing = Mathf.CeilToInt(reductionHP * GameSettings.Combatants.HPHealingRateOnWin);
                 CurrentHP += healing;
             }
@@ -157,7 +164,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
         /// <param name="token"></param>
-        private async UniTask UpdateStatusChange(BattleManager battle, CancellationToken token)
+        private async UniTask UpdateStatusChange(Battle battle, CancellationToken token)
         {
             // HP
             int hpChange = MathUtility.Percent(MaxHP, HPChangeRate);
@@ -206,7 +213,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 待機時間を設定する
         /// </summary>
         /// <param name="actionTime">行動内容</param>
-        private void SetWaitTime(ActionModel action)
+        private void SetWaitTime(ActionInfo action)
         {
             int basicWaitTime = GetBasicWaitTime();
             float actionTime = action.Effect.ActionTime;
@@ -254,9 +261,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
         /// <returns></returns>
-        private ActionModel[] GetAvailableSkills(BattleManager battle)
+        private ActionInfo[] GetAvailableSkills(Battle battle)
         {
-            ActionModel[] result = Skills
+            ActionInfo[] result = Skills
                 .Where(x => x.CanBeExecuted(battle))
                 .ToArray();
 
@@ -268,7 +275,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="action">行動内容</param>
         /// <param name="targetables">対象にできる戦闘者コンテナ</param>
-        public void MakeActionResultOnTargetSelection(ActionModel action, CombatantContainer[] targetables)
+        public void MakeActionResultOnTargetSelection(ActionInfo action, CombatantContainer[] targetables)
         {
             foreach (var targetable in targetables)
             {
@@ -301,9 +308,72 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動する
         /// </summary>
+        /// <param name="action"></param>
+        /// <param name="targets"></param>
+        /// <param name="token"></param>
+        /// <param name="onCompleted"></param>
+        /// <returns></returns>
+        public async UniTask Act(ActionInfo action, CombatantContainer[] targets, CancellationToken token, UnityAction onCompleted = null)
+        {
+            Debug.Log($"{Data.Name}は{action.Name}を{targets[0].Combatant.Data.Name}に対して使用した");
+
+            // DPを消費する
+            CurrentDP -= action.ConsumptionDP;
+
+            // アイテムを消費する
+            if (action.ConsumptionItemdId.HasValue)
+            {
+                ItemUtility.ConsumeItem(action.ConsumptionItemdId.Value);
+            }
+
+            // 行動時イベント
+            Container.OnAction(action);
+
+            // ★暫定処理
+            await UniTask.Delay(200);
+
+            // 実行回数分繰り返す
+            for (int i = 0; i < action.Effect.Executions; i++)
+            {
+                // 対象の戦闘者を取り出す
+                Combatant[] targetCombatants = GetTargetCombatants(
+                    targets,
+                    action.Effect.TargetCondition,
+                    action.Effect.TargetSelection);
+
+                // 対象が存在する
+                if (targetCombatants.Any())
+                {
+                    // 行動の結果を作る
+                    CreateActionResults(action, targetCombatants);
+
+                    // 結果を反映させる
+                    foreach (var targetCombatant in targetCombatants)
+                    {
+                        if (action.Effect.EffectsAndSEs.Any())
+                        {
+                            await PlayBattleEffect(action, targetCombatant, token);
+                        }
+
+                        await targetCombatant.ApplyActionResult(null, token);
+
+                        // ★暫定処理
+                        await UniTask.Delay(400);
+                    }
+                }
+            }
+
+            // 完了時のコールバック呼び出し
+            token.ThrowIfCancellationRequested();
+            onCompleted?.Invoke();
+        }
+
+        /// <summary>
+        /// 行動する
+        /// </summary>
         /// <param name="battle">戦闘の管理者</param>
         /// <param name="token"></param>
-        public async UniTask Act(BattleManager battle, CancellationToken token)
+        public async UniTask Act(Battle battle, CancellationToken token)
         {
             // コンテナがなければ中止する
             if (!Container)
@@ -316,10 +386,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             CombatantContainer[] targets = battle.Targets;
 
             // 行動内容
-            ActionModel action = battle.ActorAction;
+            ActionInfo action = battle.ActorAction;
 
             // DPを消費する
-            CurrentDP -= action.ConsumptionDp;
+            CurrentDP -= action.ConsumptionDP;
 
             // アイテムを消費する
             if (action.ConsumptionItemdId.HasValue)
@@ -348,14 +418,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (targetCombatants.Any())
                 {
                     // 行動の結果を作る
-                    MakeActionResults(action, targetCombatants);
+                    CreateActionResults(action, targetCombatants);
 
                     // 結果を反映させる
                     foreach (var targetCombatant in targetCombatants)
                     {
                         if (action.Effect.EffectsAndSEs.Any())
                         {
-                            await PlayBattleEffect(action, targetCombatant, battle, token);
+                            await PlayBattleEffect(action, targetCombatant, token);
                         }
 
                         await targetCombatant.ApplyActionResult(battle, token);
@@ -367,7 +437,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
-        private async UniTask PlayBattleEffect(ActionModel battleAction, Combatant target, BattleManager battle, CancellationToken token)
+        private async UniTask PlayBattleEffect(ActionInfo battleAction, Combatant target, CancellationToken token)
         {
             Queue<EffectData.EffectAndSE> queue = new(battleAction.Effect.EffectsAndSEs);
             while (queue.Any())
@@ -398,7 +468,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
         /// <param name="token">トークン</param>
-        private async UniTask ApplyActionResult(BattleManager battle, CancellationToken token)
+        private async UniTask ApplyActionResult(Battle battle, CancellationToken token)
         {
             // コンテナがなければ中止する
             if (!Container)
@@ -522,7 +592,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 浄化成功
-            if (Result.Purified == true)
+            if (battle && Result.Purified == true)
             {
                 await BePurified(battle, token);
             }
@@ -554,7 +624,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
         /// <param name="token">トークン</param>
-        private async UniTask BePurified(BattleManager battle, CancellationToken token)
+        private async UniTask BePurified(Battle battle, CancellationToken token)
         {
             AudioManager.PlaySE("浄化");
             // 初期化する
@@ -651,7 +721,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="action">行動内容</param>
         /// <param name="targets">対象</param>
-        private void MakeActionResults(ActionModel action, Combatant[] targets)
+        private void CreateActionResults(ActionInfo action, Combatant[] targets)
         {
             // 効果データ
             EffectData effect = action.Effect;
@@ -808,7 +878,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="action">行動内容</param>
         /// <param name="target">対象</param>
         /// <param name="status">ダメージデータ</param>
-        private void DecideDamageOrRecovery(ActionModel action, Combatant target, EffectData.DamageEffect status)
+        private void DecideDamageOrRecovery(ActionInfo action, Combatant target, EffectData.DamageEffect status)
         {
             // 値にステータス効果を適用する
             void ApplyStatusEffect(ref int value, float power, float technique)

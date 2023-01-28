@@ -65,7 +65,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static DreamWalkerData GetDreamWalkerData(int id)
         {
-            return Instance.DreamWalkers[id];
+            return Instance.DreamWalkers.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static NightmareData GetNightmareData(int id)
         {
-            return Instance.Nightmares[id];
+            return Instance.Nightmares.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static SkillData GetSkillData(int id)
         {
-            return Instance.Skills[id];
+            return Instance.Skills.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static ItemData GetItemData(int id)
         {
-            return Instance.Items[id];
+            return Instance.Items.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static StatusEffectData GetStatusEffectData(int id)
         {
-            return Instance.StatusEffects[id];
+            return Instance.StatusEffects.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static DungeonData GetDungeonData(int id)
         {
-            return Instance.Dungeons[id];
+            return Instance.Dungeons.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static EnemyGroupData GetEnemyGroupData(int id)
         {
-            return Instance.EnemyGroups[id];
+            return Instance.EnemyGroups.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static ScenarioData GetScenarioData(int id)
         {
-            return Instance.Scenarios[id];
+            return Instance.Scenarios.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>

@@ -13,15 +13,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ボタンを更新する
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public override void UpdateButtons(BattleManager battle)
+        public override void UpdateButtons(Battle battle)
         {
             base.UpdateButtons(battle);
 
-            ActionModel[] items = ItemUtility.GetActionModels();
+            ActionInfo[] items = ItemUtility.GetActionModels();
 
             for (int i = 0; i < items.Length && i < _buttons.Length; i++)
             {
-                ActionModel item = items[i];
+                ActionInfo item = items[i];
                 ItemButton button = _buttons[i];
 
                 // ボタンのセットアップ
@@ -32,7 +32,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // ナビゲーション更新
-            UpdateButtonNavigationsToLoop();
+            UpdateButtonNavigations();
         }
     }
 

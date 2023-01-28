@@ -8,12 +8,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public partial class Combatant 
     {
         /// <summary>
-        /// 使用するスキルを決定する
+        /// 行動を決定する
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public ActionModel DecideTheSkillToBeUsed(BattleManager battle)
+        public ActionInfo DecideAction(Battle battle)
         {
-            ActionModel result = null;
+            ActionInfo result = null;
 
             // 行動できないならnullを返す
             if (!CanAct())
@@ -22,7 +22,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 使用可能な通常攻撃及びスキルを抽出し、ランダムに選ぶ
-            ActionModel[] availables = Skills
+            ActionInfo[] availables = Skills
                 .Append(NormalAttack)
                 .Where(x => x.CanBeExecuted(battle))
                 .ToArray();

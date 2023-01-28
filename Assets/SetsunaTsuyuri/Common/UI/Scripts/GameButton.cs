@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using TMPro;
 
 namespace SetsunaTsuyuri
 {
@@ -13,11 +11,8 @@ namespace SetsunaTsuyuri
     /// </summary>
     [RequireComponent(typeof(Button))]
     [RequireComponent(typeof(EventTrigger))]
-    public class GameButton : MonoBehaviour
+    public class GameButton : MonoBehaviour, IInitializable
     {
-        public static readonly float InteractableTextAlpha = 1.0f;
-        public static readonly float NonInteractableTextAlpha = 0.5f;
-
         /// <summary>
         /// キャンバスグループ
         /// </summary>
@@ -33,33 +28,84 @@ namespace SetsunaTsuyuri
         /// </summary>
         public EventTrigger EventTrigger { get; private set; } = null;
 
+        /// <summary>
+        /// 封印されている
+        /// </summary>
+        bool isSealed = false;
+
+        /// <summary>
+        /// 封印されている
+        /// </summary>
+        public bool IsSeald
+        {
+            get => isSealed;
+            set
+            {
+                isSealed = value;
+                if (isSealed)
+                {
+                    _canvasGroup.alpha = GameButtonsSettings.NonInteractableAlpha;
+                }
+                else
+                {
+                    _canvasGroup.alpha = GameButtonsSettings.InteractableAlpha;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 押されたときのイベント
+        /// </summary>
+        readonly UnityEvent _pressed = new();
+
         protected virtual void Awake()
         {
             _canvasGroup = GetComponent<CanvasGroup>();
             Button = GetComponent<Button>();
             EventTrigger = GetComponent<EventTrigger>();
 
-            AddTrrigerEntry(EventTriggerType.Submit, (_) => AudioManager.PlaySE("決定"));
-            AddTrrigerEntry(EventTriggerType.Move, (_) => AudioManager.PlaySE("ボタン移動"));
-            AddTrrigerEntry(EventTriggerType.Cancel, (_) => AudioManager.PlaySE("キャンセル"));
+            Button.onClick.AddListener(OnPressed);
+
+            AddPressedListener(() => AudioManager.PlaySE(SEType.Select));
+            AddTrriger(EventTriggerType.Move, _ => AudioManager.PlaySE(SEType.CursolMove));
+            AddTrriger(EventTriggerType.Cancel, _ => AudioManager.PlaySE(SEType.Cancel));
+        }
+
+        public virtual void Initialize()
+        {
+            IsSeald = false;
+        }
+
+        /// <summary>
+        /// 押されたときの処理
+        /// </summary>
+        private void OnPressed()
+        {
+            if (IsSeald)
+            {
+                AudioManager.PlaySE(SEType.Cancel);
+                return;
+            }
+
+            _pressed.Invoke();
         }
 
         /// <summary>
         /// ボタンのonClickイベントリスナーを追加する
         /// </summary>
         /// <param name="action">UnityAction</param>
-        public void AddOnClickListener(UnityAction action)
+        public void AddPressedListener(UnityAction action)
         {
-            Button.onClick.AddListener(action);
+            _pressed.AddListener(action);
         }
 
         /// <summary>
         /// ボタンのonClickイベントリスナーを取り除く
         /// </summary>
         /// <param name="action">UnityAction</param>
-        public void RemoveOnClickListener(UnityAction action)
+        public void RemovePressedListener(UnityAction action)
         {
-            Button.onClick.RemoveListener(action);
+            _pressed.RemoveListener(action);
         }
 
         /// <summary>
@@ -68,7 +114,7 @@ namespace SetsunaTsuyuri
         /// <param name="button">ボタン</param>
         /// <param name="type">トリガーの種類</param>
         /// <param name="action">UnityAction</param>
-        public void AddTrrigerEntry(EventTriggerType type, UnityAction<BaseEventData> action)
+        public void AddTrriger(EventTriggerType type, UnityAction<BaseEventData> action)
         {
             EventTrigger.Entry entry = new()
             {
@@ -79,17 +125,21 @@ namespace SetsunaTsuyuri
             EventTrigger.triggers.Add(entry);
         }
 
+        /// <summary>
+        /// interactableを設定する
+        /// </summary>
+        /// <param name="interactable"></param>
         public void SetInteractable(bool interactable)
         {
             Button.interactable = interactable;
 
             if (interactable)
             {
-                _canvasGroup.alpha = InteractableTextAlpha;
+                _canvasGroup.alpha = GameButtonsSettings.InteractableAlpha;
             }
             else
             {
-                _canvasGroup.alpha = NonInteractableTextAlpha;
+                _canvasGroup.alpha = GameButtonsSettings.NonInteractableAlpha;
             }
         }
 
@@ -109,6 +159,15 @@ namespace SetsunaTsuyuri
         public void Select()
         {
             Button.Select();
+        }
+
+        /// <summary>
+        /// ロックする
+        /// </summary>
+        public void Lock()
+        {
+            Button.navigation = new Navigation();
+            Button.onClick.RemoveAllListeners();
         }
     }
 }

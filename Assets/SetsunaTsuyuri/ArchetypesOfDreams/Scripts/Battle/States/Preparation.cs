@@ -6,14 +6,14 @@ using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 戦闘開始前の準備
         /// </summary>
-        private class Preparation : StateMachine<BattleManager>.State
+        private class Preparation : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 context.OnPreparetionAsync(context.GetCancellationTokenOnDestroy()).Forget();
             }

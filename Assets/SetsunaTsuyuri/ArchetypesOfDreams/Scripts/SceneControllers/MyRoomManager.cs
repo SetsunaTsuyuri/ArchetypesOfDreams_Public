@@ -1,26 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 自室の管理者
+    /// 自室シーンの管理者
     /// </summary>
     public class MyRoomManager : MonoBehaviour
     {
         /// <summary>
-        /// 自室メニュー
+        /// UI
         /// </summary>
         [SerializeField]
-        MyRoomMenu menu = null;
+        MyRoomUIManager _ui = null;
 
         private void Start()
         {
             AllyContainersManager allies = GetComponentInChildren<AllyContainersManager>();
 
+            allies.SetUp(null);
+
             // 戦闘者配列を味方コンテナへ移す
-            allies.TransferCombatantsRuntimeDataToContainers();
+            allies.TransferCombatantsViriableDataToContainers();
 
             // 味方全員を全回復する
             allies.InitializeCombatantsStatus();
@@ -31,11 +32,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // BGMを再生する
             AudioManager.PlayBgm(BgmType.MyRoom);
 
-            // メニューをセットアップする
-            menu.SetUp();
+            // UIをセットアップする
+            _ui.SetUp(allies);
 
-            // メニューを選択する
-            menu.Select();
+            // 自室メニューを選択する
+            _ui.MyRoomMenu.BeSelected();
         }
     }
 }

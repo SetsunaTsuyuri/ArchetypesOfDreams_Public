@@ -12,7 +12,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 説明文UIの管理者
         /// </summary>
-        DescriptionUIManager description = null;
+        DescriptionUI description = null;
 
         /// <summary>
         /// ダンジョン選択ボタンの管理者
@@ -21,7 +21,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Awake()
         {
-            description = GetComponentInChildren<DescriptionUIManager>(true);
+            description = GetComponentInChildren<DescriptionUI>(true);
             DungeonButtons = GetComponentInChildren<DungeonButtonsManager>(true);
         }
 

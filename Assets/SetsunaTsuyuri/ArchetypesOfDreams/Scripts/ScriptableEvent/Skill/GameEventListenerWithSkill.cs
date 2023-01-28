@@ -7,5 +7,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// ゲームイベントリスナー(スキル)
     /// </summary>
-    public class GameEventListenerWithSkill : GameEventListenerWithArgument<ActionModel> { }
+    public class GameEventListenerWithSkill : GameEventListenerWithArgument<ActionInfo> { }
 }

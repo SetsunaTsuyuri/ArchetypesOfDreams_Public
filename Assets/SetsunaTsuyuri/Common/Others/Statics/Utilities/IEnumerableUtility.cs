@@ -7,7 +7,7 @@ using UnityEngine;
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// IEnumerableUtility関連の便利な関数集
+    /// IEnumerable関連のユーティリティ
     /// </summary>
     public static class IEnumerableUtility
     {

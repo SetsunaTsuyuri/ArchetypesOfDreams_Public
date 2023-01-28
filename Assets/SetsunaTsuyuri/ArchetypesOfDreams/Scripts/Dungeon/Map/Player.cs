@@ -34,6 +34,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool WantsToCheck { get; private set; } = false;
 
         /// <summary>
+        /// メニューを開きたい
+        /// </summary>
+        public bool WantsToOpenMenu { get; private set; } = false;
+
+        /// <summary>
         /// プレイヤーインプット
         /// </summary>
         PlayerInput _playerInput = null;
@@ -160,6 +165,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 case InputActionPhase.Canceled:
                     WantsToCheck = false;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// メニュー表示を入力したときの処理
+        /// </summary>
+        /// <param name="context"></param>
+        public void OnMenuOpen(InputAction.CallbackContext context)
+        {
+            switch (context.phase)
+            {
+                case InputActionPhase.Performed:
+                    WantsToOpenMenu = true;
+                    break;
+
+                case InputActionPhase.Canceled:
+                    WantsToOpenMenu = false;
                     break;
 
                 default:

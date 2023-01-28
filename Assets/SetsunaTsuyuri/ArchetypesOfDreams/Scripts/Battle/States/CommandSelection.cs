@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// コマンド選択開始時のイベントリスナー
@@ -21,9 +21,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// コマンド選択
         /// </summary>
-        private class CommandSelection : StateMachine<BattleManager>.State
+        private class CommandSelection : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 // コマンド選択
                 context.SelectCommandButtons();
@@ -35,7 +35,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 context.onPlayerControlledCombatantCommandSelection.Invoke(context);
             }
 
-            public override void Exit(BattleManager context)
+            public override void Exit(Battle context)
             {
                 // 戦闘コマンド非表示
                 context.BattleUI.BattleCommands.Hide();
@@ -50,7 +50,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SelectCommandButtons()
         {
-            BattleUI.BattleCommands.Select(Actor.Combatant.LastSelected);
+            BattleUI.BattleCommands.BeSelected(Actor.Combatant.LastSelected);
         }
     }
 }

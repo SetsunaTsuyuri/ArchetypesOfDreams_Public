@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 休眠状態
         /// </summary>
-        private class Sleep : StateMachine<BattleManager>.State { }
+        private class Sleep : StateMachine<Battle>.State { }
     }
 }

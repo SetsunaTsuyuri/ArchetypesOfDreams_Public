@@ -8,24 +8,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 戦闘UIの管理者
     /// </summary>
-    public class BattleUIManager : GameUI
+    public class BattleUI : GameUI
     {
         /// <summary>
         /// 説明文のUI
         /// </summary>
         [field: SerializeField]
-        public DescriptionUIManager Description { get; private set; } = null;
+        public DescriptionUI Description { get; private set; } = null;
 
         /// <summary>
         /// 味方のUI
         /// </summary>
         [field: SerializeField]
-        public AllyUIManager AlliesUI { get; private set; } = null;
+        public AlliesUI AlliesUI { get; private set; } = null;
 
         /// <summary>
         /// 敵のUI
         /// </summary>
-        public EnemyUIManager EnemiesUI { get; private set; } = null;
+        public EnemiesUI EnemiesUI { get; private set; } = null;
 
         /// <summary>
         /// 戦闘コマンドボタンの管理者
@@ -51,7 +51,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.Awake();
 
-            EnemiesUI = GetComponentInChildren<EnemyUIManager>(true);
+            EnemiesUI = GetComponentInChildren<EnemiesUI>(true);
 
             BattleCommands = GetComponentInChildren<BattleCommandsManager>(true);
             Skills = GetComponentInChildren<SkillButtonsManager>(true);
@@ -64,7 +64,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 各ボタンのセットアップを行う
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void SetUpButtons(BattleManager battle)
+        public void SetUpButtons(Battle battle)
         {
             BattleCommands.SetUp(battle);
             Skills.SetUp(battle);
@@ -75,7 +75,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 各ボタンを更新する
         /// </summary>
         /// <param name="battle">戦闘の管理者</param>
-        public void UpdateButtons(BattleManager battle)
+        public void UpdateButtons(Battle battle)
         {
             BattleCommands.UpdateButtons(battle);
             Skills.UpdateButtons(battle);

@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 時間が進む
         /// </summary>
-        public class TimeAdvancing : StateMachine<BattleManager>.State
+        public class TimeAdvancing : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 // 戦闘可能なコンテナ配列
                 CombatantContainer[] fightables = GetFightables(context);
@@ -42,12 +42,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// <summary>
             /// 戦闘可能なコンテナを取得する
             /// </summary>
-            /// <param name="battle">戦闘の管理者</param>
+            /// <param name="context"></param>
             /// <returns></returns>
-            private CombatantContainer[] GetFightables(BattleManager battle)
+            private CombatantContainer[] GetFightables(Battle context)
             {
-                CombatantContainer[] allies = battle.Allies.GetFightables();
-                CombatantContainer[] enemies = battle.Enemies.GetFightables();
+                var allies = context.Allies.GetFightables();
+                var enemies = context.Enemies.GetFightables();
 
                 CombatantContainer[] fightables = allies
                     .Concat(enemies)

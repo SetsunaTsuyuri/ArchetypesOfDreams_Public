@@ -28,7 +28,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 行動名を表示する
         /// </summary>
         /// <param name="model">行動内容</param>
-        public void DisplaySkillName(ActionModel model)
+        public void DisplaySkillName(ActionInfo model)
         {
             text.text = model.Name;
             Show();

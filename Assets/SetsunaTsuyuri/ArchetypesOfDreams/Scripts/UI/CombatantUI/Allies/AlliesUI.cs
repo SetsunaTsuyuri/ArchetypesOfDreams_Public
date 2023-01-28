@@ -1,17 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
-using System.Threading;
 using DG.Tweening;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 味方UIの管理者
+    /// 味方コンテナUIの管理UI
     /// </summary>
-    public class AllyUIManager : CombatantContainerUIManager<AllyUI, AllyContainersManager, AllyContainer>
+    public class AlliesUI : CombatantContainersUI<AllyUI, AllyContainersManager, AllyContainer>
     {
         /// <summary>
         /// スプライトを表示するImage
@@ -66,7 +63,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             for (int i = 0; i < containers.Members.Length; i++)
             {
-                containers.Members[i].OnDamageEvent += uiArray[i].OnDamage;
+                containers.Members[i].OnDamageEvent += _uiArray[i].OnDamage;
             }
         }
 
@@ -74,7 +71,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// コマンド選択開始時の処理
         /// </summary>
         /// <param name="combatant">戦闘の管理者</param>
-        public void OnPlayerControlledCombatantCommandSelection(BattleManager battle)
+        public void OnPlayerControlledCombatantCommandSelection(Battle battle)
         {
             // スプライトを表示する
             Sprite sprite = battle.Actor.Combatant.Data.Sprite;
@@ -131,7 +128,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         public void OnTargetFlagSet(CombatantContainer container)
         {
-            AllyUI ui = uiArray[container.Id];
+            AllyUI ui = _uiArray[container.Id];
             ui.ColorChanger.OnTargetFlagSet(container.IsTargeted);
         }
     }

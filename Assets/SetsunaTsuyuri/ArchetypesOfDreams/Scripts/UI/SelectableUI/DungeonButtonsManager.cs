@@ -14,7 +14,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// セットアップする
         /// </summary>
         /// <param name="description">説明文の管理者</param>
-        public void SetUp(DescriptionUIManager description)
+        public void SetUp(DescriptionUI description)
         {
             SetUp();
 
@@ -44,7 +44,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // ナビゲーション更新
-            UpdateButtonNavigationsToLoop();
+            UpdateButtonNavigations();
         }
     }
 }

@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 戦闘開始
         /// </summary>
-        private class BattleStart : StateMachine<BattleManager>.State
+        private class BattleStart : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 // 戦闘続行不可能な場合
                 if (!context.CanContinue())

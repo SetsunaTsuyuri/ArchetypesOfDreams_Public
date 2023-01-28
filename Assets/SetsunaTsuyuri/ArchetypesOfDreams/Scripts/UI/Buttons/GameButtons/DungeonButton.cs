@@ -33,7 +33,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="dungeon">ダンジョンデータ</param>
         /// <param name="description">説明文UIの管理者</param>
-        public void SetUp(DungeonData dungeon, DescriptionUIManager description)
+        public void SetUp(DungeonData dungeon, DescriptionUI description)
         {
             // ダンジョンデータ
             Data = dungeon;
@@ -42,13 +42,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             NameText.text = dungeon.Name;
 
             // 選択されたとき、説明文を設定する
-            AddTrrigerEntry(EventTriggerType.Select, (_) => description.SetText(Data.Description));
+            AddTrriger(EventTriggerType.Select, (_) => description.SetText(Data.Description));
 
             // キャンセルされたとき、自室シーンに移る
-            AddTrrigerEntry(EventTriggerType.Cancel, (_) => SceneChangeManager.StartChange(SceneNames.MyRoom));
+            AddTrriger(EventTriggerType.Cancel, (_) => SceneChangeManager.StartChange(SceneNames.MyRoom));
             
             // 押されたとき、ダンジョンシーンに移行する
-            AddOnClickListener(() =>
+            AddPressedListener(() =>
             {
                 VariableData.DungeonId = Data.Id;
                 SceneChangeManager.StartChange(SceneNames.Dungeon);

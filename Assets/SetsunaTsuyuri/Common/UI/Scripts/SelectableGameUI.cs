@@ -1,27 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// 選択可能なUIの基底クラス
+    /// 選択可能なUI
     /// </summary>
     /// <typeparam name="TGameButton">ゲームボタン</typeparam>
-    public abstract class SelectableGameUI<TGameButton> : GameUI, ISelectableGameUI
+    public abstract class SelectableGameUI<TGameButton> : SelectableGameUIBase
         where TGameButton : GameButton
     {
         /// <summary>
-        /// キャンセルした際の遷移先UI
+        /// ゲームボタンの親トランスフォーム
         /// </summary>
-        public ISelectableGameUI Previous { get; set; } = null;
+        [SerializeField]
+        protected Transform _buttonsRoot = null;
 
         /// <summary>
         /// ゲームボタン配列
@@ -51,8 +50,8 @@ namespace SetsunaTsuyuri
 
             // ボタンが選択されている場合、それを外す
             EventSystem eventSystem = EventSystem.current;
-            if (_lastSelected &&
-                _lastSelected.gameObject == eventSystem.currentSelectedGameObject)
+            if (_lastSelected
+                && _lastSelected.gameObject == eventSystem.currentSelectedGameObject)
             {
                 eventSystem.SetSelectedGameObject(null);
             }
@@ -63,38 +62,32 @@ namespace SetsunaTsuyuri
         /// </summary>
         public virtual void SetUp()
         {
-            // ボタンキャッシュ
-            _buttons = GetComponentsInChildren<TGameButton>(true);
+            // ボタン配列
+            if (_buttonsRoot == null)
+            {
+                _buttonsRoot = transform;
+            }
+            _buttons = _buttonsRoot.GetComponentsInChildren<TGameButton>(true);
 
             // イベントトリガー登録
             for (int i = 0; i < _buttons.Length; i++)
             {
-                // 選ばれたとき、自身を最後に選ばれたボタンとする
+                // 選択
                 int index = i;
-                _buttons[i].AddTrrigerEntry(EventTriggerType.Select, _ =>
-                {
-                    _lastSelected = _buttons[index].Button;
-                });
+                _buttons[i].AddTrriger(EventTriggerType.Select, _ => _lastSelected = _buttons[index].Button);
 
-                // キャンセルされたとき、前のUIに戻る
-                if (Previous != null)
-                {
-                    _buttons[i].AddTrrigerEntry(EventTriggerType.Cancel, _ =>
-                    {
-                        Previous.Select();
-                        Hide();
-                    });
-                }
+                // キャンセル
+                _buttons[i].AddTrriger(EventTriggerType.Cancel, _ => BeCanceled());
             }
 
             // ナビゲーションを更新する
-            UpdateButtonNavigationsToLoop();
+            UpdateButtonNavigations();
         }
 
         /// <summary>
         /// ボタンがループするようにナビゲーションを更新する
         /// </summary>
-        protected void UpdateButtonNavigationsToLoop()
+        protected void UpdateButtonNavigations()
         {
             Selectable[] selectables = _buttons
                 .Where(x => x.isActiveAndEnabled)
@@ -117,15 +110,13 @@ namespace SetsunaTsuyuri
                     {
                         navigation.selectOnRight = selectables[next];
                         navigation.selectOnLeft = selectables[previous];
-                    }
-                    ,
+                    },
 
                     VerticalLayoutGroup _ => () =>
                     {
                         navigation.selectOnDown = selectables[next];
                         navigation.selectOnUp = selectables[previous];
-                    }
-                    ,
+                    },
 
                     _ => null
                 };
@@ -134,16 +125,13 @@ namespace SetsunaTsuyuri
             }
         }
 
-        /// <summary>
-        /// 選択状態にする
-        /// </summary>
-        /// <param name="selectLastSelected">最後に選ばれたボタンを選択する</param>
-        public void Select(bool selectLastSelected = true)
+        public override void BeSelected()
         {
+            base.BeSelected();
+
             Show();
 
-            if (selectLastSelected
-                && _lastSelected
+            if ( _lastSelected
                 && _lastSelected.isActiveAndEnabled
                 && _lastSelected.interactable)
             {
@@ -153,7 +141,8 @@ namespace SetsunaTsuyuri
             {
                 foreach (var button in _buttons)
                 {
-                    if (button.Button.interactable)
+                    if (button.Button.isActiveAndEnabled
+                        && button.Button.interactable)
                     {
                         button.Button.Select();
                         break;
@@ -162,7 +151,7 @@ namespace SetsunaTsuyuri
             }
         }
 
-        /// <summary>
+        /// <summary>s
         /// 全てのボタンを表示する、または隠す
         /// </summary>
         /// <param name="value">値</param>

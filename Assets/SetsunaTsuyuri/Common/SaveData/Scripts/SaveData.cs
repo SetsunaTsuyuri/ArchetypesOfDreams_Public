@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SetsunaTsuyuri.ArchetypesOfDreams;
+using System.Linq;
 
 namespace SetsunaTsuyuri
 {
@@ -35,6 +36,18 @@ namespace SetsunaTsuyuri
         /// </summary>
         [field: SerializeReference]
         public List<Combatant> ReserveAllies { get; set; } = new();
+
+        /// <summary>
+        /// 精貨
+        /// </summary>
+        [field: SerializeField]
+        public int SpiritCoins { get; set; } = 0;
+
+        /// <summary>
+        /// 歩数
+        /// </summary>
+        [field: SerializeField]
+        public int Steps { get; set; } = 0;
 
         /// <summary>
         /// アイテム所持数配列
@@ -78,7 +91,12 @@ namespace SetsunaTsuyuri
             Copy(VariableData.Allies, Allies);
             Copy(VariableData.ReserveAllies, ReserveAllies);
 
-            Items = Copy(VariableData.Items);
+            SpiritCoins = VariableData.SpiritCoins;
+            Steps = VariableData.Steps;
+
+            //Items = Copy(VariableData.Items);
+            Items = VariableData.ItemsDic.Values.ToArray();
+
             StroyProgressions = Copy(VariableData.StoryProgressions);
             SelectableDungeons = Copy(VariableData.SelectableDungeons);
             ClearedDungeons = Copy(VariableData.ClearedDungeons);
@@ -93,7 +111,16 @@ namespace SetsunaTsuyuri
             Copy(Allies, VariableData.Allies);
             Copy(ReserveAllies, VariableData.ReserveAllies);
 
-            Overwrite(Items, VariableData.Items);
+            VariableData.SpiritCoins = SpiritCoins;
+            VariableData.Steps = Steps;
+
+            // Overwrite(Items, VariableData.Items);
+            VariableData.ItemsDic.Clear();
+            for (int i = 0; i < Items.Length; i++)
+            {
+                VariableData.ItemsDic.Add(i, Items[i]);
+            }
+
             Overwrite(StroyProgressions, VariableData.StoryProgressions);
             Overwrite(SelectableDungeons, VariableData.SelectableDungeons);
             Overwrite(ClearedDungeons, VariableData.ClearedDungeons);

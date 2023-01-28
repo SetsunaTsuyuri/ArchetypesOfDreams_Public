@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// 数学の関数集
+    /// 数学のユーティリティ
     /// </summary>
     public static class MathUtility
     {

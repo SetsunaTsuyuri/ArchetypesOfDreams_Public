@@ -22,8 +22,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 _buttons[i].SetUp(allies, containers[i]);
             }
 
-            UpdateButtonNavigationsToLoop();
-            Select();
+            UpdateButtonNavigations();
+            BeSelected();
         }
     }
 }

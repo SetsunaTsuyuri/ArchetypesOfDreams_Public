@@ -10,13 +10,29 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 行動ボタン
     /// </summary>
-    public class ActionButton : GameButton
+    public class ActionButton : GameButton, IInitializable
     {
         /// <summary>
         /// 名前の表示テキスト
         /// </summary>
         [field: SerializeField]
         public TextMeshProUGUI Name { get; set; } = null;
+
+        /// <summary>
+        /// 数字の表示テキスト
+        /// </summary>
+        [field: SerializeField]
+        public TextMeshProUGUI Number { get; set; } = null;
+
+        /// <summary>
+        /// ID
+        /// </summary>
+        public int Id { get; protected set; } = 0;
+
+        /// <summary>
+        /// 説明文
+        /// </summary>
+        protected string Description = string.Empty;
 
         /// <summary>
         /// ボタンが選択されたときに実行するイベントトリガーエントリー
@@ -44,14 +60,46 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EventTrigger.triggers.Add(_entry);
         }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            Name.text = string.Empty;
+            Number.text = string.Empty;
+            Description = string.Empty;
+            SetInteractable(false);
+        }
+
+        /// <summary>
+        /// ボタンを更新する
+        /// </summary>
+        /// <param name="id">ID</param>
+        /// <param name="canBeUsed">使用できる</param>
+        public virtual void UpdateButton(int id, bool canBeUsed)
+        {
+            SetInteractable(true);
+            
+            Id = id;
+            IsSeald = !canBeUsed;
+        }
+
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        /// <param name="description">説明文</param>
+        public void SetUp(DescriptionUI description)
+        {
+            AddTrriger(EventTriggerType.Select, _ => description.SetText(Description));
+        }
+
         /// <summary>
         /// セットアップする
         /// </summary>
         /// <param name="owner">ボタンの管理者</param>
-        public void SetUp(ISelectableGameUI owner)
+        public void SetUp(SelectableGameUIBase owner)
         {
-            // イベントリスナー登録
-            Button.onClick.AddListener(() => owner.Hide());
+            // イベントリスナー
+            AddPressedListener(() => owner.Hide());
 
             Hide();
         }
@@ -61,7 +109,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="action">行動内容</param>
         /// <param name="battle">戦闘の管理者</param>
-        public virtual void UpdateButton(ActionModel action, BattleManager battle)
+        public virtual void UpdateButton(ActionInfo action, Battle battle)
         {
             // 名前表示
             if (Name)
@@ -70,16 +118,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // ボタン
-            RemoveOnClickListener(_onClicked);
+            RemovePressedListener(_onClicked);
             _onClicked = () => battle.OnSkillSelected(action);
-            AddOnClickListener(_onClicked);
+            AddPressedListener(_onClicked);
 
             // イベントトリガーエントリー
             _entry.callback.RemoveListener(_onSelected);
             _onSelected = (_) => battle.BattleUI.Description.SetText(action.Description);
             _entry.callback.AddListener(_onSelected);
 
-            // インタラクト
             SetInteractable(action.CanBeExecuted(battle));
         }
     }

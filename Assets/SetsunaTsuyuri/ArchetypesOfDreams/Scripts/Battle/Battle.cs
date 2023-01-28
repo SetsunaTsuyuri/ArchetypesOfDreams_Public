@@ -30,20 +30,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     }
 
     /// <summary>
-    /// 戦闘の管理者
+    /// 戦闘
     /// </summary>
-    public partial class BattleManager : MonoBehaviour, IInitializable
+    public partial class Battle : MonoBehaviour, IInitializable
     {
         /// <summary>
         /// インスタンス
         /// </summary>
-        public static BattleManager InstanceInActiveScene { get; private set; } = null;
+        public static Battle InstanceInActiveScene { get; private set; } = null;
 
         /// <summary>
-        /// 戦闘UIの管理者
+        /// 戦闘UI
         /// </summary>
         [field: SerializeField]
-        public BattleUIManager BattleUI { get; private set; } = null;
+        public BattleUI BattleUI { get; private set; } = null;
 
         /// <summary>
         /// カメラコントローラー
@@ -86,7 +86,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動者の行動内容
         /// </summary>
-        public ActionModel ActorAction { get; private set; } = null;
+        public ActionInfo ActorAction { get; private set; } = null;
 
         /// <summary>
         /// この戦いで得られる経験値
@@ -96,7 +96,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 有限ステートマシン
         /// </summary>
-        public StateMachine<BattleManager> State { get; private set; } = null;
+        public StateMachine<Battle> State { get; private set; } = null;
 
         /// <summary>
         /// 戦闘が終わった
@@ -122,7 +122,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SetUpStateMachine()
         {
-            State = new StateMachine<BattleManager>(this);
+            State = new StateMachine<Battle>(this);
             State.Add<Sleep>();
             State.Add<Preparation>();
             State.Add<BattleStart>();
@@ -200,7 +200,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (!battleEvent.IsBossBattle)
             {
                 // 通常戦闘BGMを再生する
-                AudioManager.PlayBgm("通常戦闘");
+                AudioManager.PlayBgm(BgmType.NormalBattle);
             }
 
             return await ExecuteBattle(token);
@@ -237,7 +237,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// スキルが選択されたときの処理
         /// </summary>
         /// <param name="skill">スキル</param>
-        public void OnSkillSelected(ActionModel skill)
+        public void OnSkillSelected(ActionInfo skill)
         {
             ActorAction = skill;
 

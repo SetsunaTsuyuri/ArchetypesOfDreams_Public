@@ -26,6 +26,12 @@ namespace SetsunaTsuyuri
         /// </summary>
         Tween _fadeTween = null;
 
+        /// <summary>
+        /// 有効である
+        /// </summary>
+        /// <returns></returns>
+        public bool IsEnabled => _canvas.enabled;
+
         protected virtual void Awake()
         {
             _canvas = GetComponent<Canvas>();

@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using System.Security.Cryptography;
 using UnityEngine;
 
 namespace SetsunaTsuyuri
@@ -31,11 +29,6 @@ namespace SetsunaTsuyuri
         /// オートセーブデータの名前
         /// </summary>
         public static readonly string AutoSaveDataName = "autosave";
-
-        static readonly int s_blockSize = 128;
-        static readonly int s_keySize = 128;
-        static readonly string s_iv = "1K9hf715zU8sm59H";
-        static readonly string s_key = "R18FaEzPyxdv0WwW";
 
         /// <summary>
         /// セーブデータ配列
@@ -66,46 +59,30 @@ namespace SetsunaTsuyuri
 
         public override void Initialize()
         {
-            ImportSaves();
-        }
-
-        /// <summary>
-        /// json形式のセーブデータを取り込む
-        /// </summary>
-        private static void ImportSaves()
-        {
+#if UNITY_WEBGL && !UNITY_EDITOR
             // オートセーブデータ
-            string autoSaveDataPath = GetAutoSaveDataJsonPath();
-            if (File.Exists(autoSaveDataPath))
+            AutoSaveData = LoadFromPlayerPrefs(AutoSaveDataName);
+            
+            // セーブデータ
+            for (int i = 0; i < Saves.Length; i++)
             {
-                AutoSaveData = Import(autoSaveDataPath);
+                string key = GetSaveDataKey(i);
+                SaveData saveData = LoadFromPlayerPrefs(key);
+                Saves[i] = saveData;
             }
+#else
+            // オートセーブデータ
+            string autoSaveDataPath = GetAutoSaveDataPath();
+            AutoSaveData = Import(autoSaveDataPath);
 
             // セーブデータ
-            string[] saveDataPathes = GetSaveDataJsonPathes();
+            string[] saveDataPathes = GetSaveDataPathes();
             foreach (var path in saveDataPathes)
             {
-                SaveData save = Import(path);
-                Saves[save.Id] = save;
+                SaveData saveData = Import(path);
+                Saves[saveData.Id] = saveData;
             }
-        }
-
-        /// <summary>
-        /// json形式のセーブデータを復元する
-        /// </summary>
-        /// <param name="path">セーブデータのパス</param>
-        /// <returns></returns>
-        private static SaveData Import(string path)
-        {
-            byte[] bytes = File.ReadAllBytes(path);
-
-            // 複合する
-            bytes = Decrypt(bytes);
-
-            string json = Encoding.UTF8.GetString(bytes);
-            SaveData save = JsonUtility.FromJson<SaveData>(json);
-
-            return save;
+#endif
         }
 
         /// <summary>
@@ -122,8 +99,13 @@ namespace SetsunaTsuyuri
             SaveData saveData = Saves[id];
             saveData.Save(id);
 
-            string path = GetSaveDataJsonPath(id);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            string key = GetSaveDataKey(id);
+            SaveInPlayerPrefs(saveData, key);
+#else
+            string path = GetSaveDataPath(id);
             Export(saveData, path);
+#endif
         }
 
         /// <summary>
@@ -133,8 +115,12 @@ namespace SetsunaTsuyuri
         {
             AutoSaveData.Save();
 
-            string path = GetAutoSaveDataJsonPath();
+#if UNITY_WEBGL && !UNITY_EDITOR
+            SaveInPlayerPrefs(AutoSaveData, AutoSaveDataName);
+#else
+            string path = GetAutoSaveDataPath();
             Export(AutoSaveData, path);
+#endif
         }
 
         /// <summary>
@@ -155,92 +141,140 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// セーブデータをJson形式で書き出す
+        /// セーブデータを出力する
         /// </summary>
         /// <param name="saveData">セーブデータ</param>
-        /// <param name="path">json形式で書き出すパス</param>
+        /// <param name="path">出力先</param>
         private static void Export(SaveData saveData, string path)
+        {
+            // 暗号化
+            byte[] encrypted = Encrypt(saveData);
+
+            // 出力
+            File.WriteAllBytes(path, encrypted);
+        }
+
+        /// <summary>
+        /// セーブデータを暗号化する
+        /// </summary>
+        /// <param name="saveData">セーブデータ</param>
+        /// <returns></returns>
+        private static byte[] Encrypt(SaveData saveData)
         {
             string json = JsonUtility.ToJson(saveData);
             byte[] bytes = Encoding.UTF8.GetBytes(json);
+            byte[] encrypted = CryptographyUtility.Encrypt(bytes);
+            return encrypted;
+        }
 
-            // 暗号化する
-            bytes = Encrypt(bytes);
+        /// <summary>
+        /// セーブデータを取り込む
+        /// </summary>
+        /// <param name="path">セーブデータのパス</param>
+        /// <returns></returns>
+        private static SaveData Import(string path)
+        {
+            if (!File.Exists(path))
+            {
+                return null;
+            }
 
-            File.WriteAllBytes(path, bytes);
+            // 復号
+            byte[] encrypted = File.ReadAllBytes(path);
+            SaveData saveData = Decrypt(encrypted);
+            return saveData;
+        }
+
+        /// <summary>
+        /// セーブデータを復号する
+        /// </summary>
+        /// <param name="encrypted">暗号化されたセーブデータ</param>
+        /// <returns></returns>
+        private static SaveData Decrypt(byte[] encrypted)
+        {
+            // 復号
+            byte[] decrypted = CryptographyUtility.Decrypt(encrypted);
+
+            // セーブデータ
+            string json = Encoding.UTF8.GetString(decrypted);
+            SaveData saveData = JsonUtility.FromJson<SaveData>(json);
+            return saveData;
         }
 
         /// <summary>
         /// 全てのセーブデータ(json)のパスを取得する
         /// </summary>
         /// <returns></returns>
-        private static string[] GetSaveDataJsonPathes()
+        private static string[] GetSaveDataPathes()
         {
             return Directory.GetFiles(SaveDataPath, $"{SaveDataName}_*.dat");
         }
 
         /// <summary>
-        /// セーブデータ(json)のパスを取得する
+        /// セーブデータのパスを取得する
         /// </summary>
         /// <param name="id">セーブデータID</param>
         /// <returns></returns>
-        private static string GetSaveDataJsonPath(int id)
+        private static string GetSaveDataPath(int id)
         {
             return $"{SaveDataPath}/{SaveDataName}_{id}.dat";
         }
 
         /// <summary>
-        /// オートセーブデータ(json)のパスを取得する
+        /// オートセーブデータのパスを取得する
         /// </summary>
         /// <returns></returns>
-        private static string GetAutoSaveDataJsonPath()
+        private static string GetAutoSaveDataPath()
         {
             return $"{SaveDataPath}/{AutoSaveDataName}.dat";
         }
 
+#if UNITY_WEBGL && !UNITY_EDITOR
         /// <summary>
-        /// 暗号化する
+        /// セーブデータをPlayerPrefsに保存する
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
-        private static byte[] Encrypt(byte[] bytes)
+        /// <param name="saveData">セーブデータ</param>
+        /// <param name="key">キー</param>
+        private static void SaveInPlayerPrefs(SaveData saveData, string key)
         {
-            AesManaged managed = CreateAesManaged();
-            ICryptoTransform encryptor = managed.CreateEncryptor();
-            byte[] encrypted = encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
-            return encrypted;
+            // 暗号化
+            byte[] encrypted = Encrypt(saveData);
+
+            // 保存
+            string value = Encoding.UTF8.GetString(encrypted);
+            PlayerPrefs.SetString(key, value);
+            PlayerPrefs.Save();
         }
 
         /// <summary>
-        /// 複合する
+        /// PlayerPrefsからセーブデータを取り込む
         /// </summary>
-        /// <param name="bytes"></param>
+        /// <param name="key">キー</param>
         /// <returns></returns>
-        private static byte[] Decrypt(byte[] bytes)
+        private static SaveData LoadFromPlayerPrefs(string key)
         {
-            AesManaged managed = CreateAesManaged();
-            ICryptoTransform decryptor = managed.CreateDecryptor();
-            byte[] decrypted = decryptor.TransformFinalBlock(bytes, 0, bytes.Length);
-            return decrypted;
-        }
+            SaveData saveData = null;
 
-        /// <summary>
-        /// AesManagedを作る
-        /// </summary>
-        /// <returns></returns>
-        private static AesManaged CreateAesManaged()
-        {
-            AesManaged managed = new()
+            string value = PlayerPrefs.GetString(key);
+            if (value != string.Empty)
             {
-                BlockSize = s_blockSize,
-                KeySize = s_keySize,
-                IV = Encoding.UTF8.GetBytes(s_iv),
-                Key = Encoding.UTF8.GetBytes(s_key),
-                Mode = CipherMode.CBC,
-                Padding = PaddingMode.PKCS7
-            };
+                // 復号
+                byte[] encrypted = Encoding.UTF8.GetBytes(value);
+                saveData = Decrypt(encrypted);
+            }
 
-            return managed;
+            return saveData;
         }
+
+        /// <summary>
+        /// セーブデータのPlayerPrefsキーを取得する
+        /// </summary>
+        /// <param name="id">セーブデータID</param>
+        /// <returns></returns>
+        private static string GetSaveDataKey(int id)
+        {
+            return $"{SaveDataName}_{id}";
+        }
+#endif
     }
 }

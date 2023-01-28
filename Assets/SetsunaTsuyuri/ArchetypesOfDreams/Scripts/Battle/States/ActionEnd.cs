@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    public partial class BattleManager
+    public partial class Battle
     {
         /// <summary>
         /// 行動終了開始時のイベント
@@ -16,9 +16,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘者の行動終了
         /// </summary>
-        private class ActionEnd : StateMachine<BattleManager>.State
+        private class ActionEnd : StateMachine<Battle>.State
         {
-            public override void Enter(BattleManager context)
+            public override void Enter(Battle context)
             {
                 // イベント呼び出し
                 context.onActionEndEnter.Invoke();

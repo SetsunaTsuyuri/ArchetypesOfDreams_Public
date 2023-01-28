@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/001_prologue.json",
+    "activeFile": "maps/101.json",
     "expandedProjectPaths": [
-        "maps",
         ".",
+        "maps",
         "tilesets"
     ],
     "file.lastUsedOpenFilter": "すべてのファイル (*)",
@@ -174,10 +174,10 @@
     "project": "mugen.tiled-project",
     "property.type": "ObjectType",
     "recentFiles": [
-        "maps/101.json",
-        "maps/301.json",
-        "maps/201.json",
         "maps/001_prologue.json",
+        "maps/201.json",
+        "maps/301.json",
+        "maps/101.json",
         "maps/map.json",
         "tilesets/tileset.tsx",
         "tilesets/101.json",

@@ -1,16 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 戦闘者UIの管理者
+    /// 戦闘者コンテナUIの管理UI
     /// </summary>
     /// <typeparam name="TUI">UIの型</typeparam>
     /// <typeparam name="TContainersManager">戦闘者コンテナ管理者の型</typeparam>
     /// <typeparam name="TContainer">戦闘者コンテナの型</typeparam>
-    public class CombatantContainerUIManager<TUI, TContainersManager, TContainer> : GameUI
+    public class CombatantContainersUI<TUI, TContainersManager, TContainer> : GameUI
         where TUI : CombatantContainerUI
         where TContainersManager : CombatantContainersManager<TContainer>
         where TContainer : CombatantContainer 
@@ -24,13 +25,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘者UI配列
         /// </summary>
-        protected TUI[] uiArray = null;
+        protected TUI[] _uiArray = null;
 
         protected override void Awake()
         {
             base.Awake();
 
-            uiArray = GetComponentsInChildren<TUI>(true);
+            _uiArray = GetComponentsInChildren<TUI>(true);
         }
 
         protected virtual void Start()
@@ -43,10 +44,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SetTargets()
         {
-            CombatantContainer[] targets = containers.GetAllContainers();
-            for (int i = 0; i < uiArray.Length; i++)
+            CombatantContainer[] targets = containers
+                .GetAllContainers()
+                .ToArray();
+
+            for (int i = 0; i < _uiArray.Length; i++)
             {
-                uiArray[i].SetTargets(targets[i]);
+                _uiArray[i].SetTargets(targets[i]);
             }
         }
 
@@ -56,12 +60,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         public void OnCombatantSet(CombatantContainer container)
         {
-            if (uiArray is null)
+            if (_uiArray is null)
             {
                 return;
             }
 
-            TUI ui = uiArray[container.Id];
+            TUI ui = _uiArray[container.Id];
             ui.OnCombatantSet(container.ContainsCombatant());
         }
 
@@ -71,12 +75,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         public void OnConditionSet(CombatantContainer container)
         {
-            if (uiArray == null)
+            if (_uiArray == null)
             {
                 return;
             }
 
-            TUI ui = uiArray[container.Id];
+            TUI ui = _uiArray[container.Id];
             ui.OnConditionSet(container.Combatant.Condition);
         }
     }

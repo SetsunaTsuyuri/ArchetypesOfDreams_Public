@@ -8,5 +8,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// ゲームイベント(スキル)
     /// </summary>
     [CreateAssetMenu(menuName = "GameEvents/Skill")]
-    public class GameEventWithSkill : GameEventWithArgument<ActionModel> { }
+    public class GameEventWithSkill : GameEventWithArgument<ActionInfo> { }
 }

@@ -11,15 +11,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public static class ItemUtility
     {
         /// <summary>
-        /// 使用可能なアイテムを持っている
+        /// アイテムを持っている
         /// </summary>
         /// <returns></returns>
-        public static bool HasAnyUsableItem()
+        public static bool HasAnyItem()
         {
-            bool result = VariableData.Items
-                .Where(x => x > 0)
-                .Any();
-
+            bool result = VariableData.ItemsDic.Any(x => x.Value > 0);
             return result;
         }
 
@@ -40,7 +37,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static int GetNumberOfItems(int id)
         {
-            return VariableData.Items[id];
+            return VariableData.ItemsDic[id];
         }
 
         /// <summary>
@@ -50,7 +47,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="value">獲得数</param>
         public static void ObtainItem(int id, int value = 1)
         {
-            VariableData.Items[id] += value;
+            VariableData.ItemsDic[id] += value;
         }
 
         /// <summary>
@@ -60,7 +57,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="value">消費数</param>
         public static void ConsumeItem(int id, int value = 1)
         {
-            VariableData.Items[id] -= value;
+            VariableData.ItemsDic[id] -= value;
+        }
+
+        /// <summary>
+        /// 所有しているアイテムを取得する
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<KeyValuePair<int, int>> GetOwnedItems()
+        {
+            return VariableData.ItemsDic.Where(x => x.Value > 0);
+        }
+
+        /// <summary>
+        /// 所有しているアイテムIDを取得する
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<int> GetOwnedItemIds()
+        {
+            return GetOwnedItems().Select(x => x.Key);
         }
 
         /// <summary>
@@ -68,18 +83,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="user">使用者</param>
         /// <returns></returns>
-        public static ActionModel[] GetActionModels()
+        public static ActionInfo[] GetActionModels()
         {
-            List<ActionModel> actions = new();
-            int[] items = VariableData.Items;
-            for (int i = 0; i < items.Length; i++)
+            var ids = GetOwnedItemIds();
+
+            List<ActionInfo> actions = new();
+            foreach (var id in ids)
             {
-                if (items[i] > 0)
-                {
-                    ActionModel action = new(MasterData.GetItemData(i));
-                    actions.Add(action);
-                }
+                ActionInfo action = new(MasterData.GetItemData(id));
+                actions.Add(action);
             }
+
             return actions.ToArray();
         }
     }

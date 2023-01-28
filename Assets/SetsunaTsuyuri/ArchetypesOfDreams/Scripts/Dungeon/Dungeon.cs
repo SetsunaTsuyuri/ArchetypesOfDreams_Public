@@ -13,10 +13,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public partial class Dungeon : MonoBehaviour
     {
         /// <summary>
+        /// ダンジョンUI
+        /// </summary>
+        [SerializeField]
+        DungeonSceneUIManager _ui = null;
+
+        /// <summary>
+        /// プレイヤー
+        /// </summary>
+        [SerializeField]
+        PlayerMenu _playerMenu = null;
+
+        /// <summary>
         /// 戦闘の管理者
         /// </summary>
         [SerializeField]
-        BattleManager _battle = null;
+        Battle _battle = null;
 
         /// <summary>
         /// 味方コンテナの管理者
@@ -35,12 +47,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [SerializeField]
         CameraController _miniMapCamera = null;
-
-        /// <summary>
-        /// ミニマップ
-        /// </summary>
-        [SerializeField]
-        GameUI _miniMap = null;
 
         /// <summary>
         /// プレイヤー
@@ -73,7 +79,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [SerializeField]
         int _enemiesEncounterValueIncrease = 0;
-
 
         /// <summary>
         /// ランダムエンカウントを許可する
@@ -108,13 +113,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             SetUp();
 
-            AudioManager.PlayBgm(BgmType.Dungeon);
-
-            State.StartChange<MapEventsResolution>(this);
-        }
-
-        private void SetUp()
-        {
             // データを設定する
             int id = VariableData.DungeonId;
             _data = MasterData.GetDungeonData(id);
@@ -126,7 +124,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 戦闘者を味方コンテナへ移す
-            _allies.TransferCombatantsRuntimeDataToContainers();
+            _allies.TransferCombatantsViriableDataToContainers();
 
             // jsonからマップを作る
             string json = _data.MapJson.text;
@@ -143,7 +141,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _miniMapCamera.Target = _player.MiniMapTransform;
 
             // 説明文UIを非表示にする
-            _battle.BattleUI.Description.Hide();
+            _ui.Description.Hide();
+
+            AudioManager.PlayBgm(BgmType.Dungeon);
+
+            State.StartChange<MapEventsResolution>(this);
+        }
+
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        private void SetUp()
+        {
+            _ui.SetUp(_player, _allies, _battle.Enemies);
+            _allies.SetUp(_battle.Enemies);
         }
 
         private void Update()
@@ -202,8 +213,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 Player player = context._player;
 
+                // メニュー
+                if (player.WantsToOpenMenu)
+                {
+                    OnMenu(context);
+                }
                 // 移動
-                if (player.WantsToMove())
+                else if (player.WantsToMove())
                 {
                     OnMove(context);
                 }
@@ -217,13 +233,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 {
                     OnCheck(context);
                 }
-                // メニュー
             }
 
             public override void Exit(Dungeon context)
             {
                 // プレイヤーの操作を無効にする
                 context._player.DisableInput();
+            }
+
+            /// <summary>
+            /// メニュー
+            /// </summary>
+            /// <param name="context"></param>
+            private void OnMenu(Dungeon context)
+            {
+                AudioManager.PlaySE(SEType.Select);
+
+                context._ui.Main.Hide();
+                context._player.DisableInput();
+                context._playerMenu.BeSelected();
             }
 
             /// <summary>
@@ -286,15 +314,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     // マップイベントの処理を開始する
                     context.State.StartChange<ReservedMapEventsResolution>(context);
                 }
-            }
-
-            /// <summary>
-            /// メニュー
-            /// </summary>
-            /// <param name="context"></param>
-            private void OnMenu(Dungeon context)
-            {
-
             }
         }
 
@@ -371,6 +390,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public class RandomEncounter : UniTaskStateMachine<Dungeon>.State
         {
+            public override void Enter(Dungeon context)
+            {
+                // 説明文UIを表示する
+                context._ui.Description.Show();
+            }
+
             public override async UniTask EnterAsync(Dungeon context, CancellationToken token)
             {
                 await base.EnterAsync(context, token);
@@ -392,10 +417,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     await FadeManager.FadeOut(token);
 
                     // 非アクティブにする
-                    context.gameObject.SetActive(false);
+                    context.Map.gameObject.SetActive(false);
 
-                    // ミニマップを無効化する
-                    context._miniMap.Hide();
+                    // UIを無効化する
+                    context._ui.Main.Hide();
 
                     // 戦闘を行う
                     BattleResultType result = await context._battle.ExecuteRandomBattle(context.Map, token);
@@ -410,7 +435,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     {
 
                         // アクティブにする
-                        context.gameObject.SetActive(true);
+                        context.Map.gameObject.SetActive(true);
 
                         // カメラをプレイヤー視点にする
                         context._cameraController.Target = context._player.transform;
@@ -421,8 +446,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                         // フェードイン
                         await FadeManager.FadeIn(token);
 
-                        // ミニマップをフェードインする
-                        context._miniMap.FadeIn();
+                        // UIをフェードインする
+                        context._ui.Main.FadeIn();
 
                         context.State.SetNextState<PlayerControl>();
                     }
@@ -433,155 +458,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 }
             }
 
-            public override void Enter(Dungeon context)
-            {
-                // 説明文UIを表示する
-                context._battle.BattleUI.Description.Show();
-            }
-
             public override void Exit(Dungeon context)
             {
                 // 説明文UIを非表示にする
-                context._battle.BattleUI.Description.Hide();
+                context._ui.Description.Hide();
             }
         }
-
-        ///// <summary>
-        ///// ダンジョンをプレイする(非同期)
-        ///// </summary>
-        ///// <param name="token"></param>
-        ///// <returns></returns>
-        //private async UniTask Play(CancellationToken token)
-        //{
-        //    // 接触地面イベント実行
-
-        //    // セルイベントリスト消化
-
-        //    // プレイヤー行動決定フェイズ → イベントリストに追加、接触イベント実行へ
-
-        //    // エネミー行動決定フェイズ → イベントリスト追加、 接触イベント実行へ
-
-        //    // Moveフェイズ
-
-        //    // エンカウンターフェイズ エンカウントゲージMAXで戦闘イベントをイベントリスト追加、接触イベント実行へ
-
-        //    // ダンジョンデータ
-        //    DungeonData dungeon = RuntimeData.DungeonToPlay;
-
-        //    // 無限ループ
-        //    while (true)
-        //    {
-        //        // ゲームコマンドを取得する
-        //        GameCommand[] commands = dungeon.DungeonSections[_currentPlayerSection].GameCommands;
-
-        //        // 各コマンドに情報を追加する
-        //        foreach (var command in commands)
-        //        {
-        //            command.CurrentPlayerSection = _currentPlayerSection;
-        //        }
-
-        //        // ゲームコマンドマネージャーに全てのコマンドを解決させる
-        //        GameCommandResult result = await GameEventsManager.ResolveCommands(commands, token);
-
-        //        // 戦いに負けた場合
-        //        if (result.PlayerHasBeenDefeated)
-        //        {
-        //            // ループ終了
-        //            break;
-        //        }
-        //        else
-        //        {
-        //            // 次のセクションが存在する場合
-        //            if (ExistsNextSection(dungeon))
-        //            {
-
-
-        //                // 次のセクションへ進む
-        //                _currentPlayerSection++;
-        //            }
-        //            else
-        //            {
-        //                // クリアフラグON
-        //                _playerHasClearedThis = true;
-
-        //                // ループ終了
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    // クリアした場合
-        //    if (_playerHasClearedThis)
-        //    {
-        //        // セーブデータ
-        //        SaveData save = SaveDataManager.CurrentSaveData;
-
-        //        // 初めてクリアした場合
-        //        if (!save.ClearedDungeons[dungeon.Id])
-        //        {
-        //            save.ClearedDungeons[dungeon.Id] = true;
-
-        //            // 次のダンジョンを開放できる場合
-        //            if (CanOpenNextDungeon(dungeon))
-        //            {
-        //                save.OpenDungeons[dungeon.Id + 1] = true;
-
-        //                // 最初のダンジョン以外の場合
-        //                if (dungeon.Id != 0)
-        //                {
-        //                    // フェードイン
-        //                    await FadeManager.FadeIn(token);
-
-        //                    // メッセージ表示
-        //                    TextAsset text = MasterData.Scenarios.CommonScenarios.GetValueOrDefault(Attribute.Scenario.OpenDungeon);
-        //                    await scenario.PlayAsync(text, token);
-        //                }
-        //            }
-
-        //            // その他のダンジョン開放
-        //            foreach (var id in dungeon.OpenDungeonsId)
-        //            {
-        //                save.OpenDungeons[id] = true;
-        //            }
-        //        }
-
-        //        // 拠点に戻る
-        //        SceneChangeManager.ChangeScene(SceneNames.MyRoom);
-        //    }
-        //    else // クリアしなかった場合
-        //    {
-        //        // 最初のダンジョンの場合
-        //        if (dungeon.Id == 0)
-        //        {
-        //            // タイトルに戻る
-        //            SceneChangeManager.ChangeScene(SceneNames.Title);
-        //        }
-        //        else
-        //        {
-        //            // 拠点に戻る
-        //            SceneChangeManager.ChangeScene(SceneNames.MyRoom);
-        //        }
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 次のセクションが存在する
-        ///// </summary>
-        ///// <param name="dungeon">ダンジョンデータ</param>
-        ///// <returns></returns>
-        //private bool ExistsNextSection(DungeonData dungeon)
-        //{
-        //    return _currentPlayerSection + 1 < dungeon.DungeonSections.Length;
-        //}
-
-        ///// <summary>
-        ///// 次のダンジョンを開放できる
-        ///// </summary>
-        ///// <param name="dungeon">ダンジョンデータ</param>
-        ///// <returns></returns>
-        //private bool CanOpenNextDungeon(DungeonData dungeon)
-        //{
-        //    return dungeon.OpenNextDungeon && dungeon.Id < MasterData.Dungeons.Data.Length - 1;
-        //}
     }
 }

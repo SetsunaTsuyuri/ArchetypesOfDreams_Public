@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -68,18 +69,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// アイテム所持数
+        /// 歩数
         /// </summary>
-        int[] _items = null;
+        int _steps = 0;
 
         /// <summary>
-        /// アイテム所持数
+        /// 歩数
         /// </summary>
-        public static int[] Items
+        public static int Steps
         {
-            get => Instance._items;
-            set => Instance._items = value;
+            get => Instance._steps;
+            set => Instance._steps = value;
         }
+
+        /// <summary>
+        /// アイテム所持数ディクショナリー
+        /// </summary>
+        readonly Dictionary<int, int> _itemsDic = new();
+
+        /// <summary>
+        /// アイテム所持数ディクショナリー
+        /// </summary>
+        public static Dictionary<int, int> ItemsDic => Instance._itemsDic;
 
         /// <summary>
         /// 選択可能なダンジョンフラグ
@@ -167,8 +178,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override void Initialize()
         {
-            // アイテム
-            _items = new int[MasterData.CountItems()];
+            // 精貨
+            _spiritCoins = 0;
+            
+            // 歩数
+            _steps = 0;
+
+            // アイテム所持数ディクショナリー
+            _itemsDic.Clear();
+            int items = MasterData.CountItems();
+            for (int i = 0; i < items; i++)
+            {
+                _itemsDic.Add(i, 0);
+            }
 
             // ダンジョン
             int dungeonNumber = MasterData.CountDungeons();
@@ -193,10 +215,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Allies.Add(player);
 
             // アイテム
-            Items[0] = 100;
-            Items[1] = 100;
-            Items[2] = 100;
-            Items[4] = 100;
+            ItemsDic[0] = 10;
+            ItemsDic[1] = 10;
+            ItemsDic[3] = 10;
+            ItemsDic[4] = 10;
 
             // 選択可能なダンジョン
             _selectableDungeons[1] = true;
