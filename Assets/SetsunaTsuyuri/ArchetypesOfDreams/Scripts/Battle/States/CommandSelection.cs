@@ -50,7 +50,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SelectCommandButtons()
         {
-            BattleUI.BattleCommands.BeSelected(Actor.Combatant.LastSelected);
+            BattleUI.BattleCommands.BeSelected();
         }
     }
 }

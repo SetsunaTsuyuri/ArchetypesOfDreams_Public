@@ -35,15 +35,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 対象選択UI
             TargetSelectionUI targetSelection = GetComponentInChildren<TargetSelectionUI>();
-            targetSelection.SetUp(description, allies);
+            targetSelection.SetUp(description, null);
 
             // スキルメニュー
             SkillMenu skillMenu = GetComponentInChildren<SkillMenu>();
-            skillMenu.SetUp(description, targetSelection, allies, null);
+            skillMenu.SetUp(description, targetSelection);
 
             // アイテムメニュー
             ItemMenu itemMenu = GetComponentInChildren<ItemMenu>();
-            itemMenu.SetUp(description, targetSelection, allies, null);
+            itemMenu.SetUp(description, targetSelection);
 
             // プレイヤーメニュー
             PlayerMenu playerMenu = GetComponentInChildren<PlayerMenu>();

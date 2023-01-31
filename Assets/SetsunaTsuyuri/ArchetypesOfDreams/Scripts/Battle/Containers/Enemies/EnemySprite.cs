@@ -9,43 +9,54 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 敵スプライト
     /// </summary>
     [RequireComponent(typeof(SpriteRenderer))]
-    public class EnemySprite : MonoBehaviour
+    public class EnemySprite : MonoBehaviour, IInitializable
     {
-        SpriteRenderer spriteRenderer = null;
+        SpriteRenderer _spriteRenderer = null;
 
         /// <summary>
         /// 初期色
         /// </summary>
-        Color defaultColor = Color.white;
+        Color _defaultColor = Color.white;
 
         /// <summary>
         /// 初期の拡大倍率X
         /// </summary>
-        float defaultLocalScaleX = 0.0f;
+        float _defaultLocalScaleX = 0.0f;
 
         /// <summary>
         /// 初期の拡大倍率Y
         /// </summary>
-        float defaultLocalScaleY = 0.0f;
+        float _defaultLocalScaleY = 0.0f;
 
         /// <summary>
-        /// 色変化Tween
+        /// 対象Tween
         /// </summary>
-        Tweener targetedColor = null;
+        Tween targetedTween = null;
+
+        /// <summary>
+        /// 撃破Tween
+        /// </summary>
+        Tween _knockedOutTween = null;
 
         /// <summary>
         /// 点滅シーケンス
         /// </summary>
-        Sequence _blinking = null;
+        Sequence _blinkingSequence = null;
 
         private void Awake()
         {
-            spriteRenderer = GetComponent<SpriteRenderer>();
-            defaultColor = spriteRenderer.color;
-            defaultLocalScaleX = transform.localScale.x;
-            defaultLocalScaleY = transform.localScale.y;
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _defaultColor = _spriteRenderer.color;
+            _defaultLocalScaleX = transform.localScale.x;
+            _defaultLocalScaleY = transform.localScale.y;
+            _blinkingSequence = CreateBlinkingSequence();
+        }
 
-            _blinking = CreateBlinkingSequence();
+        public void Initialize()
+        {
+            _spriteRenderer.color = _defaultColor;
+            Vector3 scale = new (_defaultLocalScaleX, _defaultLocalScaleY, 1.0f);
+            transform.localScale = scale;
         }
 
         /// <summary>
@@ -56,16 +67,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             if (combatant != null)
             {
-                spriteRenderer.sprite = combatant.Data.Sprite;
+                _spriteRenderer.sprite = combatant.Data.Sprite;
                 Vector3 scale = transform.localScale;
-                scale.x = defaultLocalScaleX * combatant.Data.SpriteScale;
-                scale.y = defaultLocalScaleY * combatant.Data.SpriteScale;
+                scale.x = _defaultLocalScaleX * combatant.Data.SpriteScale;
+                scale.y = _defaultLocalScaleY * combatant.Data.SpriteScale;
                 transform.localScale = scale;
-                spriteRenderer.enabled = true;
+                _spriteRenderer.enabled = true;
             }
             else
             {
-                spriteRenderer.enabled = false;
+                _spriteRenderer.enabled = false;
             }
         }
 
@@ -79,7 +90,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 case Attribute.Condition.Normal:
                     // スプライト表示
-                    spriteRenderer.enabled = true;
+                    _knockedOutTween.Kill();
+                    _spriteRenderer.enabled = true;
+                    _spriteRenderer.color = _defaultColor;
                     break;
 
                 case Attribute.Condition.Crush:
@@ -88,7 +101,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 case Attribute.Condition.KnockedOut:
                     // スプライト非表示
-                    ChangeColor(
+                    _knockedOutTween = ChangeColor(
                         GameSettings.VisualEffects.DefeatedEnemyColor,
                         GameSettings.VisualEffects.EnemyFadeDuration);
                     break;
@@ -101,9 +114,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private Sequence CreateBlinkingSequence()
         {
             return DOTween.Sequence()
-                .AppendCallback(() => spriteRenderer.material.SetFloat("_Blinking", 1.0f))
+                .AppendCallback(() => _spriteRenderer.material.SetFloat("_Blinking", 1.0f))
                 .AppendInterval(0.075f)
-                .AppendCallback(() => spriteRenderer.material.SetFloat("_Blinking", 0.0f))
+                .AppendCallback(() => _spriteRenderer.material.SetFloat("_Blinking", 0.0f))
                 .AppendInterval(0.075f)
                 .SetLoops(2)
                 .SetLink(gameObject)
@@ -116,7 +129,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void Blink()
         {
-            _blinking.Restart();
+            _blinkingSequence.Restart();
         }
 
         /// <summary>
@@ -135,10 +148,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// スプライトの色を変える
         /// </summary>
-        private void ChangeColor(Color color, float duration)
+        private Tween ChangeColor(Color color, float duration)
         {
-            targetedColor = spriteRenderer.DOColor(color, duration)
-                .SetEase(Ease.Linear);
+            return _spriteRenderer.DOColor(color, duration)
+                .SetEase(Ease.Linear)
+                .SetLink(gameObject);
         }
 
         /// <summary>
@@ -147,7 +161,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnPurified()
         {
             // スプライト非表示
-            spriteRenderer.enabled = false;
+            _spriteRenderer.enabled = false;
         }
 
         /// <summary>
@@ -158,23 +172,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             if (targeted)
             {
-                StartTargetedColorTween();
+                StartTargetedTween();
             }
             else
             {
-                KillTargetedColorTween();
+                KillTargetedTween();
             }
         }
 
         /// <summary>
         /// 対象に選択されたときの色変化Tweenを開始する
         /// </summary>
-        private void StartTargetedColorTween()
+        private void StartTargetedTween()
         {
             Color color = GameSettings.VisualEffects.TargetedEnemyColor;
             float duration = GameSettings.VisualEffects.TargetedEnemyColorChangeDuration;
 
-            targetedColor = spriteRenderer.DOColor(color, duration)
+            targetedTween = _spriteRenderer.DOColor(color, duration)
                 .SetEase(Ease.OutQuad)
                 .SetLoops(-1, LoopType.Yoyo);
         }
@@ -182,18 +196,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 対象に選択されたときの色変化Tweenを終了する
         /// </summary>
-        public void KillTargetedColorTween()
+        public void KillTargetedTween()
         {
             // Tweenを殺す
-            if (targetedColor != null)
+            if (targetedTween != null)
             {
-                targetedColor.Kill();
+                targetedTween.Kill();
             }
 
             // 元の色に戻す
-            if (spriteRenderer)
+            if (_spriteRenderer)
             {
-                spriteRenderer.color = defaultColor;
+                _spriteRenderer.color = _defaultColor;
             }
         }
     }

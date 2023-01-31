@@ -104,6 +104,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool IsOver { get; private set; } = false;
 
         /// <summary>
+        /// 戦闘中である
+        /// </summary>
+        /// <returns></returns>
+        public bool IsRunning => State.Current is not Sleep;
+
+        /// <summary>
         /// 戦闘結果
         /// </summary>
         BattleResultType _result = BattleResultType.Win;
@@ -138,7 +144,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void Start()
         {
             // 各UIをセットアップする
-            BattleUI.SetUpButtons(this);
+            BattleUI.SetUp(this);
 
             // スリープステートへ移行する
             State.Change<Sleep>();
@@ -395,7 +401,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private async UniTask ToCommandSelectionAsync(CancellationToken token)
         {
-            // 2回待たないとステート遷移直後にボタンのキャンセルが発生する？
+            // NOTE: 2回待たないとステート遷移直後にボタンのキャンセルが発生する？
             await UniTask.Yield(token);
             await UniTask.Yield(token);
             State.Change<CommandSelection>();

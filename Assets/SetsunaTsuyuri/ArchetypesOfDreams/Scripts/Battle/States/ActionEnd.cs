@@ -55,5 +55,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 State.Change<BattleEnd>();
             }
         }
+
+        /// <summary>
+        /// 行動終了ステートへ移行する
+        /// </summary>
+        public void ToActionEnd()
+        {
+            State.Change<ActionEnd>();
+        }
     }
 }

@@ -35,29 +35,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         protected string Description = string.Empty;
 
         /// <summary>
-        /// ボタンが選択されたときに実行するイベントトリガーエントリー
+        /// セットアップする
         /// </summary>
-        readonly EventTrigger.Entry _entry = new()
+        /// <param name="description">説明文</param>
+        public void SetUp(DescriptionUI description)
         {
-            eventID = EventTriggerType.Select
-        };
-
-        /// <summary>
-        /// ボタンが選択されたときに実行する関数
-        /// </summary>
-        UnityAction<BaseEventData> _onSelected = (_) => { };
-
-        /// <summary>
-        /// ボタンがクリックされたときに実行する関数
-        /// </summary>
-        UnityAction _onClicked = () => { };
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            Button.onClick.AddListener(_onClicked);
-            EventTrigger.triggers.Add(_entry);
+            AddTrriger(EventTriggerType.Select, _ => description.SetText(Description));
         }
 
         public override void Initialize()
@@ -84,50 +67,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// セットアップする
+        /// 各テキストを更新する
         /// </summary>
-        /// <param name="description">説明文</param>
-        public void SetUp(DescriptionUI description)
+        /// <param name="data">データ</param>
+        /// <param name="getNumberFunc">数を取得する関数</param>
+        protected void UpdateTexts(NameDescriptionData data, System.Func<string> getNumberFunc)
         {
-            AddTrriger(EventTriggerType.Select, _ => description.SetText(Description));
-        }
+            Description = data.Description;
 
-        /// <summary>
-        /// セットアップする
-        /// </summary>
-        /// <param name="owner">ボタンの管理者</param>
-        public void SetUp(SelectableGameUIBase owner)
-        {
-            // イベントリスナー
-            AddPressedListener(() => owner.Hide());
-
-            Hide();
-        }
-
-        /// <summary>
-        /// 更新する
-        /// </summary>
-        /// <param name="action">行動内容</param>
-        /// <param name="battle">戦闘の管理者</param>
-        public virtual void UpdateButton(ActionInfo action, Battle battle)
-        {
-            // 名前表示
+            // 名前
             if (Name)
             {
-                Name.text = action.Name;
+                Name.text = data.Name;
             }
 
-            // ボタン
-            RemovePressedListener(_onClicked);
-            _onClicked = () => battle.OnSkillSelected(action);
-            AddPressedListener(_onClicked);
-
-            // イベントトリガーエントリー
-            _entry.callback.RemoveListener(_onSelected);
-            _onSelected = (_) => battle.BattleUI.Description.SetText(action.Description);
-            _entry.callback.AddListener(_onSelected);
-
-            SetInteractable(action.CanBeExecuted(battle));
+            // 数
+            if (Number)
+            {
+                Number.text = getNumberFunc?.Invoke() ?? string.Empty;
+            }
         }
     }
 }

@@ -60,6 +60,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EnemySprite = GetComponentInChildren<EnemySprite>();
         }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            EnemySprite.Initialize();
+        }
+
         public override void OnConditionSet()
         {
             base.OnConditionSet();

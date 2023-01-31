@@ -355,7 +355,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                             await PlayBattleEffect(action, targetCombatant, token);
                         }
 
-                        await targetCombatant.ApplyActionResult(null, token);
+                        // NOTE: 応急措置
+                        Battle battle = Battle.InstanceInActiveScene;
+                        await targetCombatant.ApplyActionResult(battle, token);
 
                         // ★暫定処理
                         await UniTask.Delay(400);

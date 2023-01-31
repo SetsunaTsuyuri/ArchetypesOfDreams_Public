@@ -143,7 +143,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _enemies = enemies;
         }
 
-        public void Initialize()
+        public virtual void Initialize()
         {
             if (Combatant is not null)
             {
@@ -476,26 +476,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 対象にできるコンテナを取得する
         /// </summary>
         /// <param name="effect"></param>
-        /// <param name="allies"></param>
-        /// <param name="enemies"></param>
         /// <returns></returns>
-        public List<CombatantContainer> GetTargetables(EffectData effect, ICombatantContainerManager allies, ICombatantContainerManager enemies)
+        public List<CombatantContainer> GetTargetables(EffectData effect)
         {
             List<CombatantContainer> targetables = new();
 
             switch (effect.TargetPosition)
             {
                 case TargetPosition.Enemies:
-                    AddTargetables(targetables, effect, enemies);
+                    AddTargetables(targetables, effect, Enemies);
                     break;
 
                 case TargetPosition.Allies:
-                    AddTargetables(targetables, effect, allies);
+                    AddTargetables(targetables, effect, Allies);
                     break;
 
                 case TargetPosition.Both:
-                    AddTargetables(targetables, effect, allies);
-                    AddTargetables(targetables, effect, enemies);
+                    AddTargetables(targetables, effect, Allies);
+                    AddTargetables(targetables, effect, Enemies);
                     break;
 
                 case TargetPosition.Oneself:
@@ -503,7 +501,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     break;
 
                 case TargetPosition.Reserves:
-                    AddTargetables(targetables, effect, allies);
+                    AddTargetables(targetables, effect, Allies);
                     break;
 
                 default:
@@ -531,12 +529,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// メニューでの行動を行う
+        /// 行動する
         /// </summary>
         /// <param name="action"></param>
         /// <param name="targets"></param>
         /// <param name="onCompleted"></param>
-        public void ActInMenu(ActionInfo action, CombatantContainer[] targets, UnityAction onCompleted)
+        public void Act(ActionInfo action, CombatantContainer[] targets, UnityAction onCompleted)
         {
             CancellationToken token = this.GetCancellationTokenOnDestroy();
             Combatant.Act(action, targets, token, onCompleted).Forget();

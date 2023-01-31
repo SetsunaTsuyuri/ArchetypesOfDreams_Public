@@ -50,10 +50,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// セットアップする
         /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
+        /// <param name="battle">戦闘</param>
         public void SetUp(Battle battle)
         {
             SetUp();
+
+            // UI
+            DescriptionUI description = battle.BattleUI.Description;
+            SkillMenu skillMenu = battle.BattleUI.SkillMenu;
+            ItemMenu itemMenu = battle.BattleUI.ItemMenu; ;
 
             // イベント追加
             foreach (var button in _buttons)
@@ -62,52 +67,60 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 通常攻撃
-            NormalAttack.AddPressedListener(() =>
-            {
-                battle.Actor.Combatant.LastSelected = NormalAttack.Button;
-            });
-
-            // 浄化
-            Purification.AddPressedListener(() =>
-            {
-                battle.Actor.Combatant.LastSelected = Purification.Button;
-            });
-
-            // 交代
-            Change.AddPressedListener(() =>
-            {
-                battle.Actor.Combatant.LastSelected = Change.Button;
-            });
+            SetUpBasicSkillButton(NormalAttack, BasicSkillType.Attack, battle);
 
             // 防御
-            Defense.AddPressedListener(() =>
-            {
-                battle.Actor.Combatant.LastSelected = Defense.Button;
-            });
+            SetUpBasicSkillButton(Defense, BasicSkillType.Defense, battle);
+
+            // 浄化
+            SetUpBasicSkillButton(Purification, BasicSkillType.Purification, battle);
+
+            // 交代
+            SetUpBasicSkillButton(Change, BasicSkillType.Change, battle);
 
             // スキル
             Skills.AddPressedListener(() =>
             {
-                battle.Actor.Combatant.LastSelected = Skills.Button;
-                battle.BattleUI.Skills.BeSelected();
+                skillMenu.User = battle.Actor;
+                Stack(typeof(SkillMenu));
             });
-            Skills.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Skills));
+            Skills.AddTrriger(EventTriggerType.Select, _ => description.SetText(GameSettings.Description.Skills));
 
             // アイテム
             Items.AddPressedListener(() =>
             {
-                battle.Actor.Combatant.LastSelected = Items.Button;
-                battle.BattleUI.Items.BeSelected();
+                itemMenu.User = battle.Actor;
+                Stack(typeof(ItemMenu));
             });
-            Items.AddTrriger(EventTriggerType.Select, _ => battle.BattleUI.Description.SetText(GameSettings.Description.Items));
+            Items.AddTrriger(EventTriggerType.Select, _ => description.SetText(GameSettings.Description.Items));
 
             Hide();
         }
 
         /// <summary>
+        /// 基本スキルボタンをセットアップする
+        /// </summary>
+        /// <param name="button"></param>
+        /// <param name="type"></param>
+        /// <param name="battle"></param>
+        private void SetUpBasicSkillButton(SkillButton button, BasicSkillType type, Battle battle)
+        {
+            button.SetUp(battle.BattleUI.Description);
+            button.AddPressedListener(() =>
+            {
+                CombatantContainer user = battle.Actor;
+                int id = (int)type;
+
+                battle.BattleUI.TargetSelection.OnSkillTargetSelection(user, id);
+                Stack(typeof(TargetSelectionUI));
+                Hide();
+            });
+        }
+
+        /// <summary>
         /// 各ボタンを更新する
         /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
+        /// <param name="battle">戦闘の</param>
         public void UpdateButtons(Battle battle)
         {
             // 行動者
@@ -118,8 +131,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 int id = (int)BasicSkillType.Attack;
                 bool canBeUsed = actor.CanUseSkill(id);
-                //NormalAttack.UpdateButton(id, canBeUsed);
-                NormalAttack.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
+                NormalAttack.UpdateButton(id, canBeUsed);
             }
 
             // スキルボタン
@@ -131,8 +143,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 int id = (int)BasicSkillType.Purification;
                 bool canBeUsed = actor.CanUseSkill(id);
-                Purification.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
-                //Purification.UpdateButton(id, canBeUsed);
+                Purification.UpdateButton(id, canBeUsed);
             }
             else
             {
@@ -145,8 +156,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 int id = (int)BasicSkillType.Change;
                 bool canBeUsed = actor.CanUseSkill(id);
-                Change.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
-                //Change.UpdateButton(id, canBeUsed);
+                Change.UpdateButton(id, canBeUsed);
             }
             else
             {
@@ -157,8 +167,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 int id = (int)BasicSkillType.Defense;
                 bool canBeUsed = actor.CanUseSkill(id);
-                Defense.UpdateButton(ActionInfo.CreateSkillAction(id), battle);
-                //Defense.UpdateButton(id, canBeUsed);
+                Defense.UpdateButton(id, canBeUsed);
             }
 
             // アイテムボタン
@@ -166,33 +175,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // ナビゲーション更新
             UpdateButtonNavigations();
-        }
-
-        /// <summary>
-        /// 引数で渡されたものが含まれていればそれを優先して選択する
-        /// </summary>
-        /// <param name="lastSelected">選択可能なもの</param>
-        public void BeSelected(Selectable selectable)
-        {
-            Show();
-
-            if (selectable &&
-                selectable.isActiveAndEnabled &&
-                selectable.interactable)
-            {
-                selectable.Select();
-            }
-            else
-            {
-                foreach (var button in _buttons)
-                {
-                    if (button.Button.interactable)
-                    {
-                        button.Button.Select();
-                        break;
-                    }
-                }
-            }
         }
     }
 }

@@ -62,11 +62,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 最後に選択したコマンド
-        /// </summary>
-        public Selectable LastSelected { get; set; } = null;
-
-        /// <summary>
         /// 行動の結果
         /// </summary>
         public ActionResult Result { get; set; } = new ActionResult();
@@ -78,7 +73,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             InitializeStatus();
 
             WaitTime = 0;
-            LastSelected = null;
         }
 
         /// <summary>

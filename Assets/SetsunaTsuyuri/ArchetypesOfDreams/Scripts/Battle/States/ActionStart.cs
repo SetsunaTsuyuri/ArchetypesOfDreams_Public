@@ -30,7 +30,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (context.Actor.ContainsPlayerControlled())
                 {
                     // 戦闘コマンド設定
-                    context.BattleUI.UpdateButtons(context);
+                    context.BattleUI.UpdateUI(context);
 
                     // コマンド選択
                     context.State.Change<CommandSelection>();

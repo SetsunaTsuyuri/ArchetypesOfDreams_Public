@@ -153,8 +153,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SetUp()
         {
-            _ui.SetUp(_player, _allies, _battle.Enemies);
+            _ui.SetUp(_player, _allies, _battle);
+
             _allies.SetUp(_battle.Enemies);
+            _battle.Enemies.SetUp(_allies);
         }
 
         private void Update()

@@ -29,7 +29,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.Awake();
 
             PlayerMenu = GetComponentInChildren<PlayerMenu>();
-            Description= GetComponentInChildren<DescriptionUI>();
+            Description = GetComponentInChildren<DescriptionUI>();
         }
 
         /// <summary>
@@ -37,20 +37,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="player">プレイヤー</param>
         /// <param name="allies">味方</param>
-        /// <param name="enemies">敵</param>
-        public void SetUp(Player player, AllyContainersManager allies, EnemyContainersManager enemies)
+        /// <param name="battle">戦闘</param>
+        public void SetUp(Player player, AllyContainersManager allies, Battle battle)
         {
             // 対象選択UI
             TargetSelectionUI targetSelection = GetComponentInChildren<TargetSelectionUI>();
-            targetSelection.SetUp(Description, allies, enemies);
+            targetSelection.SetUp(Description, battle);
 
             // スキルメニュー
             SkillMenu skillMenu = GetComponentInChildren<SkillMenu>();
-            skillMenu.SetUp(Description, targetSelection, allies, enemies);
+            skillMenu.SetUp(Description, targetSelection);
 
             // アイテムメニュー
             ItemMenu itemMenu = GetComponentInChildren<ItemMenu>();
-            itemMenu.SetUp(Description, targetSelection, allies, enemies);
+            itemMenu.SetUp(Description, targetSelection);
 
             // プレイヤーメニュー
             PlayerMenu.SetUp(Description, skillMenu, itemMenu, allies);

@@ -45,7 +45,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 // ID
                 int id = Random.Range(map.MinEnemyId, map.MaxEnemyId + 1);
-                Debug.Log($"Selected enemy id is {id} min {map.MinEnemyId} max {map.MaxEnemyId}");
                 Members[i].CreateNightmare(id, level);
             }
         }

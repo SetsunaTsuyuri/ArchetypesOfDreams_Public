@@ -15,33 +15,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public CombatantContainer User { get; set; } = null;
 
         /// <summary>
-        /// 味方
-        /// </summary>
-        protected AllyContainersManager Allies = null;
-
-        /// <summary>
-        /// 敵
-        /// </summary>
-        protected EnemyContainersManager Enemies = null;
-
-        /// <summary>
         /// セットアップする
         /// </summary>
         /// <param name="description">説明文UI</param>
         /// <param name="targetSelection">対象選択UI</param>
-        /// <param name="allies">味方</param>
-        /// <param name="enemies">敵</param>
-        public virtual void SetUp(
-            DescriptionUI description,
-            TargetSelectionUI targetSelection,
-            AllyContainersManager allies,
-            EnemyContainersManager enemies)
+        public void SetUp(DescriptionUI description, TargetSelectionUI targetSelection)
         {
-            base.SetUp();
-
-            User = allies.MenuUser;
-            Allies = allies;
-            Enemies = enemies;
+            SetUp();
 
             foreach (var button in _buttons)
             {
@@ -50,6 +30,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 {
                     OnActionTargetSelection(targetSelection, button.Id);
                     Stack(typeof(TargetSelectionUI));
+                    Hide();
                 });
             }
 
@@ -80,7 +61,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ボタンを更新する
         /// </summary>
-        public void UpdateButtons()
+        private void UpdateButtons()
         {
             // 初期化
             foreach (var button in _buttons)

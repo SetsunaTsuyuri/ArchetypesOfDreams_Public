@@ -71,7 +71,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // 敵スプライトの色変化を取り除く
                 foreach (var enemy in context.Enemies.Members)
                 {
-                    enemy.EnemySprite.KillTargetedColorTween();
+                    enemy.EnemySprite.KillTargetedTween();
                 }
 
                 // ゲームイベント呼び出し
