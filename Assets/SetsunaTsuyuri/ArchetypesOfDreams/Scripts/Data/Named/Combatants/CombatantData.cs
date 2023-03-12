@@ -12,7 +12,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 感情属性
         /// </summary>
-        public Attribute.Emotion Emotion = Attribute.Emotion.None;
+        public GameAttribute.Emotion Emotion = GameAttribute.Emotion.None;
 
         /// <summary>
         /// 最大HP
@@ -60,22 +60,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public SkillAcquisitionData[] Skills = { };
 
         /// <summary>
-        /// スプライト
+        /// スプライト名
         /// </summary>
-        [field: SerializeField]
-        public Sprite Sprite { get; private set; } = null;
-
-        /// <summary>
-        /// 顔スプライト
-        /// </summary>
-        [field: SerializeField]
-        public Sprite FaceSprite { get; private set; } = null;
+        public string SpriteName = string.Empty;
 
         /// <summary>
         /// スプライトの拡大倍率
         /// </summary>
-        [field: SerializeField]
-        public float SpriteScale { get; private set; } = 1.0f;
+        public float SpriteScale = 1.0f;
 
         /// <summary>
         /// 敵UI表示位置オフセット
@@ -84,24 +76,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public Vector2 EnemyUIPositionOffset { get; private set; } = Vector2.zero;
 
         /// <summary>
-        /// 通常攻撃の属性
-        /// </summary>
-        [field: SerializeField]
-        public Attribute.Skill NormalAttack { get; private set; }
-
-        /// <summary>
         /// 敵として倒したときに得られる経験値
         /// </summary>
         public int RewardExperience = 100;
-
-        /// <summary>
-        /// 顔スプライトまたはスプライトを取得する
-        /// </summary>
-        /// <returns></returns>
-        public Sprite GetFaceSpriteOrSprite()
-        {
-            Sprite sprite = FaceSprite ? FaceSprite : Sprite;
-            return sprite;
-        }
     }
 }

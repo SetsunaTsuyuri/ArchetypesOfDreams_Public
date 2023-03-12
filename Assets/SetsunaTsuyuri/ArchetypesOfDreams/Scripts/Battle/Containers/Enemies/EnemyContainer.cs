@@ -92,10 +92,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 浄化されたときの処理
         /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask OnPurified(Battle battle, CancellationToken token)
+        public async UniTask OnPurified(CancellationToken token)
         {
             // 敵スプライトの浄化時の処理
             EnemySprite.OnPurified();
@@ -106,11 +105,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 onPurified.Invoke(this);
             }
 
-            // 浄化されたときの処理
-            battle.OnEnemyKnockedOutOrPurified(this);
-
-            // 仲間に加わる
-            await battle.Allies.AddPurifiedEnemy(this, battle.BattleUI.AlliesUI.ReleaseButtons, token);
+            if (Battle.InstanceInActiveScene)
+            {
+                Battle battle = Battle.InstanceInActiveScene;
+                battle.OnEnemyKnockedOutOrPurified(this);
+                await battle.Allies.AddPurifiedEnemy(this, battle.BattleUI.AlliesUI.ReleaseButtons, token);
+            }
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             onKnockedOut.Invoke(this);
 
             // 効果音
-            AudioManager.PlaySE("敵消滅");
+            AudioManager.PlaySE(SEId.Collapse);
         }
 
         /// <summary>
@@ -134,18 +134,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void CreateNightmare(int id, int level)
         {
             NightmareData nightmareData = MasterData.GetNightmareData(id);
-            if (nightmareData is not null)
+            if (nightmareData is null)
             {
-                Nightmare nightmare = new()
-                {
-                    DataId = id,
-                    Level = level
-                };
-
-                nightmare.Initialize();
-
-                Combatant = nightmare;
+                return;
             }
+
+            Nightmare nightmare = new()
+            {
+                DataId = id,
+                Level = level
+            };
+
+            Combatant = nightmare;
+
+            nightmare.Initialize();
+            EnemySprite.UpdateSprite(Combatant);
         }
 
         /// <summary>
@@ -155,11 +158,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="level">レベル</param>
         public void CreateEnemyNightmare(EnemyData enemyData, int level)
         {
-            // IDを元にデータを取得する
             NightmareData nightmareData = MasterData.GetNightmareData(enemyData.Id);
+            if (nightmareData is null)
+            {
+                return;
+            }
 
-            // ナイトメアを作る
-            Nightmare nightmare = new Nightmare()
+            Nightmare nightmare = new()
             {
                 DataId = nightmareData.Id,
                 Level = level,
@@ -167,11 +172,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 HasBossResistance = enemyData.HasBossResistance
             };
 
-            // ナイトメアを初期化する
-            nightmare.Initialize();
-
-            // コンテナに作ったナイトメアを格納する
             Combatant = nightmare;
+
+            nightmare.Initialize();
+            EnemySprite.UpdateSprite(Combatant);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Attribute
+﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.GameAttribute
 {
     /// <summary>
     /// シナリオの属性

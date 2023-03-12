@@ -28,7 +28,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         protected override void UpdateValue()
         {
-            if (target.ContainsCombatant())
+            if (target.ContainsCombatant)
             {
                 (int, int) result = GetValues(target.Combatant);
                 value = result.Item1;

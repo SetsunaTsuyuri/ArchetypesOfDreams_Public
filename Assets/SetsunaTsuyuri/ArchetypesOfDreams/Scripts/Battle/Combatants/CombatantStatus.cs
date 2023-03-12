@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    /// <summary>
-    /// 戦闘者のステータス
-    /// </summary>
     public partial class Combatant
     {
         /// <summary>
@@ -46,9 +42,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int CurrentHP
         {
             get => _currentHP;
-            protected set
+            set
             {
                 _currentHP = Mathf.Clamp(value, 0, MaxHP);
+                OnCurrentHPSet();
             }
         }
 
@@ -63,10 +60,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxHP
         {
             get => _maxHP;
-            protected set
-            {
-                _maxHP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxHP);
-            }
+            set => _maxHP = Mathf.Clamp(value, 1, GameSettings.Combatants.MaxHP);
         }
 
         /// <summary>
@@ -80,10 +74,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int CurrentDP
         {
             get => _currentDP;
-            protected set
-            {
-                _currentDP = Mathf.Clamp(value, 0, MaxDP);
-            }
+            set => _currentDP = Mathf.Clamp(value, 0, MaxDP);
         }
 
         /// <summary>
@@ -91,13 +82,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         int _maxDP = 0;
 
+        /// <summary>
+        /// 最大DP
+        /// </summary>
         public int MaxDP
         {
             get => _maxDP;
-            protected set
-            {
-                _maxDP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxDP);
-            }
+            set => _maxDP = Mathf.Clamp(value, 1, GameSettings.Combatants.MaxDP);
         }
 
         /// <summary>
@@ -111,9 +102,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int CurrentGP
         {
             get => _currentGP;
-            protected set
+            set
             {
                 _currentGP = Mathf.Clamp(value, 0, MaxGP);
+                OnCurrentGPSet();
             }
         }
 
@@ -128,10 +120,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxGP
         {
             get => _maxGP;
-            protected set
-            {
-                _maxGP = Mathf.Clamp(value, 0, GameSettings.Combatants.MaxGP);
-            }
+            set => _maxGP = Mathf.Clamp(value, 1, GameSettings.Combatants.MaxGP);
         }
 
         /// <summary>
@@ -152,12 +141,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 感情属性
         /// </summary>
-        public Attribute.Emotion Emotion { get; protected set; } = Attribute.Emotion.None;
-
-        /// <summary>
-        /// クラッシュ状態から復帰するまでの残りターン数
-        /// </summary>
-        public int RemainingCrushTurns { get; protected set; } = 0;
+        public GameAttribute.Emotion Emotion { get; protected set; } = GameAttribute.Emotion.None;
 
         /// <summary>
         /// 通常攻撃スキル
@@ -210,13 +194,58 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int GPChangeValue { get; protected set; } = 0;
 
         /// <summary>
+        /// 待機時間
+        /// </summary>
+        public int WaitTime { get; set; } = 0;
+
+        /// <summary>
+        /// 待機時間の基本値
+        /// </summary>
+        /// <returns></returns>
+        public int BasicWaitTime => GameSettings.Combatants.MaxWaitTime / Speed;
+
+        /// <summary>
+        /// HPが設定されたときの処理 
+        /// </summary>
+        public void OnCurrentHPSet()
+        {
+            EffectData.StatusEffect effect = GameSettings.Combatants.EffectHP0;
+            
+            if (CurrentHP == 0)
+            {
+                AddStatusEffect(effect);
+            }
+            else if (CurrentHP > 0)
+            {
+                RemoveStatusEffect(effect.Id);
+            }
+        }
+
+        /// <summary>
+        /// GPが設定されたときの処理
+        /// </summary>
+        public void OnCurrentGPSet()
+        {
+            EffectData.StatusEffect effect = GameSettings.Combatants.EffectGP0;
+
+            if (CurrentGP == 0)
+            {
+                AddStatusEffect(effect);
+            }
+            else if (CurrentGP > 0)
+            {
+                RemoveStatusEffect(effect.Id);
+            }
+        }
+
+        /// <summary>
         /// ステータスを初期化する
         /// </summary>
         public void InitializeStatus()
         {
             RefreshStatus();
 
-            Condition = Attribute.Condition.Normal;
+            Condition = GameAttribute.Condition.Normal;
             RecoverHP();
             RecoverDP();
             RecoverGP();
@@ -236,6 +265,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             SetStatusBasedOnData();
             ApplyStatusCorrectionBasedOnLevel();
+            ApplyStatusCorrectionBasedOnParty();
             ApplyStatusEffects();
 
             SetSkillsBasedOnIdList();
@@ -282,7 +312,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// レベルに応じたステータス補正をかける
         /// </summary>
-        protected virtual void ApplyStatusCorrectionBasedOnLevel()
+        private void ApplyStatusCorrectionBasedOnLevel()
         {
             // 倍率
             float multiplier = 1.0f + ((Level - 1) * GameSettings.Combatants.AmountOfIncreaseInStatusPerLevel);
@@ -295,6 +325,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 技
             Technique = Mathf.FloorToInt(Data.Technique * multiplier);
+        }
+
+        /// <summary>
+        /// 敵味方の違いによるステータス補正をかける
+        /// </summary>
+        private void ApplyStatusCorrectionBasedOnParty()
+        {
+            if (Container is EnemyContainer)
+            {
+                ApplyEnemyStatusCorrection();
+            }
+        }
+
+        /// <summary>
+        /// 敵ステータス補正をかける
+        /// </summary>
+        private void ApplyEnemyStatusCorrection()
+        {
+            MaxHP = Mathf.FloorToInt(MaxHP * GameSettings.Enemies.HPScale);
+            MaxGP += GameSettings.Enemies.GPScale;
         }
 
         /// <summary>
@@ -342,7 +392,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void SetSkillsBasedOnIdList()
         {
             // 通常攻撃
-            NormalAttack = new(MasterData.GetSkillData(BasicSkillType.Attack), Data.NormalAttack);
+            NormalAttack = new(MasterData.GetSkillData(BasicSkillId.Attack));
 
             // スキルリスト
             List<ActionInfo> skillList = new();
@@ -352,7 +402,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (skillAcquisition.AcquisitionLevel >= Level)
                 {
                     SkillData skillData = MasterData.GetSkillData(skillAcquisition.SkillId);
-                    ActionInfo skill = new(skillData, Attribute.Skill.PowerSkill);
+                    ActionInfo skill = new(skillData);
                     skillList.Add(skill);
                 }
             }
@@ -368,7 +418,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public IEnumerable<int> GetAcquisitionSkillIds()
         {
             return Data.Skills
-                .Where(x => x.AcquisitionLevel >= Level)
                 .Select(x => x.SkillId);
         }
 
@@ -394,98 +443,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void RecoverGP()
         {
             CurrentGP = MaxGP;
-        }
-
-        /// <summary>
-        /// 経験値が設定されたときの処理
-        /// </summary>
-        private void OnExperienceSet()
-        {
-            int previousLevel = Level;
-
-            Level = ExperienceToLevel();
-
-            if (Level != previousLevel)
-            {
-                RefreshStatus();
-            }
-        }
-
-        /// <summary>
-        /// 経験値をレベルに変換する
-        /// </summary>
-        /// <returns></returns>
-        private int ExperienceToLevel()
-        {
-            int level = GameSettings.Combatants.MinLevel;
-            while (Experience >= ToMinExperience(level + 1))
-            {
-                level++;
-            }
-
-            return level;
-        }
-
-        /// <summary>
-        /// そのレベルに至るために必要な最低経験値を求める
-        /// </summary>
-        /// <param name="level">レベル</param>
-        /// <returns></returns>
-        public int ToMinExperience(int level)
-        {
-            // 戦闘者の設定
-            CombatantsSettings combatants = GameSettings.Combatants;
-
-            // 最小レベル
-            int minLevel = combatants.MinLevel;
-
-            // 基本値
-            int baseValue = combatants.ExperienceRequiredToLevelUp;
-
-            // 増加倍率
-            float rate = combatants.PercentageIncreaceInExperienceRequiredToLevelUp;
-
-            // 合計値
-            int sum = 0;
-
-            for (int i = minLevel; i < level; i++)
-            {
-                // 実際の倍率
-                float levelRate = rate * (i - 1) + 1.0f;
-
-                // 経験値を合計値に加える
-                int experience = Mathf.FloorToInt(baseValue * levelRate);
-                sum += experience;
-            }
-
-            return sum;
-        }
-
-        /// <summary>
-        /// 次のレベルに到達するまでに必要な経験値を取得する
-        /// </summary>
-        /// <returns></returns>
-        public int GetNextLevelExperience()
-        {
-            // 次のレベルまでに必要な最低経験値
-            int min = ToMinExperience(Level + 1);
-
-            // 現在の経験値から最低経験値を引く
-            int next = Experience - min;
-            return next;
-        }
-
-        /// <summary>
-        /// 敵として倒された場合に得られる経験値を取得する
-        /// </summary>
-        /// <returns></returns>
-        public int GetRewardExperience()
-        {
-            int experience = Data.RewardExperience;
-            float increace = GameSettings.Combatants.PercentageIncreaceInExperienceRequiredToLevelUp;
-            float rate = (Level - 1) * increace + 1.0f;
-            int result = Mathf.FloorToInt(experience * rate);
-            return result;
         }
     }
 }

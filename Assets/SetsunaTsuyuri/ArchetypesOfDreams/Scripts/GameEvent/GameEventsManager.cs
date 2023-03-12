@@ -73,7 +73,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="scenarioEvent"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async UniTask ResolveScenarioEvent(ScenarioEvent scenarioEvent, CancellationToken token)
+        public static async UniTask ResolveScenarioEvent(IdScenarioEvent scenarioEvent, CancellationToken token)
         {
             if (!Scenario)
             {

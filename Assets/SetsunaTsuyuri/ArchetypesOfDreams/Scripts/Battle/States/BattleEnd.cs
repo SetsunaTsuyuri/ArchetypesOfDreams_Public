@@ -48,6 +48,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // フェードアウト
             await FadeManager.FadeOut(token);
 
+            Enemies.Initialize();
+
+            // アセット解放
+            await Resources.UnloadUnusedAssets();
+            token.ThrowIfCancellationRequested();
+
             // UIを隠す
             BattleUI.Hide();
 

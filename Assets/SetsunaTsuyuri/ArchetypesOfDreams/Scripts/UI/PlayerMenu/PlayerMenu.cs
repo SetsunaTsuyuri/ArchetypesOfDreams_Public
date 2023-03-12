@@ -24,6 +24,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         GameButton _item = null;
 
         /// <summary>
+        /// ステータス
+        /// </summary>
+        [SerializeField]
+        GameButton _status = null;
+
+        /// <summary>
         /// 編成
         /// </summary>
         [SerializeField]
@@ -34,6 +40,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [SerializeField]
         SceneChangeButton _return = null;
+
+        /// <summary>
+        /// 設定
+        /// </summary>
+        [SerializeField]
+        GameButton _options = null;
 
         /// <summary>
         /// 説明文
@@ -55,7 +67,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 味方
         /// </summary>
-        AllyContainersManager _allies = null;
+        AlliesParty _allies = null;
 
         /// <summary>
         /// セットアップする
@@ -63,8 +75,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="description">説明文UI</param>
         /// <param name="skillMenu">スキルメニュー</param>
         /// <param name="itemMenu">アイテムメニュー</param>
+        /// <param name="targetSelection">対象選択UI</param>
         /// <param name="allies">味方</param>
-        public void SetUp(DescriptionUI description, SkillMenu skillMenu, ItemMenu itemMenu, AllyContainersManager allies)
+        public void SetUp(DescriptionUI description, SkillMenu skillMenu, ItemMenu itemMenu, TargetSelectionUI targetSelection,  AlliesParty allies)
         {
             SetUp();
 
@@ -90,9 +103,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Stack(typeof(ItemMenu));
             });
 
+            // ステータスメニュー
+            StatusMenu statusMenu = GetComponentInChildren<StatusMenu>();
+            statusMenu.SetUp();
+
+            _status.AddTrriger(EventTriggerType.Select, _ => DescriptionUI.SetText("ステータスを確認します"));
+            _status.AddPressedListener(() =>
+            {
+                statusMenu.UpdateTargetables(_allies);
+                Stack(typeof(StatusMenu));
+            });
+
             // 編成
-            _formation.AddTrriger(EventTriggerType.Select, _ => DescriptionUI.SetText("パーティ編成を行います(準備中)"));
-            _formation.IsSeald = true;
+            _formation.AddTrriger(EventTriggerType.Select, _ => DescriptionUI.SetText("パーティ編成を行います"));
+            _formation.AddPressedListener(() =>
+            {
+                targetSelection.OnFormationChangeTargetSelection();
+                Stack(typeof(TargetSelectionUI));
+            });
 
             // 帰還
             if (SceneManager.GetActiveScene().buildIndex != (int)SceneType.MyRoom)
@@ -103,6 +131,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 _return.Hide();
             }
+
+            // オプションメニュー
+            _options.AddTrriger(EventTriggerType.Select, _ => DescriptionUI.SetText("ゲームの設定を変更します"));
+            _options.AddPressedListener(() => Stack(typeof(OptionsMenu)));
 
             UpdateButtons();
             Hide();
@@ -141,11 +173,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void UpdateButtons()
         {
             // スキル
-            _skill.IsSeald = !_allies.GetNonEmptyContainers()
-                .Any(x => x.HasAnySkill());
+            _skill.IsSeald = !_allies.HasAnySkill;
 
             // アイテム
             _item.IsSeald = !ItemUtility.HasAnyItem();
+
+            // 編成
+            _formation.IsSeald = _allies.CountChangeables() < 2;
 
             UpdateButtonNavigations();
         }

@@ -28,6 +28,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         DescriptionUI _description = null;
 
         /// <summary>
+        /// 味方
+        /// </summary>
+        AlliesParty _allies = null;
+
+        /// <summary>
         /// 戦闘
         /// </summary>
         Battle _battle = null;
@@ -40,7 +45,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 対象の変更が可能である
         /// </summary>
-        bool _canChangeTarget = false;
+        bool _canChangeTargetIndex = false;
 
         /// <summary>
         /// ボタンが押されたときのイベント
@@ -48,38 +53,70 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         UnityAction _buttonPressed = null;
 
         /// <summary>
+        /// スキル・アイテムの使用者
+        /// </summary>
+        CombatantContainer _user = null;
+
+        /// <summary>
         /// 対象リスト
         /// </summary>
         List<CombatantContainer> _targetables = null;
 
         /// <summary>
+        /// 交代の対象A
+        /// </summary>
+        CombatantContainer _positionSwappingTargetA = null;
+
+        /// <summary>
+        /// 交代の対象B
+        /// </summary>
+        CombatantContainer _postionSwappingTargetB = null;
+
+        /// <summary>
+        /// 味方の対象選択開始時のイベント
+        /// </summary>
+        public event UnityAction<EffectData, List<CombatantContainer>> AllyTargetSelectionStart = null;
+
+        /// <summary>
+        /// 味方の対象選択終了時のイベント
+        /// </summary>
+        public event UnityAction AllyTargetSelectionEnd = null;
+
+        /// <summary>
         /// セットアップする
         /// </summary>
         /// <param name="description"></param>
-        public void SetUp(DescriptionUI description, Battle battle)
+        /// <param name="allies"></param>
+        /// <param name="battle"></param>
+        public void SetUp(DescriptionUI description, AlliesParty allies, Battle battle)
         {
             SetUp();
 
             _description = description;
-
+            _allies = allies;
             _battle = battle;
 
             _button = _buttons[0];
             _button.AddPressedListener(() => _buttonPressed?.Invoke());
             _button.AddTrriger(EventTriggerType.Move, (e) =>
             {
-                if (_canChangeTarget)
+                if (_canChangeTargetIndex)
                 {
-                    OnMove(e);
+                    MoveDirection direction = _button.GetMoveDirection(e);
+                    ChangeTargetIndex(direction);
                 }
             });
         }
 
-        public override void BeCanceled()
+        public override void BeDeselected()
         {
-            SetTargetFlagAll(false);
+            base.BeDeselected();
 
-            base.BeCanceled();
+            SetTargetFlagAll(false);
+            _positionSwappingTargetA = null;
+            _postionSwappingTargetB = null;
+
+            AllyTargetSelectionEnd?.Invoke();
         }
 
         /// <summary>
@@ -105,26 +142,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 対象選択の処理
+        /// 行動対象選択の処理
         /// </summary>
         /// <param name="user"></param>
         /// <param name="action"></param>
         private void OnActionTargetSelection(CombatantContainer user, ActionInfo action)
         {
+            _user = user;
             UpdateTargetSelectionType(user, action.Effect);
-            UnityAction onCompleted = GetOnActionCompleted();
-            UpdateButtonPressed(user, action, onCompleted);
-        }
+            UpdateButtonPressedOnActionTargetSelection(user, action);
 
-        /// <summary>
-        /// 行動完了後のコールバックを取得する
-        /// </summary>
-        /// <param name="battle"></param>
-        /// <returns></returns>
-        private UnityAction GetOnActionCompleted()
-        {
-            UnityAction onCompleted = _battle && _battle.IsRunning ? _battle.ToActionEnd : BeCanceled;
-            return onCompleted;
+            _user.Combatant.CreateActionResultsOnTargetSelection(action, _targetables);
+            AllyTargetSelectionStart?.Invoke(action.Effect, _targetables);
         }
 
         /// <summary>
@@ -132,7 +161,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="user"></param>
         /// <param name="action"></param>
-        private void UpdateButtonPressed(CombatantContainer user, ActionInfo action, UnityAction onCompleted)
+        private void UpdateButtonPressedOnActionTargetSelection(CombatantContainer user, ActionInfo action)
         {
             _buttonPressed = () =>
             {
@@ -146,7 +175,59 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 SetTargetFlagAll(false);
 
                 // 行動実行
-                user.Act(action, targets, onCompleted);
+                if (Battle.IsRunning)
+                {
+                    BeDeselectedAndClearHistory();
+                    user.Act(action, targets, () => _battle.OnActionEnd(action));
+                }
+                else
+                {
+                    user.Act(action, targets, BeCanceled);
+                }
+            };
+        }
+
+        /// <summary>
+        /// 編成変更対象選択の処理
+        /// </summary>
+        public void OnFormationChangeTargetSelection()
+        {
+            //主人公以外は全て選択できる
+            _targetables = _allies.GetChangeables()
+                .ToList();
+
+            UpdateButtonPressedOnFormationChange();
+
+            _canChangeTargetIndex = true;
+            _targetIndex = 0;
+            SetTargetFlag(true);
+        }
+
+        /// <summary>
+        /// ボタンが押されたときのイベントを更新する
+        /// </summary>
+        private void UpdateButtonPressedOnFormationChange()
+        {
+            _buttonPressed = () =>
+            {
+                CombatantContainer target = _targetables.FirstOrDefault(x => x.IsTargeted);
+                if (_positionSwappingTargetA == null)
+                {
+                    _positionSwappingTargetA = target;
+                }
+                else if (_positionSwappingTargetA == target)
+                {
+                    return;
+                }
+                else if (_postionSwappingTargetB == null)
+                {
+                    _postionSwappingTargetB = target;
+
+                    _positionSwappingTargetA.Swap(_postionSwappingTargetB);
+
+                    _positionSwappingTargetA = null;
+                    _postionSwappingTargetB = null;
+                }
             };
         }
 
@@ -170,15 +251,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="effect">効果データ</param>
         private void UpdateTargetSelectionType(CombatantContainer user, EffectData effect)
         {
+            _canChangeTargetIndex = false;
             _targetables = user.GetTargetables(effect);
             _selectionType = effect.TargetSelection;
 
             // 対象が複数存在し、単体を選択する行動に限り対象を変更できる
-            _canChangeTarget = _selectionType == TargetSelectionType.Single;
-            if (_canChangeTarget)
+            if (_selectionType == TargetSelectionType.Single)
             {
                 _targetIndex = 0;
                 SetTargetFlag(true);
+
+                if (_targetables.Count > 1)
+                {
+                    _canChangeTargetIndex = true;
+                }
             }
             else
             {
@@ -190,12 +276,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ボタン移動時のイベント
         /// </summary>
         /// <param name="baseEventData"></param>
-        private void OnMove(BaseEventData baseEventData)
+        private void ChangeTargetIndex(MoveDirection direction)
         {
+            AudioManager.PlaySE(SEId.FocusMove);
+
             SetTargetFlag(false);
 
-            AxisEventData axisEventData = baseEventData as AxisEventData;
-            switch (axisEventData.moveDir)
+            switch (direction)
             {
                 case MoveDirection.Left:
                 case MoveDirection.Up:
@@ -222,6 +309,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             _targetables[_targetIndex].IsTargeted = value;
 
+            // TODO: イベントにする
             if (value)
             {
                 _description.SetText($"【対象選択】 {_targetables[_targetIndex].Combatant.Data.Name}");

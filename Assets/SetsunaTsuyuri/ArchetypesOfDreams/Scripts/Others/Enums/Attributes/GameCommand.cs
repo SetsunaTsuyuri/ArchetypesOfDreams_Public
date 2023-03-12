@@ -1,4 +1,4 @@
-﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.Attribute
+﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.GameAttribute
 {
     /// <summary>
     /// ゲームコマンドの属性

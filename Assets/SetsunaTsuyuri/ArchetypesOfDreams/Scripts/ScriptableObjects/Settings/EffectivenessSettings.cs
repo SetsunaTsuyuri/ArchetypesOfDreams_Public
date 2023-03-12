@@ -15,6 +15,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 有効性倍率
         /// </summary>
         [field: SerializeField]
-        public KeysAndValues<Attribute.Effectiveness, float> Rates { get; private set; }
+        public KeysAndValues<GameAttribute.Effectiveness, float> Rates { get; private set; }
     }
 }

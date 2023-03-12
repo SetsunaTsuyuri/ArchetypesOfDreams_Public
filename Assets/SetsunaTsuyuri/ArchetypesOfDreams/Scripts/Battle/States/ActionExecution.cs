@@ -1,18 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     public partial class Battle
     {
-        /// <summary>
-        /// 行動の対象
-        /// </summary>
-        public CombatantContainer[] Targets { get; set; }
-
         /// <summary>
         /// 行動実行
         /// </summary>
@@ -20,45 +13,75 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             public override void Enter(Battle context)
             {
-                // 行動の対象を抽出する
-                context.Targets = context.Targetables
-                    .Where(c => c.IsTargeted)
-                    .ToArray();
+                // 行動者が操作可能な場合
+                if (context.Actor.ContainsPlayerControlled())
+                {
+                    // 戦闘コマンド設定
+                    context.BattleUI.UpdateUI(context);
 
-                // 行動させる
-                CancellationToken token = context.GetCancellationTokenOnDestroy();
-                context.ExecuteCombatantActionAsync(token).Forget();
+                    // コマンド選択
+                    context.State.Change<CommandSelection>();
+                    return;
+                }
+
+                ActionInfo action = null;
+                if (context.Actor.ContainsActionable())
+                {
+                    // AIが使用するスキルを決定する
+                    action = context.Actor.Combatant.DecideAction();
+                }
+                
+                if (action is null)
+                {
+                    // 行動終了
+                    context.State.Change<TurnEnd>();
+                    return;
+                }
+
+                // AIが対象を決定する
+                CombatantContainer[] targetables = context.Actor.GetTargetables(action.Effect).ToArray();
+                CombatantContainer[] targets = GetTargets(context.Actor, targetables, action.Effect);
+
+                // 行動する
+                context.Actor.Act(action, targets, () => context.OnActionEnd(action));
             }
 
-            public override void Exit(Battle context)
+            /// <summary>
+            /// 対象を取得する
+            /// </summary>
+            /// <param name="actor"></param>
+            /// <param name="targetables"></param>
+            /// <param name="effect"></param>
+            private CombatantContainer[] GetTargets(CombatantContainer actor, CombatantContainer[] targetables, EffectData effect)
             {
-                // 対象フラグをリセットする
-                context.ResetTargetFlags();
+                if (!targetables.Any()
+                    || effect.TargetSelection != TargetSelectionType.Single)
+                {
+                    return targetables;
+                }
+                else
+                {
+                    int index = actor.Combatant.DecideTargetIndex(targetables);
+                    CombatantContainer[] targets = { targetables[index] };
+
+                    return targets;
+                }
             }
         }
 
         /// <summary>
-        /// 非同期的に戦闘者を行動させる
+        /// 行動実行後の処理
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private async UniTask ExecuteCombatantActionAsync(CancellationToken token)
+        public void OnActionEnd(ActionInfo action)
         {
-            // 行動を実行させる
-            await Actor.Combatant.Act(this, token);
-
-            // 行動終了
-            State.Change<ActionEnd>();
-        }
-
-        /// <summary>
-        /// 対象フラグをリセットする
-        /// </summary>
-        public void ResetTargetFlags()
-        {
-            foreach (var target in Targets)
+            if (action.Effect.CanActAgain)
             {
-                target.IsTargeted = false;
+                UpdateOrderOfActions();
+                State.Change<ActionExecution>();
+            }
+            else
+            {
+                State.Change<TurnEnd>();
             }
         }
     }

@@ -1,4 +1,4 @@
-namespace SetsunaTsuyuri.ArchetypesOfDreams.Attribute
+﻿namespace SetsunaTsuyuri.ArchetypesOfDreams.GameAttribute
 {
     /// <summary>
     /// 健康状態
@@ -11,13 +11,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams.Attribute
         Normal = 0,
 
         /// <summary>
-        /// クラッシュ
-        /// </summary>
-        Crush = 1,
-
-        /// <summary>
         /// 戦闘不能
         /// </summary>
-        KnockedOut = 2
+        KnockedOut = 1
     }
 }

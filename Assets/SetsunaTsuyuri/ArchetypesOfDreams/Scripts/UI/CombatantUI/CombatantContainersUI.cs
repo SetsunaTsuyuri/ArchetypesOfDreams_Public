@@ -9,18 +9,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 戦闘者コンテナUIの管理UI
     /// </summary>
     /// <typeparam name="TUI">UIの型</typeparam>
-    /// <typeparam name="TContainersManager">戦闘者コンテナ管理者の型</typeparam>
+    /// <typeparam name="TParty">パーティの型</typeparam>
     /// <typeparam name="TContainer">戦闘者コンテナの型</typeparam>
-    public class CombatantContainersUI<TUI, TContainersManager, TContainer> : GameUI
+    public class CombatantContainersUI<TUI, TParty, TContainer> : GameUI
         where TUI : CombatantContainerUI
-        where TContainersManager : CombatantContainersManager<TContainer>
+        where TParty : CombatantsParty<TContainer>
         where TContainer : CombatantContainer 
     {
         /// <summary>
-        /// 戦闘者コンテナの管理者
+        /// 戦闘者パーティ
         /// </summary>
         [SerializeField]
-        protected TContainersManager containers = null;
+        protected TParty _party = null;
 
         /// <summary>
         /// 戦闘者UI配列
@@ -44,7 +44,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void SetTargets()
         {
-            CombatantContainer[] targets = containers
+            CombatantContainer[] targets = _party
                 .GetAllContainers()
                 .ToArray();
 
@@ -66,7 +66,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             TUI ui = _uiArray[container.Id];
-            ui.OnCombatantSet(container.ContainsCombatant());
+            ui.OnCombatantSet(container.ContainsCombatant);
         }
 
         /// <summary>

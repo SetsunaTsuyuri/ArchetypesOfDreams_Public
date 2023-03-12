@@ -8,13 +8,14 @@ using DG.Tweening;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// ポップアップするテキスト
+    /// ポップアップテキスト
     /// </summary>
-    public class PopUpText : MonoBehaviour
+    public class PopUpText : GameUI
     {
+        /// <summary>
+        /// レクトトランスフォーム
+        /// </summary>
         public RectTransform RectTransform { get; private set; } = null;
-        Canvas canvas = null;
-        CanvasGroup canvasGroup = null;
 
         /// <summary>
         /// TMPテキスト
@@ -27,19 +28,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         float initialAlpha = 0.0f;
 
         /// <summary>
-        /// ループシーケンス
+        /// ループするTweener
         /// </summary>
-        public Sequence LoopSequence { get; private set; } = null;
+        Tweener _loopTweener = null;
 
-        private void Awake()
+        public bool IsLoop => _loopTweener.IsActive();
+
+        protected override void Awake()
         {
-            canvas = GetComponent<Canvas>();
-            canvasGroup = GetComponent<CanvasGroup>();
-            initialAlpha = canvasGroup.alpha;
+            base.Awake();
 
+            initialAlpha = _canvasGroup.alpha;
             Text = GetComponentInChildren<TextMeshProUGUI>();
             RectTransform = GetComponent<RectTransform>();
-
         }
 
         /// <summary>
@@ -50,6 +51,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="color">色</param>
         public void Show(Vector3 position, string text, Color color)
         {
+            Show();
+
             // 位置変更
             transform.position = position;
 
@@ -60,10 +63,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Text.color = color;
 
             // アルファ値初期化
-            canvasGroup.alpha = initialAlpha;
-
-            // キャンバス有効化
-            canvas.enabled = true;
+            _canvasGroup.alpha = initialAlpha;
 
             // 有効化
             enabled = true;
@@ -72,82 +72,62 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 非表示にする
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
-            // シーケンスを止める
-            if (LoopSequence != null)
-            {
-                LoopSequence.Kill();
-            }
+            base.Hide();
 
-            // キャンバス無効化
-            canvas.enabled = false;
+            _loopTweener.Kill();
 
             // 無効化
             enabled = false;
         }
 
         /// <summary>
-        /// 点滅表示シーケンスを実行する
+        /// 繰り返し点滅する
         /// </summary>
         /// <param name="position">位置</param>
         /// <param name="text">文字列</param>
         /// <param name="color">色</param>
-        public void DoBlinkingSequence(Vector3 position, string text, Color color)
+        public void BlinkRepeatedly(Vector3 position, string text, Color color)
         {
             // 表示する
             Show(position, text, color);
 
-            LoopSequence = DOTween.Sequence();
-
-            LoopSequence
-                .AppendInterval(GameSettings.PopUpTexts.BlinkingInterval)
-                .Append(
-                    DOTween.To(
-                        () => canvasGroup.alpha,
-                        x => canvasGroup.alpha = x,
-                        0.0f,
-                        GameSettings.PopUpTexts.BlinkingFadeDutation
-                    )
-                )
-                .Append(
-                    DOTween.To(
-                        () => canvasGroup.alpha,
-                        x => canvasGroup.alpha = x,
-                        1.0f,
-                        GameSettings.PopUpTexts.BlinkingFadeDutation
-                    )
-                )
+            // 繰り返し点滅する
+            _loopTweener = DOVirtual.Float(
+                0.0f,
+                1.0f,
+                GameSettings.PopUpTexts.BlinkingDutation,
+                value => _canvasGroup.alpha = GameSettings.PopUpTexts.BlinkingCurve.Evaluate(value))
                 .SetLoops(-1)
                 .SetLink(gameObject);
         }
 
         /// <summary>
-        /// 表示シーケンスを実行する
+        /// ポップアップする
         /// </summary>
         /// <param name="position">位置</param>
         /// <param name="text">文字列</param>
         /// <param name="color">色</param>
-        public void DoPopUpSequence(Vector3 position, string text, Color color)
+        public void PopUp(Vector3 position, string text, Color color)
         {
             // 表示する
             Show(position, text, color);
-
-            // シーケンス
-            Sequence sequence = DOTween.Sequence()
-                .SetLink(gameObject)
-                .OnComplete(Hide);
 
             // 移動
             var move = RectTransform
                 .DOLocalMove(GameSettings.PopUpTexts.MoveVector, GameSettings.PopUpTexts.MoveDuration)
                 .SetRelative();
 
-            sequence.Append(move);
-
             // フェードアウト
-            var fadeout = canvasGroup.DOFade(0.0f, GameSettings.PopUpTexts.FadeOutDuration);
-            sequence.Append(fadeout);
+            var fadeout = _canvasGroup.DOFade(0.0f, GameSettings.PopUpTexts.FadeOutDuration);
+
+            // シーケンス
+            Sequence sequence = DOTween.Sequence()
+                .Append(move)
+                .Append(fadeout)
+                .SetLink(gameObject)
+                .OnComplete(Hide);
         }
     }
 }

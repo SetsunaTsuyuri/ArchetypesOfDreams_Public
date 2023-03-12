@@ -11,6 +11,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class EnemiesSettings : ScriptableObject
     {
         /// <summary>
+        /// HP倍率
+        /// </summary>
+        [field: SerializeField]
+        public float HPScale { get; private set; } = 0.5f;
+
+        /// <summary>
+        /// GP倍率
+        /// </summary>
+        [field: SerializeField]
+        public int GPScale { get; private set; } = -2;
+
+        /// <summary>
         /// UIの表示位置オフセット
         /// </summary>
         [field: SerializeField]

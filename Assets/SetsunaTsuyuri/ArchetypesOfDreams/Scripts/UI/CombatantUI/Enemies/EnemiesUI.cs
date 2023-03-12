@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 敵コンテナUIの管理UI
     /// </summary>
-    public class EnemiesUI : CombatantContainersUI<EnemyUI, EnemyContainersManager, EnemyContainer>
+    public class EnemiesUI : CombatantContainersUI<EnemyUI, EnemiesParty, EnemyContainer>
     {
         /// <summary>
         /// メインカメラ

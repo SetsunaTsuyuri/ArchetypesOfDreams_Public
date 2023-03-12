@@ -36,7 +36,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => NightmareData;
         }
 
-        public override int GetPurificationSuccessRate(Combatant purifier)
+        public override int CaluclatePurificationSuccessRate(Combatant purifier)
         {
             int result = 0;
 
@@ -55,12 +55,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 // HP減少による補正
                 rate *= 1.0f + (GetHPReductionRate() * GameSettings.Purification.LifeReductionCorrection);
-
-                // クラッシュ補正
-                if (IsCrushed())
-                {
-                    rate *= GameSettings.Purification.CrushCorrection;
-                }
 
                 // 設定された範囲内に収める
                 int min = GameSettings.Purification.MinSuccessRate;

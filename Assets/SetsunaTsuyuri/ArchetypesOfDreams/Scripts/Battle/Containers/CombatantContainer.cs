@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using Cysharp.Threading.Tasks;
-using System.Linq;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -16,28 +15,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 味方
         /// </summary>
-        ICombatantContainerManager _allies = null;
+        CombatantsPartyBase _allies = null;
 
         /// <summary>
         /// 味方
         /// </summary>
-        public ICombatantContainerManager Allies
+        public CombatantsPartyBase Allies
         {
-            // TODO: 状態異常等により敵味方が入れ替わる
+            // TODO: 状態異常等により敵味方の判断が逆転する
             get => _allies;
         }
 
         /// <summary>
         /// 敵
         /// </summary>
-        ICombatantContainerManager _enemies = null;
+        CombatantsPartyBase _enemies = null;
 
         /// <summary>
         /// 敵
         /// </summary>
-        public ICombatantContainerManager Enemies
+        public CombatantsPartyBase Enemies
         {
-            // TODO: 状態異常等により敵味方が入れ替わる
+            // TODO: 状態異常等により敵味方の判断が逆転する
             get => _enemies;
         }
 
@@ -88,7 +87,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
-        public event Action<CombatantContainer> OnDamageEvent = null;
+        /// <summary>
+        /// ダメージを受けたときのイベント
+        /// </summary>
+        public event UnityAction<CombatantContainer> Damaged = null;
 
         /// <summary>
         /// 戦闘者が設定されたときのゲームイベント
@@ -137,7 +139,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="allies">味方</param>
         /// <param name="enemies">敵</param>
-        public void SetUp(ICombatantContainerManager allies, ICombatantContainerManager enemies)
+        public void SetUp(CombatantsPartyBase allies, CombatantsPartyBase enemies)
         {
             _allies = allies;
             _enemies = enemies;
@@ -177,7 +179,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 行動を回避した
+        /// 失敗
         /// </summary>
         public void OnMiss()
         {
@@ -192,7 +194,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public virtual void OnDamage()
         {
-            OnDamageEvent?.Invoke(this);
+            Damaged?.Invoke(this);
 
             if (onDamage)
             {
@@ -203,12 +205,33 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 回復
         /// </summary>
-        public void OnRecovery()
+        public void OnHealing()
         {
             if (onRecovery)
             {
                 onRecovery.Invoke(this);
             }
+        }
+
+        /// <summary>
+        /// ステータス効果追加
+        /// </summary>
+        /// <param name="effect"></param>
+        public void OnStatusEffectAdded(EffectData.StatusEffect effect)
+        {
+            StatusEffectData data = MasterData.GetStatusEffectData(effect.Id);
+            AddedStatusEffectResult result = new(this, data);
+            UniRxEventsManager.FireStatusEffectAdded(result);
+        }
+
+        /// <summary>
+        /// ステータス効果解除
+        /// </summary>
+        /// <param name="effects"></param>
+        public void OnStatusEffectsRemoved(StatusEffectData[] effects)
+        {
+            StatusEffectsResult result = new(this, effects);
+            UniRxEventsManager.FireStatusEffectsRemoved(result);
         }
 
         /// <summary>
@@ -253,12 +276,53 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 自身が格納している戦闘者を別のコンテナに入れる
+        /// ターン開始時の処理
+        /// </summary>
+        /// <param name="token"></param>
+        public async UniTask OnTurnStart(CancellationToken token)
+        {
+            if (!ContainsCombatant)
+            {
+                return;
+            }
+
+            await Combatant.OnTurnStart(token);
+        }
+
+        /// <summary>
+        /// ターン終了時の処理
+        /// </summary>
+        /// <param name="token"></param>
+        public async UniTask OnTurnEnd(CancellationToken token)
+        {
+            if (!ContainsCombatant)
+            {
+                return;
+            }
+
+            await Combatant.OnTurnEnd(token);
+        }
+
+        /// <summary>
+        /// 行動する
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="targets"></param>
+        /// <param name="onCompleted"></param>
+        public void Act(ActionInfo action, CombatantContainer[] targets, UnityAction onCompleted)
+        {
+            CancellationToken token = this.GetCancellationTokenOnDestroy();
+            Combatant.Act(action, targets, token, onCompleted).Forget();
+        }
+
+        /// <summary>
+        /// 浄化された戦闘者を別のコンテナに入れる
         /// </summary>
         /// <param name="target"></param>
-        public void InjectCombatantInto(CombatantContainer target)
+        public void InjectPurified(CombatantContainer target)
         {
             target.Combatant = Combatant;
+            target.Combatant.InitializeStatus();
             Release();
         }
 
@@ -275,10 +339,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 戦闘者を格納している
         /// </summary>
         /// <returns></returns>
-        public bool ContainsCombatant()
-        {
-            return Combatant is not null;
-        }
+        public bool ContainsCombatant => Combatant is not null;
 
         /// <summary>
         /// 行動の対象にできる戦闘者を格納している
@@ -291,7 +352,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 TargetCondition.Living => ContainsFightable(),
                 TargetCondition.KnockedOut => ContainsKnockedOut(),
-                TargetCondition.LivingAndKnockedOut => ContainsCombatant(),
+                TargetCondition.LivingAndKnockedOut => ContainsCombatant,
                 _ => false
             };
         }
@@ -302,7 +363,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsFightable()
         {
-            return ContainsCombatant() && !Combatant.IsKnockedOut();
+            return ContainsCombatant && !Combatant.IsKnockedOut;
         }
 
         /// <summary>
@@ -311,7 +372,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsKnockedOut()
         {
-            return ContainsCombatant() && Combatant.IsKnockedOut();
+            return ContainsCombatant && Combatant.IsKnockedOut;
         }
 
         /// <summary>
@@ -320,7 +381,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsActionable()
         {
-            return ContainsCombatant() && Combatant.CanAct();
+            return ContainsCombatant && Combatant.CanAct();
         }
 
         /// <summary>
@@ -329,7 +390,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsPurificatable()
         {
-            return ContainsCombatant() && !Combatant.HasBossResistance;
+            return ContainsCombatant && !Combatant.HasBossResistance;
         }
 
         /// <summary>
@@ -338,7 +399,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsReleasable()
         {
-            return ContainsCombatant() && Combatant.CanBeReleased();
+            return ContainsCombatant && Combatant.CanBeReleased();
         }
 
         /// <summary>
@@ -347,7 +408,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsChangeable()
         {
-            return ContainsCombatant();
+            return ContainsCombatant && Combatant is Nightmare;
         }
 
         /// <summary>
@@ -365,7 +426,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool ContainsCrush()
         {
-            return ContainsCombatant() && Combatant.IsCrushed();
+            return ContainsCombatant && Combatant.IsCrushed;
         }
 
         /// <summary>
@@ -423,11 +484,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 使用できる
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public bool CanUse(ActionInfo action)
+        {
+            bool canConsumeDP = Combatant.CurrentDP >= action.ConsumptionDP;
+            return canConsumeDP && CanUse(action.Effect);
+        }
+
+        /// <summary>
         /// 効果を使用できる
         /// </summary>
         /// <param name="effect"></param>
         /// <returns></returns>
-        public bool CanUse(EffectData effect)
+        private bool CanUse(EffectData effect)
         {
             bool result = effect.TargetPosition switch
             {
@@ -448,7 +520,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="effect"></param>
         /// <param name="containers"></param>
         /// <returns></returns>
-        private bool ExistsTargetables(EffectData effect, ICombatantContainerManager containers)
+        private bool ExistsTargetables(EffectData effect, CombatantsPartyBase containers)
         {
             bool result = false;
 
@@ -467,7 +539,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="allies"></param>
         /// <param name="enemies"></param>
         /// <returns></returns>
-        private bool ExistsTargetables(EffectData effect, ICombatantContainerManager allies, ICombatantContainerManager enemies)
+        private bool ExistsTargetables(EffectData effect, CombatantsPartyBase allies, CombatantsPartyBase enemies)
         {
             return ExistsTargetables(effect, allies) || ExistsTargetables(effect, enemies);
         }
@@ -517,7 +589,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="targetables"></param>
         /// <param name="effect"></param>
         /// <param name="containers"></param>
-        private void AddTargetables(List<CombatantContainer> targetables, EffectData effect, ICombatantContainerManager containers)
+        private void AddTargetables(List<CombatantContainer> targetables, EffectData effect, CombatantsPartyBase containers)
         {
             if (containers == null)
             {
@@ -529,15 +601,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 行動する
+        /// 中身を入れ替える
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="targets"></param>
-        /// <param name="onCompleted"></param>
-        public void Act(ActionInfo action, CombatantContainer[] targets, UnityAction onCompleted)
+        /// <param name="target"></param>
+        public void Swap(CombatantContainer target)
         {
-            CancellationToken token = this.GetCancellationTokenOnDestroy();
-            Combatant.Act(action, targets, token, onCompleted).Forget();
+            (target.Combatant, Combatant) = (Combatant, target.Combatant);
         }
     }
 }

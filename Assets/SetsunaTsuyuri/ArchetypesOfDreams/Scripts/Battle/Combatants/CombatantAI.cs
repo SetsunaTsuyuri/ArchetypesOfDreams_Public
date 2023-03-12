@@ -10,8 +10,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動を決定する
         /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        public ActionInfo DecideAction(Battle battle)
+        public ActionInfo DecideAction()
         {
             ActionInfo result = null;
 
@@ -24,7 +23,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 使用可能な通常攻撃及びスキルを抽出し、ランダムに選ぶ
             ActionInfo[] availables = Skills
                 .Append(NormalAttack)
-                .Where(x => x.CanBeExecuted(battle))
+                .Where(x => Container.CanUse(x))
                 .ToArray();
 
             if (availables.Any())

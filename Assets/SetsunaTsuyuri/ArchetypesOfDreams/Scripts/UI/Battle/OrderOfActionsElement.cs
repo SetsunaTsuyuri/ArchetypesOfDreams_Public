@@ -26,7 +26,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 待機時間の表示テキスト
         /// </summary>
-        TextMeshProUGUI waitTime = null;
+        TextMeshProUGUI _waitTime = null;
 
         /// <summary>
         /// 表示対象の戦闘者コンテナ
@@ -37,7 +37,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.Awake();
 
-            waitTime = GetComponentInChildren<TextMeshProUGUI>(true);
+            _waitTime = GetComponentInChildren<TextMeshProUGUI>(true);
 
             DeactivateAndHide();
         }
@@ -60,7 +60,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void OnTargetSet()
         {
-            if (Target && Target.ContainsActionable())
+            if (Target && Target.ContainsFightable())
             {
                 UpdateDisplay();
                 ActivateAndShow();
@@ -76,11 +76,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void UpdateDisplay()
         {
-            // 戦闘者データ
-            CombatantData data = Target.Combatant.Data;
-
-            // 顔グラフィック
-            face.sprite = data.GetFaceSpriteOrSprite();
+            // 顔スプライト
+            face.sprite = Target.Combatant.GetFaceSpriteOrSprite();
 
             // 枠の色
             Color frameColor = Target switch
@@ -93,7 +90,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             frame.color = frameColor;
 
             // 待機時間
-            waitTime.text = Target.Combatant.WaitTime.ToString();
+            if (_waitTime)
+            {
+                _waitTime.text = Target.Combatant.WaitTime.ToString();
+            }
         }
     }
 }

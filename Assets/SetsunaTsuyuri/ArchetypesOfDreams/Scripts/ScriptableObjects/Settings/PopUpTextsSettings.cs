@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -71,16 +70,58 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public string GPPrefix { get; private set; } = "SP";
 
         /// <summary>
-        /// 点滅表示のフェード時間
+        /// クリティカルの文字列
         /// </summary>
         [field: SerializeField]
-        public float BlinkingFadeDutation { get; private set; } = 0.75f;
+        public string CriticalText { get; private set; } = "Critical!";
 
         /// <summary>
-        /// 点滅する時間間隔
+        /// クラッシュの文字列
         /// </summary>
         [field: SerializeField]
-        public float BlinkingInterval { get; private set; } = 1.0f;
+        public string CrushText { get; private set; } = "Crsuh!";
+
+        /// <summary>
+        /// 異常ステータス効果の色
+        /// </summary>
+        [field: SerializeField]
+        public Color AbnormalityColor { get; private set; } = Color.white;
+
+        /// <summary>
+        /// 強化ステータス効果の色
+        /// </summary>
+        [field: SerializeField]
+        public Color BuffColor { get; private set; } = Color.white;
+
+        /// <summary>
+        /// 弱体ステータス効果の色
+        /// </summary>
+        [field: SerializeField]
+        public Color DebuffColor { get; private set; } = Color.white;
+
+        /// <summary>
+        /// 構えステータス効果の色
+        /// </summary>
+        [field: SerializeField]
+        public Color StanceColor { get; private set; } = Color.white;
+
+        /// <summary>
+        /// 解除ステータス効果のアルファ値
+        /// </summary>
+        [field: SerializeField]
+        public float RemovedEffectAlpha { get; private set; } = 0.5f;
+
+        /// <summary>
+        /// 点滅表示のアニメーションカーブ
+        /// </summary>
+        [field: SerializeField]
+        public AnimationCurve BlinkingCurve { get; private set; } = new();
+
+        /// <summary>
+        /// 点滅表示の時間
+        /// </summary>
+        [field: SerializeField]
+        public float BlinkingDutation { get; private set; } = 3.0f;
 
         /// <summary>
         /// 浄化成功率の文字列
@@ -129,18 +170,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="effectiveness">有効性</param>
         /// <returns></returns>
-        public (string, Color) GetEffectivenessTextAndColor(Attribute.Effectiveness effectiveness)
+        public (string, Color) GetEffectivenessTextAndColor(GameAttribute.Effectiveness effectiveness)
         {
             string text = string.Empty;
             Color color = Color.white;
             switch (effectiveness)
             {
-                case Attribute.Effectiveness.Weakness:
+                case GameAttribute.Effectiveness.Weakness:
                     text = WeaknessText;
                     color = WeaknessColor;
                     break;
 
-                case Attribute.Effectiveness.Resistance:
+                case GameAttribute.Effectiveness.Resistance:
                     text = RegistanceText;
                     color = RegistanceColor;
                     break;

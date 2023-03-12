@@ -26,6 +26,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             foreach (var button in _buttons)
             {
                 button.SetUp(description);
+
                 button.AddPressedListener(() =>
                 {
                     OnActionTargetSelection(targetSelection, button.Id);
@@ -61,7 +62,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ボタンを更新する
         /// </summary>
-        private void UpdateButtons()
+        protected void UpdateButtons()
         {
             // 初期化
             foreach (var button in _buttons)

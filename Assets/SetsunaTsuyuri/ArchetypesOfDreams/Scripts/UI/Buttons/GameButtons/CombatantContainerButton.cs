@@ -26,23 +26,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ボタンが押されたときに実行する関数
         /// </summary>
-        UnityAction onClick = () => { };
+        UnityAction _onPressed = () => { };
 
         protected override void Awake()
         {
             base.Awake();
 
-            Button.onClick.AddListener(onClick);
+            AddPressedListener(_onPressed);
         }
 
         /// <summary>
-        /// 使えるようにする
+        /// セットアップする
         /// </summary>
         /// <param name="allies">味方の管理者</param>
         /// <param name="container">戦闘者コンテナ</param>
-        public void SetUp(AllyContainersManager allies, CombatantContainer container)
+        public void SetUp(AlliesParty allies, CombatantContainer container)
         {
-            if (container.ContainsCombatant())
+            if (container.ContainsCombatant)
             {
                 gameObject.SetActive(true);
                 Name.text = container.Combatant?.Data.Name;
@@ -50,20 +50,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 if (container.ContainsReleasable())
                 {
-                    Button.onClick.RemoveListener(onClick);
-                    onClick = () => allies.ToBeReleased = container;
-                    Button.onClick.AddListener(onClick);
+                    RemovePressedListener(_onPressed);
+                    _onPressed = () => allies.ToBeReleased = container;
+                    AddPressedListener(_onPressed);
 
-                    Button.interactable = true;
+                    SetInteractable(true);
                 }
                 else
                 {
-                    Button.interactable = false;
+                    SetInteractable(false);
                 }
             }
             else
             {
-                Button.interactable = false;
+                SetInteractable(false);
                 gameObject.SetActive(false);
             }
         }

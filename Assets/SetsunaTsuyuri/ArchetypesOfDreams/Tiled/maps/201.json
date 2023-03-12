@@ -132,7 +132,7 @@
         {
          "name":"max_enemy_id",
          "type":"int",
-         "value":5
+         "value":4
         }, 
         {
          "name":"min_enemy_id",

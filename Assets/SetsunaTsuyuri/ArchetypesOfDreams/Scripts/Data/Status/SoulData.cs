@@ -20,6 +20,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 感情属性
         /// </summary>
         [field: SerializeField]
-        public Attribute.Emotion Emotion { get; private set; }
+        public GameAttribute.Emotion Emotion { get; private set; }
     }
 }

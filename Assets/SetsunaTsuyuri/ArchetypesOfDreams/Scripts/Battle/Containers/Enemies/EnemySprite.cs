@@ -11,6 +11,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     [RequireComponent(typeof(SpriteRenderer))]
     public class EnemySprite : MonoBehaviour, IInitializable
     {
+        /// <summary>
+        /// スプライトレンダラー
+        /// </summary>
         SpriteRenderer _spriteRenderer = null;
 
         /// <summary>
@@ -65,19 +68,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="combatant">戦闘者</param>
         public void OnComabtantSet(Combatant combatant)
         {
-            if (combatant != null)
+            if (combatant is null)
             {
-                _spriteRenderer.sprite = combatant.Data.Sprite;
-                Vector3 scale = transform.localScale;
-                scale.x = _defaultLocalScaleX * combatant.Data.SpriteScale;
-                scale.y = _defaultLocalScaleY * combatant.Data.SpriteScale;
-                transform.localScale = scale;
-                _spriteRenderer.enabled = true;
+                _spriteRenderer.sprite = null;
+                return;
             }
-            else
+
+            Vector3 scale = transform.localScale;
+            scale.x = _defaultLocalScaleX * combatant.Data.SpriteScale;
+            scale.y = _defaultLocalScaleY * combatant.Data.SpriteScale;
+            transform.localScale = scale;
+        }
+
+        /// <summary>
+        /// スプライトを更新する
+        /// </summary>
+        /// <param name="combatant">戦闘者</param>
+        public void UpdateSprite(Combatant combatant)
+        {
+            if (combatant is null)
             {
                 _spriteRenderer.enabled = false;
+                return;
             }
+
+            _spriteRenderer.sprite = combatant.Sprite;
+            _spriteRenderer.enabled = true;
         }
 
         /// <summary>
@@ -88,18 +104,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             switch (combatant.Condition)
             {
-                case Attribute.Condition.Normal:
+                case GameAttribute.Condition.Normal:
                     // スプライト表示
                     _knockedOutTween.Kill();
                     _spriteRenderer.enabled = true;
                     _spriteRenderer.color = _defaultColor;
                     break;
 
-                case Attribute.Condition.Crush:
-                    // スプライト変化
-                    break;
-
-                case Attribute.Condition.KnockedOut:
+                case GameAttribute.Condition.KnockedOut:
                     // スプライト非表示
                     _knockedOutTween = ChangeColor(
                         GameSettings.VisualEffects.DefeatedEnemyColor,
@@ -190,7 +202,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             targetedTween = _spriteRenderer.DOColor(color, duration)
                 .SetEase(Ease.OutQuad)
-                .SetLoops(-1, LoopType.Yoyo);
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetLink(gameObject);
         }
 
         /// <summary>
@@ -198,17 +211,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void KillTargetedTween()
         {
-            // Tweenを殺す
             if (targetedTween != null)
             {
                 targetedTween.Kill();
             }
 
-            // 元の色に戻す
-            if (_spriteRenderer)
-            {
-                _spriteRenderer.color = _defaultColor;
-            }
+            _spriteRenderer.color = _defaultColor;
         }
     }
 }

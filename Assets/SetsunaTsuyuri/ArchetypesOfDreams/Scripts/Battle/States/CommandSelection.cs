@@ -26,7 +26,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             public override void Enter(Battle context)
             {
                 // コマンド選択
-                context.SelectCommandButtons();
+                context.BattleUI.BattleCommands.BeSelected();
 
                 // 戦闘コマンド表示
                 context.BattleUI.BattleCommands.Show();
@@ -43,14 +43,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // イベント実行
                 context.onCommandSelectionExit.Invoke();
             }
-        }
-
-        /// <summary>
-        /// いずれかのコマンドボタンを選択する
-        /// </summary>
-        private void SelectCommandButtons()
-        {
-            BattleUI.BattleCommands.BeSelected();
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -26,17 +25,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     fightable.OnTimeElapsed(elapsedTime);
                 }
 
-                // 行動順
-                CombatantContainer[] orderOfActions = DecideOrderOfActions(fightables);
+                context.Actor = null;
 
-                // 行動順UIを更新する
-                context.BattleUI.OrderOfActions.UpdateDisplay(orderOfActions);
+                // 行動順を更新する
+                context.UpdateOrderOfActions();
 
                 // 行動者を決定する
-                context.Actor = orderOfActions.FirstOrDefault();
+                context.Actor = context.OrderOfActions.FirstOrDefault();
 
-                // 行動開始
-                context.State.Change<ActionStart>();
+                // ターン開始
+                context.State.Change<TurnStart>();
             }
 
             /// <summary>
@@ -54,23 +52,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     .ToArray();
 
                 return fightables;
-            }
-
-            /// <summary>
-            /// 行動順を決定する
-            /// </summary>
-            /// <returns>戦闘可能なコンテナ配列</returns>
-            private CombatantContainer[] DecideOrderOfActions(CombatantContainer[] fightables)
-            {
-                // 優先順位
-                // 待機時間が小さい→味方である→IDが小さい
-                CombatantContainer[] order = fightables
-                    .OrderBy(x => x.Combatant.WaitTime)
-                    .ThenByDescending(x => x is AllyContainer)
-                    .ThenBy(x => x.Id)
-                    .ToArray();
-
-                return order;
             }
         }
     }

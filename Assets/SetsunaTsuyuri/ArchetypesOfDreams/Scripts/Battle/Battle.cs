@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -40,6 +38,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static Battle InstanceInActiveScene { get; private set; } = null;
 
         /// <summary>
+        /// 戦闘中である
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsRunning
+        {
+            get
+            {
+                bool result = false;
+                if (InstanceInActiveScene)
+                {
+                    result = InstanceInActiveScene.State.Current is not Sleep;
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// 戦闘UI
         /// </summary>
         [field: SerializeField]
@@ -58,25 +74,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Transform _cameraTransform = null;
 
         /// <summary>
-        /// 味方の管理者
+        /// 味方
         /// </summary>
         [field: SerializeField]
-        public AllyContainersManager Allies { get; private set; } = null;
+        public AlliesParty Allies { get; private set; } = null;
 
         /// <summary>
-        /// 敵の管理者
+        /// 敵
         /// </summary>
-        public EnemyContainersManager Enemies { get; private set; } = null;
+        public EnemiesParty Enemies { get; private set; } = null;
 
         /// <summary>
-        /// 現在のターン
+        /// 行動順
         /// </summary>
-        public int Turn { get; private set; } = 0;
-
-        /// <summary>
-        /// 逃走を禁じる
-        /// </summary>
-        public bool ForbidEscaping { get; private set; } = false;
+        public CombatantContainer[] OrderOfActions { get; private set; } = { };
 
         /// <summary>
         /// 行動者コンテナ
@@ -84,30 +95,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public CombatantContainer Actor { get; private set; } = null;
 
         /// <summary>
-        /// 行動者の行動内容
-        /// </summary>
-        public ActionInfo ActorAction { get; private set; } = null;
-
-        /// <summary>
-        /// この戦いで得られる経験値
+        /// 得られる経験値
         /// </summary>
         public int RewardExperience { get; private set; } = 0;
 
         /// <summary>
-        /// 有限ステートマシン
+        /// ステートマシン
         /// </summary>
         public StateMachine<Battle> State { get; private set; } = null;
+
+        /// <summary>
+        /// 逃走を禁じる
+        /// </summary>
+        public bool ForbidEscaping { get; private set; } = false;
 
         /// <summary>
         /// 戦闘が終わった
         /// </summary>
         public bool IsOver { get; private set; } = false;
-
-        /// <summary>
-        /// 戦闘中である
-        /// </summary>
-        /// <returns></returns>
-        public bool IsRunning => State.Current is not Sleep;
 
         /// <summary>
         /// 戦闘結果
@@ -116,7 +121,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Awake()
         {
-            Enemies = GetComponentInChildren<EnemyContainersManager>(true);
+            Enemies = GetComponentInChildren<EnemiesParty>(true);
 
             SetUpStateMachine();
 
@@ -133,11 +138,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             State.Add<Preparation>();
             State.Add<BattleStart>();
             State.Add<TimeAdvancing>();
-            State.Add<ActionStart>();
+            State.Add<TurnStart>();
             State.Add<CommandSelection>();
-            State.Add<TargetSelection>();
             State.Add<ActionExecution>();
-            State.Add<ActionEnd>();
+            State.Add<TurnEnd>();
             State.Add<BattleEnd>();
         }
 
@@ -160,9 +164,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 戦闘終了フラグ
             IsOver = false;
 
-            // ターン数
-            Turn = 0;
-
             // 経験値
             RewardExperience = 0;
 
@@ -179,12 +180,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public async UniTask<BattleResultType> ExecuteRandomBattle(Map map, CancellationToken token)
         {
             await FadeManager.FadeOut(token);
-            
+
             Enemies.Initialize();
             Enemies.CreateEnemies(map, Allies);
 
             // 通常戦闘BGMを再生する
-            AudioManager.PlayBgm(BgmType.NormalBattle);
+            AudioManager.PlayBgm(BgmId.NormalBattle);
 
             return await ExecuteBattle(token);
         }
@@ -198,7 +199,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public async UniTask<BattleResultType> ExecuteEventBattle(BattleEvent battleEvent, CancellationToken token)
         {
             await FadeManager.FadeOut(token);
-            
+
             Enemies.Initialize();
             Enemies.CreateEnemies(battleEvent);
 
@@ -206,7 +207,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (!battleEvent.IsBossBattle)
             {
                 // 通常戦闘BGMを再生する
-                AudioManager.PlayBgm(BgmType.NormalBattle);
+                AudioManager.PlayBgm(BgmId.NormalBattle);
             }
 
             return await ExecuteBattle(token);
@@ -240,18 +241,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// スキルが選択されたときの処理
-        /// </summary>
-        /// <param name="skill">スキル</param>
-        public void OnSkillSelected(ActionInfo skill)
-        {
-            ActorAction = skill;
-
-            // 対象選択ステートへ移行する
-            State.Change<TargetSelection>();
-        }
-
-        /// <summary>
         /// 敵が倒された、または浄化されたときの処理
         /// </summary>
         /// <param name="container">戦闘者コンテナ</param>
@@ -262,149 +251,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// PlayerInput「Move」発動時のUnityEvent
+        /// 行動順を決定する
         /// </summary>
-        /// <param name="context"></param>
-        public void OnMove(InputAction.CallbackContext context)
+        private void UpdateOrderOfActions()
         {
-            if (!context.performed)
-            {
-                return;
-            }
-
-            if (State.Current is TargetSelection)
-            {
-                ChangeTarget(context);
-            }
-        }
-
-        /// <summary>
-        /// PlayerInput「Fire」発動時のUnityEvent
-        /// </summary>
-        /// <param name="context"></param>
-        public void OnFire(InputAction.CallbackContext context)
-        {
-            if (!context.performed)
-            {
-                return;
-            }
-
-            if (State.Current is TargetSelection)
-            {
-                DecideTarget();
-            }
-        }
-
-        /// <summary>
-        /// PlayerInput「Cancel」発動時のUnityEvent
-        /// </summary>
-        /// <param name="context"></param>
-        public void OnCancel(InputAction.CallbackContext context)
-        {
-            if (!context.performed)
-            {
-                return;
-            }
-
-            if (State.Current is TargetSelection)
-            {
-                CancelTargetSelection();
-            }
-        }
-
-        /// <summary>
-        /// 対象を変更する
-        /// </summary>
-        /// <param name="context"></param>
-        private void ChangeTarget(InputAction.CallbackContext context)
-        {
-            // 対象がいなければ中止する
-            if (Targetables == null || Targetables.Length == 0)
-            {
-                return;
-            }
-
-            // 非単体対象なら中止する
-            if (targetIsNotSingle)
-            {
-                return;
-            }
-
-            // 入力に応じて対象を隣に移す
-            Targetables[targetIndex].IsTargeted = false;
-
-            Vector2 input = context.ReadValue<Vector2>();
-            if (input == Vector2.right || input == Vector2.down)
-            {
-                targetIndex++;
-                if (targetIndex >= Targetables.Length)
-                {
-                    targetIndex = 0;
-                }
-            }
-            else if (input == Vector2.left || input == Vector2.up)
-            {
-                targetIndex--;
-                if (targetIndex < 0)
-                {
-                    targetIndex = Targetables.Length - 1;
-                }
-            }
-
-            Targetables[targetIndex].IsTargeted = true;
-        }
-
-        /// <summary>
-        /// 対象を決定する
-        /// </summary>
-        private void DecideTarget()
-        {
-            // 行動実行ステートへ非同期的に移行する
-            ToActionExecutionStateAsync(this.GetCancellationTokenOnDestroy()).Forget();
-        }
-
-        /// <summary>
-        /// 行動実行ステートへ移行する
-        /// </summary>
-        /// <param name="token">トークン</param>
-        /// <returns></returns>
-        private async UniTask ToActionExecutionStateAsync(CancellationToken token)
-        {
-            await UniTask.Yield(token);
-            await UniTask.Yield(token);
-            State.Change<ActionExecution>();
-        }
-
-        /// <summary>
-        /// 対象選択をキャンセルする
-        /// </summary>
-        private void CancelTargetSelection()
-        {
-            // 対象から外す
-            CombatantContainer[] targets = Targetables
-                .Where(x => x.IsTargeted)
+            // 優先順位
+            // 再行動可能者→待機時間(小)→素早さ(大)→味方→ID(小)
+            OrderOfActions = Allies.GetFightables()
+                .Concat(Enemies.GetFightables())
+                .OrderByDescending(x => x == Actor)
+                .ThenBy(x => x.Combatant.WaitTime)
+                .ThenByDescending(x => x.Combatant.Speed)
+                .ThenByDescending(x => x is AllyContainer)
+                .ThenBy(x => x.Id)
                 .ToArray();
 
-            foreach (var target in targets)
-            {
-                target.IsTargeted = false;
-            }
-
-            // コマンド選択ステートへ非同期的に移行する
-            ToCommandSelectionAsync(this.GetCancellationTokenOnDestroy()).Forget();
-        }
-
-        /// <summary>
-        /// コマンド選択ステートへ移行する
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private async UniTask ToCommandSelectionAsync(CancellationToken token)
-        {
-            // NOTE: 2回待たないとステート遷移直後にボタンのキャンセルが発生する？
-            await UniTask.Yield(token);
-            await UniTask.Yield(token);
-            State.Change<CommandSelection>();
+            // UI更新
+            BattleUI.OrderOfActions.UpdateDisplay(OrderOfActions);
         }
     }
 }

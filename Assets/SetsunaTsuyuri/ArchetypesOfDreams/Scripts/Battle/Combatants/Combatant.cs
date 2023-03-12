@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -43,12 +41,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 健康状態
         /// </summary>
-        Attribute.Condition condition = Attribute.Condition.Normal;
+        GameAttribute.Condition condition = GameAttribute.Condition.Normal;
 
         /// <summary>
         /// 健康状態
         /// </summary>
-        public Attribute.Condition Condition
+        public GameAttribute.Condition Condition
         {
             get => condition;
             set
@@ -64,15 +62,47 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動の結果
         /// </summary>
-        public ActionResult Result { get; set; } = new ActionResult();
+        public ActionResultSet Results { get; set; } = new ActionResultSet();
+
+        /// <summary>
+        /// スプライト
+        /// </summary>
+        public Sprite Sprite { get; private set; } = null;
+
+        /// <summary>
+        /// 顔スプライト
+        /// </summary>
+        public Sprite FaceSprite { get; private set; } = null;
 
         public void Initialize()
         {
-            Result.Initialize();
+            Results.Initialize();
             Experience = ToMinExperience(Level);
             InitializeStatus();
 
             WaitTime = 0;
+
+            LoadSprites();
+        }
+
+        /// <summary>
+        /// スプライトをロードする
+        /// </summary>
+        public void LoadSprites()
+        {
+            Sprite[] sprites = ResourcesUtility.LoadSprites(Data.SpriteName);
+            Sprite = sprites.Length >= 1 ? sprites[0] : null;
+            FaceSprite = sprites.Length >= 2 ? sprites[1] : Sprite;
+        }
+
+        /// <summary>
+        /// 顔スプライトまたはスプライトを取得する
+        /// </summary>
+        /// <returns></returns>
+        public Sprite GetFaceSpriteOrSprite()
+        {
+            Sprite sprite = FaceSprite ? FaceSprite : Sprite;
+            return sprite;
         }
 
         /// <summary>
@@ -81,34 +111,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool CanAct()
         {
-            bool result = false;
-
-            if (Condition == Attribute.Condition.Normal ||
-                (Condition == Attribute.Condition.Crush && HasBossResistance))
-            {
-                result = true;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// クラッシュしている
-        /// </summary>
-        /// <returns></returns>
-        public bool IsCrushed()
-        {
-            return Condition == Attribute.Condition.Crush;
+            return Condition == GameAttribute.Condition.Normal;
         }
 
         /// <summary>
         /// 戦闘不能である
         /// </summary>
         /// <returns></returns>
-        public bool IsKnockedOut()
-        {
-            return Condition == Attribute.Condition.KnockedOut;
-        }
+        public bool IsKnockedOut => StatusEffects.Any(x => x.Data.IsTreatedAsKnockedOut) || Condition == GameAttribute.Condition.KnockedOut;
+
+        /// <summary>
+        /// 崩壊している
+        /// </summary>
+        /// <returns></returns>
+        public bool IsCrushed => IsAffected(StatusEffectId.Crush);
 
         /// <summary>
         /// スキルを有している

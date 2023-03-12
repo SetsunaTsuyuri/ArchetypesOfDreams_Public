@@ -18,20 +18,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 有効性を取得する
         /// </summary>
-        /// <param name="attackEmotion">攻撃側の感情属性</param>
         /// <param name="defenseEmotion">守備側の感情属性</param>
+        /// <param name="attackEmotion">攻撃側の感情属性</param>
         /// <returns>見つからなければNormalを返す</returns>
-        public Attribute.Effectiveness GetEffectiveness(Attribute.Emotion attackEmotion, Attribute.Emotion defenseEmotion)
+        public GameAttribute.Effectiveness GetEffectiveness(GameAttribute.Emotion defenseEmotion, GameAttribute.Emotion attackEmotion)
         {
-            Attribute.Effectiveness result = Attribute.Effectiveness.Normal;
+            GameAttribute.Effectiveness result = GameAttribute.Effectiveness.Normal;
 
-            var offense = Effectiveness.FirstOrDefault(a => a.Attack == attackEmotion);
-            if (offense != null)
+            var defense = Effectiveness.FirstOrDefault(x => x.Defense == defenseEmotion);
+            if (defense != null)
             {
-                var defense = offense.Effectiveness.FirstOrDefault(a => a.Key == defenseEmotion);
-                if (defense != null)
+                var attack = defense.Effectiveness.FirstOrDefault(x => x.Key == attackEmotion);
+                if (attack != null)
                 {
-                    result = defense.Value;
+                    result = attack.Value;
                 }
             }
 

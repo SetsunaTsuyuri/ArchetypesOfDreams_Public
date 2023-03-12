@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -8,28 +6,25 @@ using Cysharp.Threading.Tasks;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// シナリオのゲームコマンド
+    /// シナリオイベント
     /// </summary>
-    [Serializable]
     public class ScenarioEvent : IGameEvent
     {
         /// <summary>
-        /// ID
+        /// 名前
         /// </summary>
         [field: SerializeField]
-        public int Id { get; set; } = 1;
+        public string Name { get; set; } = string.Empty;
 
-        public ScenarioEvent(string[] columns)
-        {
-            if (int.TryParse(columns[1], out int id))
-            {
-                Id = id;
-            }
-        }
+        /// <summary>
+        /// 文章
+        /// </summary>
+        [field: SerializeField]
+        public string Message { get; set; } = string.Empty;
 
         public UniTask GetUniTask(CancellationToken token)
         {
-            return GameEventsManager.ResolveScenarioEvent(this, token);
+            return UniTask.CompletedTask;
         }
     }
 }

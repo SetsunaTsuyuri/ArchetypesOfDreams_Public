@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -187,7 +186,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // アイテム所持数ディクショナリー
             _itemsDic.Clear();
             int items = MasterData.CountItems();
-            for (int i = 0; i < items; i++)
+            for (int i = 1; i <= items; i++)
             {
                 _itemsDic.Add(i, 0);
             }
@@ -208,17 +207,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 味方パーティ
             Combatant player = new DreamWalker()
             {
-                DataId = 0,
+                DataId = 1,
                 Level = 1
             };
             player.Initialize();
             Allies.Add(player);
 
             // アイテム
-            ItemsDic[0] = 10;
             ItemsDic[1] = 10;
-            ItemsDic[3] = 10;
+            ItemsDic[2] = 10;
             ItemsDic[4] = 10;
+            ItemsDic[5] = 10;
 
             // 選択可能なダンジョン
             _selectableDungeons[1] = true;

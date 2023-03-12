@@ -96,7 +96,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 return;
             }
 
-            AudioManager.PlaySE(SEType.Select);
+            AudioManager.PlaySE(SEId.Select);
             _playerInput.enabled = false;
             Stack(typeof(PlayerMenu));
         }

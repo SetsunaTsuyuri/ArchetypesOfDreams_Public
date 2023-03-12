@@ -42,6 +42,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 // スタック
                 selectable.OnStack += t => Stack(t);
+
+                // 履歴消去
+                selectable.OnClearingHistory += Clear;
             }
         }
 
@@ -51,7 +54,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="type"></param>
         public void Stack(System.Type type)
         {
-            if (_currentSelected != null)
+            if (_currentSelected)
             {
                 _historyStack.Push(_currentSelected);
             }
@@ -59,6 +62,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             SelectableGameUIBase next = _selectables.FirstOrDefault(x => x.GetType() == type);
             if (next != null)
             {
+                if (_currentSelected)
+                {
+                    _currentSelected.BeDeselected();
+                }
+
                 next.BeSelected();
             }
             else
@@ -76,6 +84,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 return;
             }
+
+            _currentSelected.BeDeselected();
 
             SelectableGameUIBase previous = _historyStack.Pop();
             previous.BeSelected();

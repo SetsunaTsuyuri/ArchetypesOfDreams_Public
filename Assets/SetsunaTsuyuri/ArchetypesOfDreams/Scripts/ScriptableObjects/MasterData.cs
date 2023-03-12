@@ -91,11 +91,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 基本スキルデータを取得する
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public static SkillData GetSkillData(BasicSkillType type)
+        public static SkillData GetSkillData(BasicSkillId id)
         {
-            return GetSkillData((int)type);
+            return GetSkillData((int)id);
         }
 
         /// <summary>
@@ -106,6 +106,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static ItemData GetItemData(int id)
         {
             return Instance.Items.FirstOrDefault(x => x.Id == id);
+        }
+
+        /// <summary>
+        /// 基本ステータス効果データを取得する
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static StatusEffectData GetStatusEffectData(StatusEffectId id)
+        {
+            return GetStatusEffectData((int)id);
         }
 
         /// <summary>

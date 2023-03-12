@@ -67,16 +67,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 通常攻撃
-            SetUpBasicSkillButton(NormalAttack, BasicSkillType.Attack, battle);
+            SetUpBasicSkillButton(NormalAttack, BasicSkillId.Attack, battle);
 
             // 防御
-            SetUpBasicSkillButton(Defense, BasicSkillType.Defense, battle);
+            SetUpBasicSkillButton(Defense, BasicSkillId.Defense, battle);
 
             // 浄化
-            SetUpBasicSkillButton(Purification, BasicSkillType.Purification, battle);
+            SetUpBasicSkillButton(Purification, BasicSkillId.Purification, battle);
 
             // 交代
-            SetUpBasicSkillButton(Change, BasicSkillType.Change, battle);
+            SetUpBasicSkillButton(Change, BasicSkillId.Change, battle);
 
             // スキル
             Skills.AddPressedListener(() =>
@@ -101,15 +101,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 基本スキルボタンをセットアップする
         /// </summary>
         /// <param name="button"></param>
-        /// <param name="type"></param>
+        /// <param name="basicSkillId"></param>
         /// <param name="battle"></param>
-        private void SetUpBasicSkillButton(SkillButton button, BasicSkillType type, Battle battle)
+        private void SetUpBasicSkillButton(SkillButton button, BasicSkillId basicSkillId, Battle battle)
         {
             button.SetUp(battle.BattleUI.Description);
             button.AddPressedListener(() =>
             {
                 CombatantContainer user = battle.Actor;
-                int id = (int)type;
+                int id = (int)basicSkillId;
 
                 battle.BattleUI.TargetSelection.OnSkillTargetSelection(user, id);
                 Stack(typeof(TargetSelectionUI));
@@ -120,7 +120,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 各ボタンを更新する
         /// </summary>
-        /// <param name="battle">戦闘の</param>
+        /// <param name="battle">戦闘</param>
         public void UpdateButtons(Battle battle)
         {
             // 行動者
@@ -129,7 +129,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 通常攻撃ボタン
             {
-                int id = (int)BasicSkillType.Attack;
+                int id = (int)BasicSkillId.Attack;
                 bool canBeUsed = actor.CanUseSkill(id);
                 NormalAttack.UpdateButton(id, canBeUsed);
             }
@@ -141,7 +141,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Purification.gameObject.SetActive(combatant is DreamWalker);
             if (Purification.isActiveAndEnabled)
             {
-                int id = (int)BasicSkillType.Purification;
+                int id = (int)BasicSkillId.Purification;
                 bool canBeUsed = actor.CanUseSkill(id);
                 Purification.UpdateButton(id, canBeUsed);
             }
@@ -154,7 +154,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Change.gameObject.SetActive(combatant is Nightmare);
             if (Change.isActiveAndEnabled)
             {
-                int id = (int)BasicSkillType.Change;
+                int id = (int)BasicSkillId.Change;
                 bool canBeUsed = actor.CanUseSkill(id);
                 Change.UpdateButton(id, canBeUsed);
             }
@@ -165,7 +165,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 防御ボタン
             {
-                int id = (int)BasicSkillType.Defense;
+                int id = (int)BasicSkillId.Defense;
                 bool canBeUsed = actor.CanUseSkill(id);
                 Defense.UpdateButton(id, canBeUsed);
             }

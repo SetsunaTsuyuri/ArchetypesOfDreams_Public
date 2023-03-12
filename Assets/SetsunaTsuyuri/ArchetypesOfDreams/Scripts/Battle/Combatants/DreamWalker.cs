@@ -40,7 +40,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             return true;
         }
 
-        public override int GetPurificationSuccessRate(Combatant purifier)
+        public override int CaluclatePurificationSuccessRate(Combatant purifier)
         {
             return 0;
         }

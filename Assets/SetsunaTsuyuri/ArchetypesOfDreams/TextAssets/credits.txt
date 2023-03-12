@@ -1,0 +1,39 @@
+﻿【ゲームデザイン・プログラミング】
+Kairi Kawasaki
+
+【イラスト】
+Kairi Kawasaki
+摩
+
+【素材提供】
+
+Copyright (c) 2019 Yoshifumi Kawai / Cysharp, Inc.
+Released under the MIT license
+https://github.com/Cysharp/UniTask/blob/master/LICENSE
+
+Copyright (c) 2018 Yoshifumi Kawai
+Released under the MIT license
+https://github.com/neuecc/UniRx/blob/master/LICENSE
+
+Copyright (c) 2017 furukazu
+Released under the MIT license
+https://github.com/furukazu/UnityCSVReader/blob/master/LICENSE
+
+ぴぽや
+https://pipoya.net/
+
+PeriTune
+https://peritune.com/
+
+DOVA-SYNDROME
+https://dova-s.jp/
+
+魔王魂
+https://maou.audio/
+
+ザ・マッチメイカァズ2nd
+http://osabisi.sakura.ne.jp/m2/
+
+(株)ビタースウィートエンタテインメント
+
+月わに

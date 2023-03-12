@@ -71,18 +71,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int AmoutOfSoulRecoverdPerTurn { get; private set; } = 1;
 
         /// <summary>
-        /// クラッシュ状態のときの与ダメージ・回復倍率
-        /// </summary>
-        [field: SerializeField]
-        public float TakingDamageAndRecoveryCorrectionWhenCrush { get; private set; } = 0.25f;
-
-        /// <summary>
-        /// クラッシュ状態のときの被ダメージ倍率
-        /// </summary>
-        [field: SerializeField]
-        public float GivingDamageCorrectionWhenCrush { get; private set; } = 1.5f;
-
-        /// <summary>
         /// クリティカルヒットしたときのダメージ倍率
         /// </summary>
         [field: SerializeField]
@@ -101,10 +89,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxDamageAndHealing { get; private set; } = 99999999;
 
         /// <summary>
-        /// クラッシュ状態が継続するターン数
+        /// HPが0になったときに付与されるステータス効果
         /// </summary>
         [field: SerializeField]
-        public int CrushTurns { get; private set; } = 2;
+        public EffectData.StatusEffect EffectHP0 { get; private set; } = new();
+
+        /// <summary>
+        /// GPが0になったとき付与されるステータス効果
+        /// </summary>
+        [field: SerializeField]
+        public EffectData.StatusEffect EffectGP0 { get; private set; } = new();
 
         /// <summary>
         /// 勝利後のHP回復率

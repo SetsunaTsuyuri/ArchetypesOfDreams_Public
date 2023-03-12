@@ -47,6 +47,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 戦闘者の健康状態が設定されたときの処理
         /// </summary>
         /// <param name="condition">健康状態</param>
-        public virtual void OnConditionSet(Attribute.Condition condition) { }
+        public virtual void OnConditionSet(GameAttribute.Condition condition) { }
     }
 }

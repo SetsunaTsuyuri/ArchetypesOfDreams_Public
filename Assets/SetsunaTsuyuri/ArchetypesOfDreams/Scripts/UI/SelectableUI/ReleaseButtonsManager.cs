@@ -13,7 +13,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 更新した後選択する
         /// </summary>
         /// <param name="allies">味方の管理者</param>
-        public void UpdateButtonsAndSelect(AllyContainersManager allies)
+        public void UpdateButtonsAndSelect(AlliesParty allies)
         {
             CombatantContainer[] containers = allies.GetPurifiedEnemyAndAllMembers();
 

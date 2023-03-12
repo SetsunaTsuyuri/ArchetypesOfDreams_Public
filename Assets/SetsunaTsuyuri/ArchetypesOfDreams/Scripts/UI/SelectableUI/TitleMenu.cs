@@ -21,10 +21,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         GameButton _loadGameButton = null;
 
         /// <summary>
+        /// オプションボタン
+        /// </summary>
+        [SerializeField]
+        GameButton _optionsButton = null;
+
+        /// <summary>
+        /// クレジットボタン
+        /// </summary>
+        [SerializeField]
+        GameButton _creditsButton = null;
+
+        /// <summary>
+        /// 終了ボタン
+        /// </summary>
+        [SerializeField]
+        GameButton _quitButton = null;
+
+        /// <summary>
         /// セットアップする
         /// </summary>
-        /// <param name="savedataMenu">セーブデータメニュー</param>
-        public void SetUp(SelectableGameUIBase savedataMenu)
+        public override void SetUp()
         {
             base.SetUp();
             
@@ -34,16 +51,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // 初期化する
                 VariableData.Instance.Initialize();
 
-                // 自室へ移動する
-                SceneChangeManager.StartChange(SceneType.MyRoom);
+                // ダンジョンへ移動する
+                SceneChangeManager.StartChange(SceneType.Dungeon);
             });
 
             // ロードゲーム
             _loadGameButton.AddPressedListener(() => Stack(typeof(SaveDataMenu)));
 
-            // TODO: オプション オプションメニューを開く
+            // オプション
+            _optionsButton.AddPressedListener(() => Stack(typeof(OptionsMenu)));
 
-            // TODO: クレジット クレジット画面を開く
+            // クレジット
+            _creditsButton.AddPressedListener(() => Stack(typeof(CreditsUI)));
+
+            // ゲーム終了
+            _quitButton.AddPressedListener(() => ApplicationUtility.Quit());
         }
     }
 }

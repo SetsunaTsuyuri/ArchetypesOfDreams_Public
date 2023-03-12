@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -171,10 +171,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 待機時間の設定
+        /// </summary>
+        WaitTimeSettings _waitTime = null;
+
+        /// <summary>
+        /// 待機時間の設定
+        /// </summary>
+        public static WaitTimeSettings WaitTime
+        {
+            get => Instance._waitTime;
+        }
+
+        /// <summary>
         /// その他の設定
         /// </summary>
         OtherSettings _other = null;
 
+        /// <summary>
+        /// その他の設定
+        /// </summary>
         public static OtherSettings Other
         {
             get => Instance._other;
@@ -194,16 +210,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _popUpTexts = Resources.Load<PopUpTextsSettings>(s_path + "PopUpTexts");
             _purification = Resources.Load<PurificationSettings>(s_path + "Purification");
             _terms = Resources.Load<TermsSettings>(s_path + "Terms");
+            _waitTime = Resources.Load<WaitTimeSettings>(s_path + "WaitTime");
             _other = Resources.Load<OtherSettings>(s_path + "Other");
         }
 
         /// <summary>
         /// 感情属性による有効性を取得する
         /// </summary>
-        /// <param name="attackEmotion">攻撃側の感情属性</param>
         /// <param name="defenseEmotion">守備側の感情属性</param>
+        /// <param name="attackEmotion">攻撃側の感情属性</param>
         /// <returns>見つからなければNormalを返す</returns>
-        public static Attribute.Effectiveness GetEffectiveness(Attribute.Emotion attackEmotion, Attribute.Emotion defenseEmotion)
+        public static GameAttribute.Effectiveness GetEffectiveness(GameAttribute.Emotion defenseEmotion, GameAttribute.Emotion attackEmotion)
         {
             return Instance._emotions.GetEffectiveness(defenseEmotion, attackEmotion);
         }

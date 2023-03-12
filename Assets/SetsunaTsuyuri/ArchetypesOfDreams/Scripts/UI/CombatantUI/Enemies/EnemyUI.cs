@@ -9,11 +9,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public class EnemyUI : CombatantContainerUI
     {
-        public override void OnConditionSet(Attribute.Condition condition)
+        public override void OnConditionSet(GameAttribute.Condition condition)
         {
             switch (condition)
             {
-                case Attribute.Condition.KnockedOut:
+                case GameAttribute.Condition.KnockedOut:
                     DeactivateAndHide();
                     break;
             }

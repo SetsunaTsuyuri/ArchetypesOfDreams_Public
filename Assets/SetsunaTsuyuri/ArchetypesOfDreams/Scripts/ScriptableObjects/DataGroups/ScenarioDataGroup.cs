@@ -14,6 +14,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 汎用シナリオ集
         /// </summary>
         [field: SerializeField]
-        public KeysAndValues<Attribute.Scenario, TextAsset> CommonScenarios { get; private set; }
+        public KeysAndValues<GameAttribute.Scenario, TextAsset> CommonScenarios { get; private set; }
     }
 }

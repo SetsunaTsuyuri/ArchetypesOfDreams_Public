@@ -7,5 +7,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 夢渡りのデータ
     /// </summary>
     [System.Serializable]
-    public class DreamWalkerData : CombatantData { }
+    public class DreamWalkerData : CombatantData
+    {
+        public string FullName = string.Empty;
+    }
 }

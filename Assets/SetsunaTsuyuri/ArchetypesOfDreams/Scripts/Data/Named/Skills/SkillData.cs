@@ -4,29 +4,29 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 基本スキルタイプ
+    /// 基本スキルID
     /// </summary>
-    public enum BasicSkillType
+    public enum BasicSkillId
     {
         /// <summary>
         /// 攻撃
         /// </summary>
-        Attack = 0,
+        Attack = 1,
 
         /// <summary>
         /// 防御
         /// </summary>
-        Defense = 1,
+        Defense = 2,
 
         /// <summary>
         /// 浄化
         /// </summary>
-        Purification = 2,
+        Purification = 3,
 
         /// <summary>
         /// 交代
         /// </summary>
-        Change = 3
+        Change = 4
     }
 
     /// <summary>
@@ -39,8 +39,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 消費DP
         /// </summary>
-        [field: SerializeField]
-        public int Cost { get; private set; }
+        public int Cost = 0;
 
         /// <summary>
         /// 効果

@@ -31,7 +31,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// 影響を受けるステータス
             /// </summary>
             [field: SerializeField]
-            public Affected Affected { get; private set; } = Affected.HP;
+            public AffectedStatusType Affected { get; private set; } = AffectedStatusType.HP;
 
             /// <summary>
             /// ダメージの種類
@@ -99,6 +99,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// </summary>
             [field: SerializeField]
             public bool IgnoreRegistance { get; private set; } = false;
+
+            /// <summary>
+            /// 永続する
+            /// </summary>
+            [field: SerializeField]
+            public bool IsPermanent { get; private set; } = false;
         }
 
         /// <summary>
@@ -125,7 +131,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             /// <summary>
             /// SEタイプ
             /// </summary>
-            public SEType SE = default;
+            public SEId SE = default;
         }
 
         /// <summary>
@@ -197,7 +203,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool IsChange { get; private set; } = false;
 
         /// <summary>
-        /// 攻撃的なスキルである
+        /// 効果適用後、再び行動できる
+        /// </summary>
+        [field: SerializeField]
+        public bool CanActAgain { get; private set; } = false;
+
+        /// <summary>
+        /// 攻撃的な効果である
         /// </summary>
         [field: SerializeField]
         public bool IsOffensive { get; private set; } = false;
@@ -206,13 +218,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 攻撃の属性
         /// </summary>
         [field: SerializeField]
-        public Attribute.Attack Attack { get; private set; } = Attribute.Attack.None;
+        public GameAttribute.Attack Attack { get; private set; } = GameAttribute.Attack.None;
 
         /// <summary>
         /// 感情の属性
         /// </summary>
         [field: SerializeField]
-        public Attribute.Emotion Emotion { get; private set; } = Attribute.Emotion.None;
+        public GameAttribute.Emotion Emotion { get; private set; } = GameAttribute.Emotion.None;
 
         /// <summary>
         /// 弱点を突いた場合に与える追加精神ダメージ
@@ -233,21 +245,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int Critical { get; private set; } = 0;
 
         /// <summary>
-        /// ステータスに影響を与える
+        /// ダメージ効果がある
         /// </summary>
         /// <returns></returns>
-        public bool AffectStatus()
-        {
-            return DamageEffects.Length > 0;
-        }
-
-        /// <summary>
-        /// ステータス効果を付与する
-        /// </summary>
-        /// <returns></returns>
-        public bool AddsStatusEffects()
-        {
-            return StatusEffects.Length > 0;
-        }
+        public bool HasDamageEffects => DamageEffects.Length > 0;
     }
 }

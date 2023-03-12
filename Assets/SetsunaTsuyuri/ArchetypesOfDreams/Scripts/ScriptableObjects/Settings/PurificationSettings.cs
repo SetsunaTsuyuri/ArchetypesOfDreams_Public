@@ -33,11 +33,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public float LifeReductionCorrection { get; private set; } = 1.0f;
-
-        /// <summary>
-        /// クラッシュ状態のときの成功率補正
-        /// </summary>
-        [field: SerializeField]
-        public float CrushCorrection { get; private set; } = 3.0f;
     }
 }

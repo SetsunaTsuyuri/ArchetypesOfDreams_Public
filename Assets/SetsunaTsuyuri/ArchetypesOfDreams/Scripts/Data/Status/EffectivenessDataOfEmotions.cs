@@ -14,12 +14,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 攻撃側の属性
         /// </summary>
         [field: SerializeField]
-        public Attribute.Emotion Attack { get; private set; }
+        public GameAttribute.Emotion Defense { get; private set; }
 
         /// <summary>
         /// 守備側の属性毎の有効性
         /// </summary>
         [field: SerializeField]
-        public KeyAndValue<Attribute.Emotion, Attribute.Effectiveness>[] Effectiveness { get; private set; }
+        public KeyAndValue<GameAttribute.Emotion, GameAttribute.Effectiveness>[] Effectiveness { get; private set; }
     }
 }

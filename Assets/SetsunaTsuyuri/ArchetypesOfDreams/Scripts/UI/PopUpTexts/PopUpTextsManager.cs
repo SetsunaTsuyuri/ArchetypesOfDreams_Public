@@ -1,7 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -36,7 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ポップアップテキストのリスト
         /// </summary>
-        List<PopUpText> _popUpTexts = new();
+        readonly List<PopUpText> _popUpTexts = new();
 
         /// <summary>
         /// レクトトランスフォーム
@@ -58,6 +60,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 instance.Hide();
                 _popUpTexts.Add(instance);
             }
+
+            // 付与ステータス効果ポップアップ
+            UniRxEventsManager.OnStatusEffectAdded
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(PopUpAddedStatusEffect);
+
+            // 解除ステータス効果ポップアップ
+            UniRxEventsManager.OnStatusEffectsRemoved
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(PopUpRemovedStatusEffects);
+        }
+
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        /// <param name="targetSelection">対象選択UI</param>
+        public void SetUp(TargetSelectionUI targetSelection)
+        {
+            targetSelection.AllyTargetSelectionStart += OnAllyTargeSelectionEnter;
+            targetSelection.AllyTargetSelectionEnd += OnTAllyargetSelectionExit;
         }
 
         /// <summary>
@@ -76,52 +98,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 対象選択開始時の処理
+        /// 味方による対象選択開始時の処理
         /// </summary>
-        /// <param name="battle">戦闘の管理者</param>
-        public void OnTargetSelectionEnter(Battle battle)
+        /// <param name="effect"></param>
+        /// <param name="targetables"></param>
+        private void OnAllyTargeSelectionEnter(EffectData effect, List<CombatantContainer> targetables)
         {
-            // プレイヤー操作が不可能、または交代、逃走する場合は中止する
-            if (!battle.Actor.ContainsPlayerControlled())
+            foreach (var targetable in targetables)
             {
-                return;
-            }
-
-            // 行動者の行動効果データを取得する
-            EffectData effect = battle.ActorAction.Effect;
-
-            // 効果に応じて処理を決める
-            System.Action<CombatantContainer> action = null;
-            if (effect.IsOffensive)
-            {
-                // 有効性を表示する
-                action = (x) => PopUpEffectiveness(x);
-            }
-            else if (effect.IsPurification)
-            {
-                // 浄化成功率を表示する
-                action = (x) => PopUpPurificationSuccessRate(x);
-            }
-
-            if (action != null)
-            {
-                foreach (var container in battle.Targetables)
+                if (effect.IsOffensive)
                 {
-                    action.Invoke(container);
+                    BlinkEffectiveness(targetable);
+                }
+                else if (effect.IsPurification)
+                {
+                    BlinkPurificationSuccessRate(targetable);
                 }
             }
         }
 
         /// <summary>
-        /// 行動開始時の処理
+        /// 対象選択終了時の処理
         /// </summary>
-        public void OnTargetSelectionExit()
+        public void OnTAllyargetSelectionExit()
         {
-            // ループ表示しているテキストを全て非表示にする
-            PopUpText[] loops = _popUpTexts
-               .Where(x => x.LoopSequence != null && x.LoopSequence.active)
-               .ToArray();
-
+            // ループ表示を止める
+            var loops = _popUpTexts.Where(x => x.IsLoop);
             foreach (var loop in loops)
             {
                 loop.Hide();
@@ -132,24 +134,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 浄化成功率を表示する
         /// </summary>
         /// <param name="container"></param>
-        private void PopUpPurificationSuccessRate(CombatantContainer container)
+        private void BlinkPurificationSuccessRate(CombatantContainer container)
         {
             string rate = GameSettings.PopUpTexts.PurificationSuccessRateText;
-            rate += container.Combatant.Result.PurificationSuccessRate.ToString();
+            rate += container.Combatant.Results.PurificationSuccessRate.ToString();
             rate += GameSettings.PopUpTexts.PurificatinSuccessRateSuffix;
 
-            PopUpLoop(container, rate, GameSettings.PopUpTexts.PurificationSuccessRateColor);
+            Blink(container, rate, GameSettings.PopUpTexts.PurificationSuccessRateColor);
         }
 
         /// <summary>
-        /// 感情属性の有効性を表示する
+        /// 属性の有効性を表示する
         /// </summary>
         /// <param name="container">戦闘者コンテナ</param>
-        private void PopUpEffectiveness(CombatantContainer container)
+        private void BlinkEffectiveness(CombatantContainer container)
         {
-            Attribute.Effectiveness effectiveness = container.Combatant.Result.Effectiveness;
+            GameAttribute.Effectiveness effectiveness = container.Combatant.Results.Effectiveness;
             (string, Color) result = GameSettings.PopUpTexts.GetEffectivenessTextAndColor(effectiveness);
-            PopUpLoop(container, result.Item1, result.Item2);
+            Blink(container, result.Item1, result.Item2);
         }
 
         /// <summary>
@@ -158,11 +160,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         /// <param name="text">文字列</param>
         /// <param name="color">色</param>
-        private void PopUpLoop(CombatantContainer container, string text, Color color)
+        private void Blink(CombatantContainer container, string text, Color color)
         {
             PopUpText popUpText = GetPopUpText();
             Vector3 position = DecidePosition(container);
-            popUpText.DoBlinkingSequence(position, text, color);
+            popUpText.BlinkRepeatedly(position, text, color);
         }
 
         /// <summary>
@@ -175,43 +177,125 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ダメージ量を表示する
+        /// ダメージを表示する
         /// </summary>
         /// <param name="container">戦闘者コンテナ</param>
         public void PopUpDamage(CombatantContainer container)
         {
-            string damage = string.Empty;
-            ActionResult result = container.Combatant.Result;
-            MakeDamageOrRecoveryText(ref damage, result.HPDamage, result.DPDamage, result.GPDamage);
+            string text = string.Empty;
+            DamageResult damage = container.Combatant.Results.Damage;
 
-            PopUp(container, damage, GameSettings.PopUpTexts.DamageColor);
+            if (damage.IsCritical)
+            {
+                AddNewLineText(ref text, GameSettings.PopUpTexts.CriticalText);
+            }
+
+            if (damage.IsCrush)
+            {
+                AddNewLineText(ref text, GameSettings.PopUpTexts.CrushText);
+            }
+
+            AddDamageOrHealingText(ref text, damage.HP, damage.DP, damage.GP);
+            PopUp(container, text, GameSettings.PopUpTexts.DamageColor);
         }
 
         /// <summary>
-        /// 回復量を表示する
+        /// 回復を表示する
         /// </summary>
         /// <param name="container">戦闘者コンテナ</param>
-        public void PopUpRecovery(CombatantContainer container)
+        public void PopUpHealing(CombatantContainer container)
         {
-            string recovery = string.Empty;
-            ActionResult result = container.Combatant.Result;
-            MakeDamageOrRecoveryText(ref recovery, result.HPHealing, result.DPHealing, result.GPHealing);
+            string text = string.Empty;
+            HealingResult healing = container.Combatant.Results.Healing;
+            AddDamageOrHealingText(ref text, healing.HP, healing.DP, healing.GP);
+            PopUp(container, text, GameSettings.PopUpTexts.HealingColor);
+        }
 
-            PopUp(container, recovery, GameSettings.PopUpTexts.HealingColor);
+        /// <summary>
+        /// 付与ステータス効果を表示する
+        /// </summary>
+        /// <param name="result"></param>
+        public void PopUpAddedStatusEffect(AddedStatusEffectResult result)
+        {
+            string text = result.Effect.Name;
+            Color color = result.Effect.EffectAttribute switch
+            {
+                StatusEffectCategory.Stance => GameSettings.PopUpTexts.StanceColor,
+                _ => Color.white
+            };
+
+            PopUp(result.Container, text, color);
+        }
+
+        /// <summary>
+        /// 解除ステータス効果をポップアップする
+        /// </summary>
+        /// <param name="result"></param>
+        public void PopUpRemovedStatusEffects(StatusEffectsResult result)
+        {
+            CancellationToken token = this.GetCancellationTokenOnDestroy();
+            PopUpStatusEffects(result, token, true).Forget();
+        }
+
+        /// <summary>
+        /// ステータス効果をポップアップする
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="token"></param>
+        /// <param name="isRemoval"></param>
+        /// <returns></returns>
+        private async UniTask PopUpStatusEffects(StatusEffectsResult result, CancellationToken token, bool isRemoval)
+        {
+            var effects = result.Effects.Where(x => x.CanPopUp);
+            foreach (var effect in effects)
+            {
+                string text = effect.Name;
+                Color color = effect.EffectAttribute switch
+                {
+                    StatusEffectCategory.Abnormality => GameSettings.PopUpTexts.AbnormalityColor,
+                    StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
+                    StatusEffectCategory.Debuff => GameSettings.PopUpTexts.DebuffColor,
+                    StatusEffectCategory.Stance => GameSettings.PopUpTexts.StanceColor,
+                    _ => Color.white
+                };
+
+                if (isRemoval)
+                {
+                    color.a *= GameSettings.PopUpTexts.RemovedEffectAlpha;
+                }
+
+                PopUp(result.Container, text, color);
+                await TimeUtility.Wait(GameSettings.WaitTime.StatusEffectAdded, token);
+            }
         }
 
         /// <summary>
         /// ダメージまたは回復の表示文字列を作る
         /// </summary>
         /// <param name="text">文字列</param>
-        /// <param name="hp">生命力</param>
-        /// <param name="dp">夢想力</param>
-        /// <param name="sp">精神力</param>
-        private void MakeDamageOrRecoveryText(ref string text, int? hp, int? dp, int? sp)
+        /// <param name="hp">HP</param>
+        /// <param name="dp">DP</param>
+        /// <param name="gp">GP</param>
+        private void AddDamageOrHealingText(ref string text, int? hp, int? dp, int? gp)
         {
             AddNewLineAndText(ref text, hp);
             AddNewLineAndText(ref text, dp, GameSettings.PopUpTexts.DPPrefix);
-            AddNewLineAndText(ref text, sp, GameSettings.PopUpTexts.GPPrefix);
+            AddNewLineAndText(ref text, gp, GameSettings.PopUpTexts.GPPrefix);
+        }
+
+        /// <summary>
+        /// テキストを改行して追加する
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="newLineText"></param>
+        private void AddNewLineText(ref string text, string newLineText)
+        {
+            if (!string.IsNullOrEmpty(text))
+            {
+                text += "\n";
+            }
+
+            text += newLineText;
         }
 
         /// <summary>
@@ -223,17 +307,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="suffix">接尾辞</param>
         private void AddNewLineAndText(ref string text, int? value, string prefix = "", string suffix = "")
         {
-            if (value.HasValue)
+            if (!value.HasValue)
             {
-                if (!string.IsNullOrEmpty(text))
-                {
-                    text += "\n";
-                }
-
-                text += prefix;
-                text += value;
-                text += suffix;
+                return;
             }
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                text += "\n";
+            }
+
+            text += prefix;
+            text += value;
+            text += suffix;
         }
 
         /// <summary>
@@ -246,7 +332,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             PopUpText popUpText = GetPopUpText();
             Vector3 position = DecidePosition(container);
-            popUpText.DoPopUpSequence(position, text, color);
+            popUpText.PopUp(position, text, color);
         }
 
         /// <summary>

@@ -5,6 +5,22 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
+    /// ステータス効果ID
+    /// </summary>
+    public enum StatusEffectId
+    {
+        /// <summary>
+        /// 戦闘不能
+        /// </summary>
+        KnockedOut = 1,
+
+        /// <summary>
+        /// 崩壊
+        /// </summary>
+        Crush = 2
+    }
+
+    /// <summary>
     /// ステータス効果
     /// </summary>
     public class StatusEffect
@@ -20,14 +36,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int RemainingTurns { get; set; } = 0;
 
         /// <summary>
-        /// コンストラクター
+        /// 永続する
         /// </summary>
-        /// <param name="id">ID</param>
-        /// <param name="turns">有効ターン数</param>
-        public StatusEffect(int id, int turns)
+        public bool IsPermanent { get; set; } = false;
+
+        /// <summary>
+        /// 解除されるべき効果である
+        /// </summary>
+        public bool MustBeRemoved => !IsPermanent && RemainingTurns == 0;
+
+        public StatusEffect(int id, int turns, bool isPermanent)
         {
             Data = MasterData.GetStatusEffectData(id);
             RemainingTurns = turns;
+            IsPermanent = isPermanent;
+        }
+
+        public StatusEffect(StatusEffectId id, int turns, bool isPermanent)
+        {
+            Data = MasterData.GetStatusEffectData(id);
+            RemainingTurns = turns;
+            IsPermanent = isPermanent;
         }
     }
 }
