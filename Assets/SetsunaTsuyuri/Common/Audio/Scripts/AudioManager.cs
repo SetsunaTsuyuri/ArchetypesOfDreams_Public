@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using UnityEngine.Audio;
+using UniRx;
 
 namespace SetsunaTsuyuri
 {
@@ -21,20 +21,22 @@ namespace SetsunaTsuyuri
     public class AudioManager : SingletonBehaviour<AudioManager, AudioManagerLoader>, IInitializable
     {
         /// <summary>
+        /// オーディオミキサー
+        /// </summary>
+        [SerializeField]
+        AudioMixer _audioMixer = null;
+
+        /// <summary>
         //// BGMの制御者
         //// </summary>
         [SerializeField]
-        AudioSourceController bgmSource = null;
-
-        private static AudioSourceController BgmSource => Instance.bgmSource;
+        AudioSourceController _bgmSource = null;
 
         /// <summary>
         /// SEの制御者
         /// </summary>
         [SerializeField]
-        AudioSourceController seSource = null;
-
-        private static AudioSourceController SESource => Instance.seSource;
+        AudioSourceController _seSource = null;
 
         /// <summary>
         /// BGMデータグループ
@@ -42,84 +44,92 @@ namespace SetsunaTsuyuri
         [SerializeField]
         BgmDataGroup _bgmDataGroup = null;
 
-        private static BgmDataGroup BgmDataGroup => Instance._bgmDataGroup;
-
         /// <summary>
         /// SEデータグループ
         /// </summary>
         [SerializeField]
         SEDataGroup _seDataGroup = null;
 
-        private static SEDataGroup SEDataGroup => Instance._seDataGroup;
+        /// <summary>
+        /// マスター音量
+        /// </summary>
+        readonly AudioVolume _masterVolume = new();
+
+        /// <summary>
+        /// マスター音量
+        /// </summary>
+        public static AudioVolume MasterVolume => Instance._masterVolume;
+
+        /// <summary>
+        /// BGM音量
+        /// </summary>
+        readonly AudioVolume _bgmVolume = new();
+
+        /// <summary>
+        /// BGM音量
+        /// </summary>
+        public static AudioVolume BgmVolume => Instance._bgmVolume;
+
+        /// <summary>
+        /// SE音量
+        /// </summary>
+        public AudioVolume _seVolume = new();
+
+        /// <summary>
+        /// SE音量
+        /// </summary>
+        public static AudioVolume SEVolume => Instance._seVolume;
 
         /// <summary>
         /// 保存されたBGM
         /// </summary>
         AudioData _savedBgm = null;
 
-        private static AudioData SavedBgm
-        {
-            get => Instance._savedBgm;
-            set => Instance._savedBgm = value;
-        }
-
         /// <summary>
         /// 保存されたBGMの再生位置
         /// </summary>
         float _savedBgmPlaybackPosition = 0.0f;
-
-        private static float SavedBgmPlaybackPosition
-        {
-            get => Instance._savedBgmPlaybackPosition;
-            set => Instance._savedBgmPlaybackPosition = value;
-        }
 
         /// <summary>
         /// BGMのキャンセレーショントークンソース
         /// </summary>
         CancellationTokenSource _bgmCancellationTokenSource = null;
 
-        private static CancellationTokenSource BgmCancellationTokenSource
+        protected override void Awake()
         {
-            get => Instance._bgmCancellationTokenSource;
-            set => Instance._bgmCancellationTokenSource = value;
+            base.Awake();
+
+            MasterVolume.Observable
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(volume => SetMixierVolume("Master", volume));
+
+            BgmVolume.Observable
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(volume => SetMixierVolume("BGM", volume));
+
+            SEVolume.Observable
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(volume => SetMixierVolume("SE", volume));
         }
 
         private void OnDestroy()
         {
             _bgmCancellationTokenSource?.Cancel();
+            _bgmCancellationTokenSource?.Dispose();
         }
 
         /// <summary>
         /// BGMを再生する
         /// </summary>
-        /// <param name="type">BGMタイプ</param>
+        /// <param name="id">BGMID</param>
         /// <param name="duration">フェード時間</param>
         /// <param name="position">再生位置</param>
-        public static void PlayBgm(BgmType type, float duration = 0.0f, float position = 0.0f)
+        public static void PlayBgm(BgmId id, float duration = 0.0f, float position = 0.0f)
         {
-            AudioData data = BgmDataGroup[type];
+            AudioData data = Instance._bgmDataGroup[id];
             if (data is null)
             {
-                Debug.LogError($"{type} is not found");
-                return;
-            }
-
-            PlayBgm(data, duration, position);
-        }
-
-        /// <summary>
-        /// BGMを再生する
-        /// </summary>
-        /// <param name="name">名前</param>
-        /// <param name="duration">フェード時間</param>
-        /// <param name="position">再生位置</param>
-        public static void PlayBgm(string name, float duration = 0.0f, float position = 0.0f)
-        {
-            AudioData data = BgmDataGroup[name];
-            if (data is null)
-            {
-                Debug.LogError($"{name} is not found");
+                Debug.LogError($"{id} is not found");
                 return;
             }
 
@@ -134,10 +144,28 @@ namespace SetsunaTsuyuri
         /// <param name="position">再生位置</param>
         public static void PlayBgm(int id, float duration = 0.0f, float position = 0.0f)
         {
-            AudioData data = BgmDataGroup[id];
+            AudioData data = Instance._bgmDataGroup[id];
             if (data is null)
             {
                 Debug.LogError($"ID:{id} is not found");
+                return;
+            }
+
+            PlayBgm(data, duration, position);
+        }
+
+        /// <summary>
+        /// BGMを再生する
+        /// </summary>
+        /// <param name="name">名前</param>
+        /// <param name="duration">フェード時間</param>
+        /// <param name="position">再生位置</param>
+        public static void PlayBgm(string name, float duration = 0.0f, float position = 0.0f)
+        {
+            AudioData data = Instance._bgmDataGroup[name];
+            if (data is null)
+            {
+                Debug.LogError($"{name} is not found");
                 return;
             }
 
@@ -152,16 +180,19 @@ namespace SetsunaTsuyuri
         /// <param name="position">再生位置</param>
         private static void PlayBgm(AudioData data, float duration, float position)
         {
-            if (data != BgmSource.Data)
+            AudioSourceController controller = Instance._bgmSource;
+
+            if (data != controller.Data)
             {
-                BgmSource.Data = data;
-                BgmSource.PlaybackPosition = position;
+                controller.Data = data;
+                controller.PlaybackPosition = position;
             }
 
-            BgmCancellationTokenSource?.Cancel();
-            BgmCancellationTokenSource = new CancellationTokenSource();
+            Instance._bgmCancellationTokenSource?.Cancel();
+            Instance._bgmCancellationTokenSource?.Dispose();
+            Instance._bgmCancellationTokenSource = new();
 
-            BgmSource.PlayWithFadeIn(duration, BgmCancellationTokenSource.Token).Forget();
+            controller.PlayWithFadeIn(duration, Instance._bgmCancellationTokenSource.Token).Forget();
         }
 
         /// <summary>
@@ -170,22 +201,21 @@ namespace SetsunaTsuyuri
         /// <param name="duration">フェード時間</param>
         public static void StopBgm(float duration = 0.5f)
         {
-            BgmCancellationTokenSource?.Cancel();
-            BgmCancellationTokenSource = new CancellationTokenSource();
+            Instance._bgmCancellationTokenSource?.Cancel();
 
-            BgmSource.StopWithFadeOut(duration, BgmCancellationTokenSource.Token).Forget();
+            Instance._bgmSource.StopWithFadeOut(duration, Instance._bgmCancellationTokenSource.Token).Forget();
         }
 
         /// <summary>
         /// SEを再生する
         /// </summary>
-        /// <param name="type">SEタイプ</param>
-        public static void PlaySE(SEType type)
+        /// <param name="id">SEID</param>
+        public static void PlaySE(SEId id)
         {
-            AudioData data = SEDataGroup[type];
+            AudioData data = Instance._seDataGroup[id];
             if (data is null)
             {
-                Debug.LogError($"{type} is not found");
+                Debug.LogError($"ID: {id} is not found");
                 return;
             }
 
@@ -195,10 +225,10 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// SEを再生する
         /// </summary>
-        /// <param name="name">SEの名前</param>
+        /// <param name="name"></param>
         public static void PlaySE(string name)
         {
-            AudioData data = SEDataGroup[name];
+            AudioData data = Instance._seDataGroup[name];
             if (data is null)
             {
                 Debug.LogError($"{name} is not found");
@@ -208,14 +238,15 @@ namespace SetsunaTsuyuri
             PlaySE(data);
         }
 
+
         /// <summary>
         /// SEを再生する
         /// </summary>
         /// <param name="name">SEの名前</param>
         public static void PlaySE(AudioData data)
         {
-            SESource.Data = data;
-            SESource.PlayOneShot();
+            Instance._seSource.Data = data;
+            Instance._seSource.PlayOneShot();
         }
 
         /// <summary>
@@ -223,8 +254,8 @@ namespace SetsunaTsuyuri
         /// </summary>
         public static void SaveBgm()
         {
-            SavedBgm = BgmSource.Data;
-            SavedBgmPlaybackPosition = BgmSource.PlaybackPosition;
+            Instance._savedBgm = Instance._bgmSource.Data;
+            Instance._savedBgmPlaybackPosition = Instance._bgmSource.PlaybackPosition;
         }
 
         /// <summary>
@@ -233,7 +264,28 @@ namespace SetsunaTsuyuri
         /// <param name="duration"></param>
         public static void LoadBgm(float duration = 0.0f)
         {
-            PlayBgm(SavedBgm, duration, SavedBgmPlaybackPosition);
+            PlayBgm(Instance._savedBgm, duration, Instance._savedBgmPlaybackPosition);
+        }
+
+        /// <summary>
+        /// オーディオミキサーの音量を設定する
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="volume"></param>
+        public static void SetMixierVolume(string name, float volume)
+        {
+            float dB = ToDecibel(volume);
+            Instance._audioMixer.SetFloat(name, dB);
+        }
+
+        /// <summary>
+        /// 音量をデシベルに変換する
+        /// </summary>
+        /// <param name="volume"></param>
+        /// <returns></returns>
+        private static float ToDecibel(float volume)
+        {
+            return Mathf.Clamp(Mathf.Log10(volume) * 20.0f, -80.0f, 0.0f);
         }
     }
 }

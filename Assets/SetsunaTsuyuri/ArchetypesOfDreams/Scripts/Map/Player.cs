@@ -16,7 +16,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ミニマップのトランスフォーム
         /// </summary>
         [field: SerializeField]
-        public Transform MiniMapTransform { get; private set; } = null; 
+        public Transform MiniMapTransform { get; private set; } = null;
 
         /// <summary>
         /// 移動する方向
@@ -42,6 +42,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// プレイヤーインプット
         /// </summary>
         PlayerInput _playerInput = null;
+
+        /// <summary>
+        /// 何かしらの動作を求めている
+        /// </summary>
+        public bool WantsToAnyAction
+        {
+            get
+            {
+                return WantsToMove()
+                    || WantsToRotate()
+                    || WantsToCheck
+                    || WantsToOpenMenu;
+            }
+        }
 
         private void Awake()
         {
@@ -145,7 +159,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     _moveDirection = Vector2Int.zero;
                     _rotationDirection = Vector2Int.zero;
                     break;
-                
+
                 default:
                     break;
             }

@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 敵のUI
     /// </summary>
-    public class EnemyUI : CombatantContainerUI
+    public class EnemyUI : CombatantUI
     {
         public override void OnConditionSet(GameAttribute.Condition condition)
         {

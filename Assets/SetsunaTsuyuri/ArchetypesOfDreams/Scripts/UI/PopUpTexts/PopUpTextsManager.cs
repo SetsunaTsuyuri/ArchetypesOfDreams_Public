@@ -62,12 +62,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 付与ステータス効果ポップアップ
-            UniRxEventsManager.OnStatusEffectAdded
+            MessageBrokersManager.OnStatusEffectAdded
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpAddedStatusEffect);
 
             // 解除ステータス効果ポップアップ
-            UniRxEventsManager.OnStatusEffectsRemoved
+            MessageBrokersManager.OnStatusEffectsRemoved
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpRemovedStatusEffects);
         }
@@ -220,6 +220,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             string text = result.Effect.Name;
             Color color = result.Effect.EffectAttribute switch
             {
+                StatusEffectCategory.Abnormality => GameSettings.PopUpTexts.AbnormalityColor,
+                StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
+                StatusEffectCategory.Debuff => GameSettings.PopUpTexts.DebuffColor,
                 StatusEffectCategory.Stance => GameSettings.PopUpTexts.StanceColor,
                 _ => Color.white
             };

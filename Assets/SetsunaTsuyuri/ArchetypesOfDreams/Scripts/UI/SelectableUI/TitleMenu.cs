@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -52,11 +53,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 VariableData.Instance.Initialize();
 
                 // ダンジョンへ移動する
-                SceneChangeManager.StartChange(SceneType.Dungeon);
+                SceneChangeManager.StartChange(SceneId.Dungeon);
             });
 
             // ロードゲーム
             _loadGameButton.AddPressedListener(() => Stack(typeof(SaveDataMenu)));
+
+            // ロードできるデータがない場合はロードゲームボタンを封印する
+            if (SaveDataManager.SaveDataDic.Values.All(x => x is null)
+                && SaveDataManager.AutoSaveData is null)
+            {
+                _loadGameButton.IsSeald = true;
+            }
 
             // オプション
             _optionsButton.AddPressedListener(() => Stack(typeof(OptionsMenu)));

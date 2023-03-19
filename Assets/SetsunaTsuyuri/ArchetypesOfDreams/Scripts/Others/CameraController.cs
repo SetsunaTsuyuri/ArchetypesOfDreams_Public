@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -32,6 +30,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public Camera Camera { get; private set; } = null;
 
         /// <summary>
+        /// 位置を更新する
+        /// </summary>
+        public bool CanUpdatePosition { get; set; } = true;
+
+        /// <summary>
         /// 視点となるトランスフォーム
         /// </summary>
         public Transform Target
@@ -60,7 +63,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void UpdatePositionAndRotation()
         {
-            if (!Target)
+            if (!CanUpdatePosition || !Target)
             {
                 return;
             }

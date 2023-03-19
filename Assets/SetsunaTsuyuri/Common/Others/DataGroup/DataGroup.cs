@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -19,12 +17,7 @@ namespace SetsunaTsuyuri
         [field: SerializeField]
         public TData[] Data { get; private set; }
 
-        /// <summary>
-        /// インデクサー
-        /// </summary>
-        /// <param name="id">ID</param>
-        /// <returns></returns>
-        public TData this[int id] => Data[id];
+        public TData this[int id] => Data.FirstOrDefault(x => x.Id == id);
 
         /// <summary>
         /// データの数を数える
@@ -34,14 +27,5 @@ namespace SetsunaTsuyuri
         {
             return Data.Length;
         }
-
-        //protected virtual void OnValidate()
-        //{
-        //    // IDを設定する
-        //    for (int i = 0; i < Data.Length; i++)
-        //    {
-        //        Data[i].Id = i;
-        //    }
-        //}
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// UIの管理者
+    /// ルートUI
     /// </summary>
     public abstract class UIManager : GameUI
     {

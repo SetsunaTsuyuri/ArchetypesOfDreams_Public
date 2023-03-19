@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using SetsunaTsuyuri.ArchetypesOfDreams;
-using System.Linq;
 
 namespace SetsunaTsuyuri
 {
@@ -94,7 +93,6 @@ namespace SetsunaTsuyuri
             SpiritCoins = VariableData.SpiritCoins;
             Steps = VariableData.Steps;
 
-            //Items = Copy(VariableData.Items);
             Items = VariableData.ItemsDic.Values.ToArray();
 
             StroyProgressions = Copy(VariableData.StoryProgressions);
@@ -114,11 +112,10 @@ namespace SetsunaTsuyuri
             VariableData.SpiritCoins = SpiritCoins;
             VariableData.Steps = Steps;
 
-            // Overwrite(Items, VariableData.Items);
             VariableData.ItemsDic.Clear();
             for (int i = 0; i < Items.Length; i++)
             {
-                VariableData.ItemsDic.Add(i, Items[i]);
+                VariableData.ItemsDic.Add(i + 1, Items[i]);
             }
 
             Overwrite(StroyProgressions, VariableData.StoryProgressions);

@@ -11,7 +11,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     {
         public override bool ContainsPlayerControlled()
         {
-            return ContainsActionable();
+            return ContainsActionable;
         }
     }
 }

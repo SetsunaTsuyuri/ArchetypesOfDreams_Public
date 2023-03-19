@@ -31,25 +31,18 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// 封印されている
         /// </summary>
-        bool isSealed = false;
+        bool _isSealed = false;
 
         /// <summary>
         /// 封印されている
         /// </summary>
         public bool IsSeald
         {
-            get => isSealed;
+            get => _isSealed;
             set
             {
-                isSealed = value;
-                if (isSealed)
-                {
-                    _canvasGroup.alpha = GameButtonsSettings.NonInteractableAlpha;
-                }
-                else
-                {
-                    _canvasGroup.alpha = GameButtonsSettings.InteractableAlpha;
-                }
+                _isSealed = value;
+                UpdateAlpha();
             }
         }
 
@@ -66,9 +59,29 @@ namespace SetsunaTsuyuri
 
             Button.onClick.AddListener(OnPressed);
 
-            AddPressedListener(() => AudioManager.PlaySE(SEType.Select));
-            AddTrriger(EventTriggerType.Move, _ => AudioManager.PlaySE(SEType.CursolMove));
-            AddTrriger(EventTriggerType.Cancel, _ => AudioManager.PlaySE(SEType.Cancel));
+            // 移動
+            AddTrriger(EventTriggerType.Move, e =>
+            {
+                MoveDirection direction = GetMoveDirection(e);
+                Navigation navigation = Button.navigation;
+
+                bool canMove = direction switch
+                {
+                    MoveDirection.Left => navigation.selectOnLeft != null,
+                    MoveDirection.Up => navigation.selectOnUp != null,
+                    MoveDirection.Right => navigation.selectOnRight != null,
+                    MoveDirection.Down => navigation.selectOnDown != null,
+                    _ => false
+                };
+
+                if (canMove)
+                {
+                    AudioManager.PlaySE(SEId.FocusMove);
+                }
+            });
+
+            // キャンセル
+            AddTrriger(EventTriggerType.Cancel, _ => AudioManager.PlaySE(SEId.Cancel));
         }
 
         public virtual void Initialize()
@@ -83,17 +96,18 @@ namespace SetsunaTsuyuri
         {
             if (IsSeald)
             {
-                AudioManager.PlaySE(SEType.Cancel);
+                AudioManager.PlaySE(SEId.Cancel);
                 return;
             }
 
+            AudioManager.PlaySE(SEId.Select);
             _pressed.Invoke();
         }
 
         /// <summary>
         /// ボタンのonClickイベントリスナーを追加する
         /// </summary>
-        /// <param name="action">UnityAction</param>
+        /// <param name="action"></param>
         public void AddPressedListener(UnityAction action)
         {
             _pressed.AddListener(action);
@@ -102,18 +116,25 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// ボタンのonClickイベントリスナーを取り除く
         /// </summary>
-        /// <param name="action">UnityAction</param>
+        /// <param name="action"></param>
         public void RemovePressedListener(UnityAction action)
         {
             _pressed.RemoveListener(action);
         }
 
         /// <summary>
+        /// ボタンのonClickイベントリスナーを全て取り除く
+        /// </summary>
+        public void RemoveAllPressedListener()
+        {
+            _pressed.RemoveAllListeners();
+        }
+
+        /// <summary>
         /// イベントトリガーエントリーを追加する
         /// </summary>
-        /// <param name="button">ボタン</param>
-        /// <param name="type">トリガーの種類</param>
-        /// <param name="action">UnityAction</param>
+        /// <param name="type"></param>
+        /// <param name="action"></param>
         public void AddTrriger(EventTriggerType type, UnityAction<BaseEventData> action)
         {
             EventTrigger.Entry entry = new()
@@ -132,15 +153,7 @@ namespace SetsunaTsuyuri
         public void SetInteractable(bool interactable)
         {
             Button.interactable = interactable;
-
-            if (interactable)
-            {
-                _canvasGroup.alpha = GameButtonsSettings.InteractableAlpha;
-            }
-            else
-            {
-                _canvasGroup.alpha = GameButtonsSettings.NonInteractableAlpha;
-            }
+            UpdateAlpha();
         }
 
         public void Show()
@@ -168,6 +181,38 @@ namespace SetsunaTsuyuri
         {
             Button.navigation = new Navigation();
             Button.onClick.RemoveAllListeners();
+            EventTrigger.triggers.Clear();
+        }
+
+        /// <summary>
+        /// 移動方向を取得する
+        /// </summary>
+        /// <param name="eventData"></param>
+        /// <returns></returns>
+        public MoveDirection GetMoveDirection(BaseEventData eventData)
+        {
+            MoveDirection direction = MoveDirection.None;
+            if (eventData is AxisEventData axis)
+            {
+                direction = axis.moveDir;
+            }
+
+            return direction;
+        }
+
+        /// <summary>
+        /// アルファ値を更新する
+        /// </summary>
+        private void UpdateAlpha()
+        {
+            if (!_canvasGroup)
+            {
+                return;
+            }
+
+            _canvasGroup.alpha = Button.interactable && !IsSeald ?
+                GameButtonsSettings.InteractableAlpha :
+                GameButtonsSettings.NonInteractableAlpha;
         }
     }
 }

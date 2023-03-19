@@ -15,11 +15,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         ActionInfo _lastAction = null;
 
         /// <summary>
+        /// 行動済みフラグ
+        /// </summary>
+        public bool HasActed { get; private set; } = false;
+
+        /// <summary>
         /// 戦闘開始時の処理
         /// </summary>
         public void OnBattleStart()
         {
             WaitTime = BasicWaitTime;
+            DPRegainingTimer = 0;
         }
 
         /// <summary>
@@ -28,6 +34,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnBattleStartReserve()
         {
             WaitTime = 0;
+            DPRegainingTimer = 0;
         }
 
         /// <summary>
@@ -36,6 +43,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnBattleEnd()
         {
             _lastAction = null;
+            HasActed = false;
 
             // ステータス効果解除
             StatusEffects.RemoveAll(x => x.Data.IsRemovedOnBattleEnd);
@@ -78,8 +86,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public void OnTimeElapsed(int elapsedTime)
         {
-            // 経過時間分、待機時間を減らす
             WaitTime -= elapsedTime;
+
+            UpdateDPRegaining(elapsedTime);
+        }
+
+        /// <summary>
+        /// 時間経過によるDP回復の処理
+        /// </summary>
+        /// <param name="elapsedTime"></param>
+        private void UpdateDPRegaining(int elapsedTime)
+        {
+            DPRegainingTimer += elapsedTime;
+
+            int regaining = DPRegainingTimer / GameSettings.Combatants.DPRegainingInterval;
+            if (regaining > 0)
+            {
+                CurrentDP += regaining;
+                DPRegainingTimer %= GameSettings.Combatants.DPRegainingInterval;
+            }
         }
 
         /// <summary>
@@ -90,6 +115,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             await UpdateStatusEffectsRemoval(RemovalTiming.TurnStart, token);
 
             _lastAction = null;
+            HasActed = false;
         }
 
         /// <summary>
@@ -136,6 +162,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Results.Healing.AddGP(MaxGP);
                 await ApplyHealing(token);
             }
+
+            RefreshStatus();
         }
 
         /// <summary>
@@ -236,6 +264,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public async UniTask Act(ActionInfo action, CombatantContainer[] targets, CancellationToken token, UnityAction onCompleted = null)
         {
+            // ターゲットフラグ解除
             foreach (var target in targets)
             {
                 target.IsTargeted = false;
@@ -254,7 +283,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Container.OnAction(action);
 
             // ★暫定処理
-            await UniTask.Delay(200);
+            await UniTask.Delay(200, cancellationToken: token);
 
             // 実行回数分繰り返す
             for (int i = 0; i < action.Effect.Executions; i++)
@@ -284,12 +313,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 }
             }
 
-            _lastAction = action;
+            // 戦闘中の場合
+            if (Battle.IsRunning)
+            {
+                // 最後の行動
+                _lastAction = action;
+
+                // 行動済みフラグ
+                if (!action.Effect.CanActAgain)
+                {
+                    HasActed = true;
+                }
+            }
 
             await TimeUtility.Wait(GameSettings.WaitTime.ActionExecuted, token);
 
             // 完了時のコールバック呼び出し
-            token.ThrowIfCancellationRequested();
             onCompleted?.Invoke();
         }
 
@@ -364,9 +403,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // ステータス効果解除
-            foreach (var status in Results.RemovedStatusEffects)
+            if (Results.RemovedStatusEffects.Any())
             {
-                StatusEffects.Remove(status);
+                foreach (var status in Results.RemovedStatusEffects)
+                {
+                    StatusEffects.Remove(status);
+                }
+
+                RefreshStatus();
             }
 
             // 浄化失敗

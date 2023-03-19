@@ -4,18 +4,18 @@ using UnityEngine;
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// ランダム関連のユーティリティ
+    /// 乱数のユーティリティ
     /// </summary>
     public static class RandomUtility
     {
         /// <summary>
         /// 百分率で成否判定する
         /// </summary>
-        /// <param name="value">成功率</param>
+        /// <param name="percent">成功率</param>
         /// <returns></returns>
-        public static bool JudgeByPercentage(int value)
+        public static bool Percent(int percent)
         {
-            return value > Random.Range(0, 100);
+            return Random.Range(0, 100) < percent;
         }
     }
 }

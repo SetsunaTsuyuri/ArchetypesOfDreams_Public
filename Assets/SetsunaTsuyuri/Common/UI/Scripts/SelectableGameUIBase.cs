@@ -11,13 +11,7 @@ namespace SetsunaTsuyuri
     public abstract class SelectableGameUIBase : GameUI
     {
         /// <summary>
-        /// キャンセルした際の遷移先UI
-        /// NOTE: 削除予定
-        /// </summary>
-        public SelectableGameUIBase Previous { get; set; } = null;
-
-        /// <summary>
-        /// 自身を選択する
+        /// 選択する
         /// </summary>
         public virtual void BeSelected()
         {
@@ -30,11 +24,6 @@ namespace SetsunaTsuyuri
         public virtual void BeCanceled()
         {
             Canceled?.Invoke();
-
-            if (Previous)
-            {
-                Previous.BeSelected();
-            }
         }
 
         /// <summary>
@@ -45,6 +34,20 @@ namespace SetsunaTsuyuri
         {
             OnStack?.Invoke(type);
         }
+
+        /// <summary>
+        /// 選択を解除し、履歴を消去する
+        /// </summary>
+        public void BeDeselectedAndClearHistory()
+        {
+            BeDeselected();
+            OnClearingHistory?.Invoke();
+        }
+
+        /// <summary>
+        /// 選択が解除されたときの処理
+        /// </summary>
+        public abstract void BeDeselected();
 
         /// <summary>
         /// 選択されたときのイベント
@@ -60,5 +63,10 @@ namespace SetsunaTsuyuri
         /// スタックするときのイベント
         /// </summary>
         public event UnityAction<Type> OnStack;
+
+        /// <summary>
+        /// 履歴消去するときのイベント
+        /// </summary>
+        public event UnityAction OnClearingHistory;
     }
 }

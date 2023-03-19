@@ -199,6 +199,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int WaitTime { get; set; } = 0;
 
         /// <summary>
+        /// DP増加タイマー
+        /// </summary>
+        public int DPRegainingTimer { get; protected set; } = 0;
+
+        /// <summary>
         /// 待機時間の基本値
         /// </summary>
         /// <returns></returns>
@@ -250,6 +255,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             RecoverDP();
             RecoverGP();
             WaitTime = 0;
+            DPRegainingTimer = 0;
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri
     /// <summary>
     /// 数学のユーティリティ
     /// </summary>
-    public static class MathUtility
+    public static class CalculationUtility
     {
         /// <summary>
         /// n%にする
@@ -15,21 +15,10 @@ namespace SetsunaTsuyuri
         /// <param name="value"></param>
         /// <param name="percent"></param>
         /// <returns></returns>
-        public static int Percent(int value, float percent)
+        public static int Percent(int value, int percent)
         {
-            int result = Mathf.FloorToInt(value * percent / 100);
+            int result = Mathf.FloorToInt(value * (float)percent / 100);
             return result;
-        }
-
-        /// <summary>
-        /// n%増やす
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="percent"></param>
-        /// <returns></returns>
-        public static void IncreaseBy(ref int value, float percent)
-        {
-            value = Mathf.FloorToInt(value * (100 + percent) / 100);
         }
 
         /// <summary>

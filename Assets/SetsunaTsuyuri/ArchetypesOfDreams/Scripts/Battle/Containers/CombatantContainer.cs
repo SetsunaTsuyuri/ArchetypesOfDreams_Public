@@ -4,6 +4,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using Cysharp.Threading.Tasks;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -194,6 +195,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public virtual void OnDamage()
         {
+            MessageBrokersManager.Damage.Publish(this);
+
             Damaged?.Invoke(this);
 
             if (onDamage)
@@ -207,6 +210,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void OnHealing()
         {
+            MessageBrokersManager.Healing.Publish(this);
+
             if (onRecovery)
             {
                 onRecovery.Invoke(this);
@@ -221,7 +226,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             StatusEffectData data = MasterData.GetStatusEffectData(effect.Id);
             AddedStatusEffectResult result = new(this, data);
-            UniRxEventsManager.FireStatusEffectAdded(result);
+            MessageBrokersManager.FireStatusEffectAdded(result);
         }
 
         /// <summary>
@@ -231,7 +236,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnStatusEffectsRemoved(StatusEffectData[] effects)
         {
             StatusEffectsResult result = new(this, effects);
-            UniRxEventsManager.FireStatusEffectsRemoved(result);
+            MessageBrokersManager.FireStatusEffectsRemoved(result);
         }
 
         /// <summary>
@@ -316,6 +321,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 行動する
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="targets"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async UniTask Act(ActionInfo action, CombatantContainer[] targets, CancellationToken token)
+        {
+            await Combatant.Act(action, targets, token);
+        }
+
+        /// <summary>
         /// 浄化された戦闘者を別のコンテナに入れる
         /// </summary>
         /// <param name="target"></param>
@@ -350,8 +367,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             return condition switch
             {
-                TargetCondition.Living => ContainsFightable(),
-                TargetCondition.KnockedOut => ContainsKnockedOut(),
+                TargetCondition.Living => ContainsFightable,
+                TargetCondition.KnockedOut => ContainsKnockedOut,
                 TargetCondition.LivingAndKnockedOut => ContainsCombatant,
                 _ => false
             };
@@ -360,55 +377,49 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘可能な戦闘者を格納している
         /// </summary>
-        /// <returns></returns>
-        public bool ContainsFightable()
+        public bool ContainsFightable
         {
-            return ContainsCombatant && !Combatant.IsKnockedOut;
+            get => ContainsCombatant && !Combatant.IsKnockedOut;
         }
 
         /// <summary>
         /// 戦闘不能な戦闘者を格納している
         /// </summary>
-        /// <returns></returns>
-        public bool ContainsKnockedOut()
+        public bool ContainsKnockedOut
         {
-            return ContainsCombatant && Combatant.IsKnockedOut;
+            get => ContainsCombatant && Combatant.IsKnockedOut;
         }
 
         /// <summary>
         /// 行動可能な戦闘者を格納している
         /// </summary>
-        /// <returns></returns>
-        public bool ContainsActionable()
+        public bool ContainsActionable
         {
-            return ContainsCombatant && Combatant.CanAct();
+            get => ContainsCombatant && Combatant.CanAct();
         }
 
         /// <summary>
         /// 浄化可能な戦闘者を格納している
         /// </summary>
-        /// <returns></returns>
-        public bool ContainsPurificatable()
+        public bool ContainsPurificatable
         {
-            return ContainsCombatant && !Combatant.HasBossResistance;
+            get => ContainsCombatant && !Combatant.HasBossResistance;
         }
 
         /// <summary>
         /// 解放可能な戦闘者を格納している
         /// </summary>
-        /// <returns></returns>
-        public bool ContainsReleasable()
+        public bool ContainsReleasable
         {
-            return ContainsCombatant && Combatant.CanBeReleased();
+            get => ContainsCombatant && Combatant.CanBeReleased();
         }
 
         /// <summary>
         /// 交代可能な戦闘者を格納している
         /// </summary>
-        /// <returns></returns>
-        public bool ContainsChangeable()
+        public bool ContainsChangeable
         {
-            return ContainsCombatant && Combatant is Nightmare;
+            get => ContainsCombatant && Combatant is Nightmare;
         }
 
         /// <summary>

@@ -106,7 +106,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             string masterData = Format(text);
             Debug.Log(masterData);
 
-            EditorUtility.SetDirty(this);
+            EditorUtility.SetDirty(_masterData);
             JsonUtility.FromJsonOverwrite(masterData, _masterData);
 
             AssetDatabase.SaveAssets();

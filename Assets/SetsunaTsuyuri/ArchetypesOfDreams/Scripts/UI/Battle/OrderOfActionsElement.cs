@@ -60,7 +60,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void OnTargetSet()
         {
-            if (Target && Target.ContainsFightable())
+            if (Target && Target.ContainsFightable)
             {
                 UpdateDisplay();
                 ActivateAndShow();

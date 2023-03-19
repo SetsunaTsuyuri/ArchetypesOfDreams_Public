@@ -71,7 +71,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _adventureButton.AddPressedListener(() =>
             {
                 _playerInput.enabled = false;
-                SceneChangeManager.StartChange(SceneType.DungeonSelection);
+                SceneChangeManager.StartChange(SceneId.DungeonSelection);
                 _adventureButton.Lock();
             });
             _adventureButton.AddTrriger(EventTriggerType.Select, (_) => _descriptionUI.SetText(_adventureDescription));

@@ -3,10 +3,10 @@
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// プールされるオブジェクトのコンテナ
+    /// プールされるオブジェクトのラッパークラス
     /// </summary>
     /// <typeparam name="TPooledObject">オブジェクトの型</typeparam>
-    public class PooledObjectContainer<TPooledObject> where TPooledObject : class
+    public class PooledObjectWrapper<TPooledObject> where TPooledObject : class
     {
         /// <summary>
         /// 利用可能である
@@ -22,7 +22,7 @@ namespace SetsunaTsuyuri
         /// コンストラクター
         /// </summary>
         /// <param name="pooledObject">プールされるオブジェクト</param>
-        public PooledObjectContainer(TPooledObject pooledObject)
+        public PooledObjectWrapper(TPooledObject pooledObject)
         {
             PooledObject = pooledObject;
         }

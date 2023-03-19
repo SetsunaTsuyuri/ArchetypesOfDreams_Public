@@ -4,9 +4,9 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 戦闘者コンテナのUI
+    /// 戦闘者のUI
     /// </summary>
-    public class CombatantContainerUI : GameUI
+    public abstract class CombatantUI : GameUI
     {
         protected override void Awake()
         {

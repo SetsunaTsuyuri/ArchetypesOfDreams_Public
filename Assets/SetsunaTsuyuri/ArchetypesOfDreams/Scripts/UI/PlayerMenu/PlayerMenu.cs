@@ -123,7 +123,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             });
 
             // 帰還
-            if (SceneManager.GetActiveScene().buildIndex != (int)SceneType.MyRoom)
+            if (SceneManager.GetActiveScene().buildIndex != (int)SceneId.MyRoom)
             {
                 _return.SetUp(DescriptionUI);
             }

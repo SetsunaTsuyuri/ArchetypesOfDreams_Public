@@ -111,7 +111,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool CanAct()
         {
-            return Condition == GameAttribute.Condition.Normal;
+            return Condition == GameAttribute.Condition.Normal
+                && !HasActed;
         }
 
         /// <summary>

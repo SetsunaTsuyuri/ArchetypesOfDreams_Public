@@ -14,7 +14,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ダメージ時の振動
         /// </summary>
         [field: SerializeField]
-        public Vector3 DamagePunch { get; private set; } = new Vector3(0.0f, 20.0f, 0.0f);
+        public Vector3 DamagePunch { get; private set; } = new Vector3(0.0f, 25.0f, 0.0f);
 
         /// <summary>
         /// ダメージ時の振動する時間

@@ -65,10 +65,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxWaitTime { get; private set; } = 10000;
 
         /// <summary>
-        /// 1ターン毎の精神力回復量
+        /// DPが増える間隔
         /// </summary>
         [field: SerializeField]
-        public int AmoutOfSoulRecoverdPerTurn { get; private set; } = 1;
+        public int DPRegainingInterval { get; private set; } = 20;
 
         /// <summary>
         /// クリティカルヒットしたときのダメージ倍率

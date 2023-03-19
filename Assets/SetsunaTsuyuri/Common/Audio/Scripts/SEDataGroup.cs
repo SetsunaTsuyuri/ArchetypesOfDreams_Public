@@ -1,20 +1,20 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// SEタイプ
+    /// SEID
     /// </summary>
-    public enum SEType
+    public enum SEId
     {
-        Damage,
-        Healing,
-        CursolMove,
-        Select,
-        Cancel,
-        Purification,
-        Collapse,
-        BattleStart
+        Damage = 1,
+        Healing = 2,
+        FocusMove = 3,
+        Select = 4,
+        Cancel = 5,
+        Purification = 6,
+        Collapse = 7,
+        BattleStart = 8
     }
 
     /// <summary>
@@ -26,8 +26,8 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// インデクサー
         /// </summary>
-        /// <param name="type">SEタイプ</param>
+        /// <param name="id">SEID</param>
         /// <returns></returns>
-        public AudioData this[SEType type] => this[(int)type];
+        public AudioData this[SEId id] => this[(int)id];
     }
 }

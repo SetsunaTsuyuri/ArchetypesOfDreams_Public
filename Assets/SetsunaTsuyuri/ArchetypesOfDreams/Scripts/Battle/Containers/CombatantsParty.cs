@@ -68,7 +68,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             CombatantContainer[] containers = GetAllContainers()
                 .Where(x => x.ContainsCombatant && x.Combatant.IsKnockedOut)
-                .Where(x => x.ContainsReleasable())
+                .Where(x => x.ContainsReleasable)
                 .ToArray();
 
             foreach (var container in containers)
@@ -143,7 +143,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public IEnumerable<CombatantContainer> GetFightables()
         {
-            return Members.Where(x => x.ContainsFightable());
+            return Members.Where(x => x.ContainsFightable);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public IEnumerable<CombatantContainer> GetChangeables()
         {
             return GetAllContainers()
-                .Where(x => x.ContainsChangeable());
+                .Where(x => x.ContainsChangeable);
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int CountChangeables()
         {
             return GetAllContainers()
-                .Count(x => x.ContainsChangeable());
+                .Count(x => x.ContainsChangeable);
         }
 
         public override IEnumerable<CombatantContainer> GetNonEmptyContainers()

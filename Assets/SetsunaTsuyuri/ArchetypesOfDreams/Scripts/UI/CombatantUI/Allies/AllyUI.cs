@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 味方のUI
     /// </summary>
-    public class AllyUI : CombatantContainerUI
+    public class AllyUI : CombatantUI
     {
         /// <summary>
         /// Imageの色を変えるもの
@@ -31,10 +31,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Vector3 punch = GameSettings.Allies.DamagePunch;
             float duration = GameSettings.Allies.DamagePunchDuration;
             int vibrato = GameSettings.Allies.DamagePunchVibrato;
-
-            transform
-                .DOPunchPosition(punch, duration, vibrato)
-                .SetLink(gameObject);
+            Punch(punch, duration, vibrato);
         }
     }
 }

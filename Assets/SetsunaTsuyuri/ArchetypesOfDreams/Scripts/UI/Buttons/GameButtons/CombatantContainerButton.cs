@@ -48,7 +48,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Name.text = container.Combatant?.Data.Name;
                 Level.text = GameSettings.Terms.Level + container.Combatant?.Level.ToString();
 
-                if (container.ContainsReleasable())
+                if (container.ContainsReleasable)
                 {
                     RemovePressedListener(_onPressed);
                     _onPressed = () => allies.ToBeReleased = container;

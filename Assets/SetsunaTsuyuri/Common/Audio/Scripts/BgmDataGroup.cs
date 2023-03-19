@@ -4,15 +4,15 @@ using UnityEngine;
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// BGMタイプ
+    /// BGMID
     /// </summary>
-    public enum BgmType
+    public enum BgmId
     {
-        Title,
-        MyRoom,
-        NormalBattle,
-        BossBattle,
-        Dungeon
+        Title = 1,
+        MyRoom = 2,
+        NormalBattle = 3,
+        BossBattle = 4,
+        Dungeon = 5
     }
 
     /// <summary>
@@ -24,8 +24,8 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// インデクサー
         /// </summary>
-        /// <param name="type">BGMタイプ</param>
+        /// <param name="id">BGMID</param>
         /// <returns></returns>
-        public AudioData this[BgmType type] => this[(int)type];
+        public AudioData this[BgmId id] => this[(int)id];
     }
 }

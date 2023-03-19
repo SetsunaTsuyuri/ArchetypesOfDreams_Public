@@ -1,17 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// シーンの種類
+    /// シーンID
     /// </summary>
-    public enum SceneType
+    public enum SceneId
     {
         Title = 0,
         MyRoom = 1,
@@ -34,7 +33,7 @@ namespace SetsunaTsuyuri
         /// </summary>
         /// <param name="type">シーンの種類</param>
         /// <param name="callback">シーン変更後に呼び出す関数</param>
-        public static void StartChange(SceneType type, UnityAction<Scene, LoadSceneMode> callback = null)
+        public static void StartChange(SceneId type, UnityAction<Scene, LoadSceneMode> callback = null)
         {
             string name = type.ToString();
             StartChange(name, callback);

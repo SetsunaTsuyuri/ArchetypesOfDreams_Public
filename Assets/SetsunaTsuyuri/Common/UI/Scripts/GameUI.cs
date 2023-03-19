@@ -27,6 +27,11 @@ namespace SetsunaTsuyuri
         Tween _fadeTween = null;
 
         /// <summary>
+        /// シェイクTween
+        /// </summary>
+        Tween _shakeTween = null;
+
+        /// <summary>
         /// 有効である
         /// </summary>
         /// <returns></returns>
@@ -87,13 +92,13 @@ namespace SetsunaTsuyuri
         /// フェードインする
         /// </summary>
         /// <param name="duration"></param>
-        public void FadeIn(float duration = 0.5f)
+        public virtual void FadeIn(float duration = 0.5f)
         {
             KillIfFadeTweenIsActive();
 
-            _canvas.enabled = true;
-            _canvasGroup.alpha = 0.0f;
+            Show();
 
+            _canvasGroup.alpha = 0.0f;
             _fadeTween = _canvasGroup.DOFade(1.0f, duration)
                 .SetLink(gameObject);
         }
@@ -102,13 +107,15 @@ namespace SetsunaTsuyuri
         /// フェードアウトする
         /// </summary>
         /// <param name="duration"></param>
-        public void FadeOut(float duration = 0.5f)
+        public virtual void FadeOut(float duration = 0.5f)
         {
             KillIfFadeTweenIsActive();
 
+            SetInteractable(false);
+
             _fadeTween = _canvasGroup.DOFade(0.0f, duration)
                 .SetLink(gameObject)
-                .OnComplete(() => _canvas.enabled = true);
+                .OnComplete(() => _canvas.enabled = false);
         }
 
         /// <summary>
@@ -120,6 +127,24 @@ namespace SetsunaTsuyuri
             {
                 _fadeTween.Kill();
             }
+        }
+        
+        /// <summary>
+        /// パンチする
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="duration"></param>
+        /// <param name="vibrato"></param>
+        public void Punch(Vector3 vector, float duration, int vibrato)
+        {
+            if (_shakeTween.IsActive())
+            {
+                _shakeTween.Complete();
+            }
+
+            _shakeTween = transform
+                .DOPunchPosition(vector, duration, vibrato)
+                .SetLink(gameObject);
         }
     }
 }

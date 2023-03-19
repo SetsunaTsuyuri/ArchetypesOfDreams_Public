@@ -1,13 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// シングルトンなMonoBehaviourプレハブをロードする者
+    /// シングルトンなMonoBehaviourプレハブローダー
     /// </summary>
-    /// <typeparam name="TBehaviour">シングルトンの型</typeparam>
+    /// <typeparam name="TBehaviour"</typeparam>
     public abstract class SingletonBehaviourLoader<TBehaviour>
         where TBehaviour : MonoBehaviour, IInitializable
     {
@@ -21,8 +20,8 @@ namespace SetsunaTsuyuri
     /// <summary>
     /// シングルトンなMonoBehaviour
     /// </summary>
-    /// <typeparam name="TBehaviour">シングルトンの型</typeparam>
-    /// <typeparam name="TLoader">プレハブローダーの型</typeparam>
+    /// <typeparam name="TBehaviour"></typeparam>
+    /// <typeparam name="TLoader"></typeparam>
     public abstract class SingletonBehaviour<TBehaviour, TLoader> : MonoBehaviour
         where TBehaviour : MonoBehaviour, IInitializable
         where TLoader : SingletonBehaviourLoader<TBehaviour>, new()
@@ -39,24 +38,37 @@ namespace SetsunaTsuyuri
         {
             get
             {
-                if (s_instance is null)
+                if (!s_instance)
                 {
                     // プレハブをロードする
-                    TLoader loader = new TLoader();
+                    TLoader loader = new();
                     TBehaviour prefab = loader.LoadPrefab();
 
-                    // ロードしたプレハブをインスタンス化し、クラス変数に代入する
-                    s_instance = Instantiate(prefab);
+                    // ロードしたプレハブをインスタンス化する
+                    Instantiate(prefab);
 
-                    // シーン遷移の際、インスタンスを破壊されないようにする
-                    DontDestroyOnLoad(s_instance);
-
-                    // インスタンスを初期化する
-                    s_instance.Initialize();
+                    // NOTE: Instantiateした直後にAwakeが実行される
                 }
 
                 return s_instance;
             }
+        }
+
+        protected virtual void Awake()
+        {
+            if (s_instance)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            s_instance = this as TBehaviour;
+
+            // シーン遷移の際、インスタンスを破壊されないようにする
+            DontDestroyOnLoad(s_instance);
+
+            // 初期化する
+            Initialize();
         }
 
         /// <summary>

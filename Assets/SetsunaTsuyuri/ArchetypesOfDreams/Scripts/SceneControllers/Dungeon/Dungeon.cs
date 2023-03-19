@@ -164,6 +164,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             State.Update();
         }
 
+        /// <summary>
+        /// マップイベント解決
+        /// </summary>
         public class MapEventsResolution : UniTaskStateMachine<Dungeon>.State
         {
             public override async UniTask EnterAsync(Dungeon context, CancellationToken token)
@@ -177,6 +180,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 {
                     await mapEventObject.ResolveEvents(token);
 
+                    // イベントにより移動した場合、移動先でもイベントが発生する可能性があるためやり直す
                     if (player.Position != previousPlayerPosition)
                     {
                         context.State.SetNextState<MapEventsResolution>();
@@ -380,8 +384,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 UniTask move = context._player.CreateTransformMoveUniTask(token);
                 await move;
 
-                // その他マップオブジェクトの移動
-                // 配列にしてWhenAll
+                // TODO: その他マップオブジェクトの移動
 
                 context.State.SetNextState<MapEventsResolution>();
             }
@@ -392,12 +395,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public class RandomEncounter : UniTaskStateMachine<Dungeon>.State
         {
-            public override void Enter(Dungeon context)
-            {
-                // 説明文UIを表示する
-                context._ui.Description.Show();
-            }
-
             public override async UniTask EnterAsync(Dungeon context, CancellationToken token)
             {
                 await base.EnterAsync(context, token);
@@ -427,6 +424,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 // UIを無効化する
                 context._ui.Main.Hide();
+
+                // 説明文UIを表示する
+                context._ui.Description.Show();
 
                 // 戦闘を行う
                 BattleResultType result = await context._battle.ExecuteRandomBattle(context.Map, token);

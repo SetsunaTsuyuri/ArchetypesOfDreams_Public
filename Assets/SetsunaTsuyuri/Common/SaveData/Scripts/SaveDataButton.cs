@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,41 +15,46 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// セーブデータメニュー
         /// </summary>
-        public SaveDataCommandType SaveDataMenu { get; set; } = SaveDataCommandType.Save;
+        SaveDataCommandType _commandType = SaveDataCommandType.Save;
 
         /// <summary>
         /// セーブデータID
         /// </summary>
-        public int Id { get; set; } = 0;
+        int _id = 0;
 
         /// <summary>
         /// オートセーブスロットである
         /// </summary>
-        public bool IsAutoSave { get; set; } = false;
+        bool _isAutoSave = false;
 
         /// <summary>
         /// IDテキスト
         /// </summary>
         [SerializeField]
-        TextMeshProUGUI idText = null;
+        TextMeshProUGUI _idText = null;
 
         /// <summary>
         /// 日付・時間テキスト
         /// </summary>
         [SerializeField]
-        TextMeshProUGUI dateTimeText = null;
+        TextMeshProUGUI _dateTimeText = null;
 
         /// <summary>
         /// フッターテキスト
         /// </summary>
         [SerializeField]
-        TextMeshProUGUI footer = null;
+        TextMeshProUGUI _footer = null;
 
         /// <summary>
-        /// 顔グラフィック配列
+        /// キャラクターイメージの親トランスフォーム
         /// </summary>
         [SerializeField]
-        Image[] alliesFace = { };
+        RectTransform _characterImagesRoot = null;
+
+        /// <summary>
+        /// キャラクターイメージ配列
+        /// </summary>
+        Image[] _characterImages = { };
 
         protected override void Awake()
         {
@@ -58,25 +62,25 @@ namespace SetsunaTsuyuri
 
             AddPressedListener(() =>
             {
-                switch (SaveDataMenu)
+                switch (_commandType)
                 {
                     // セーブ
                     case SaveDataCommandType.Save:
-                        SaveDataManager.Save(Id);
-                        UpdateTexts(SaveDataManager.Saves[Id]);
-                        UpdateImages(SaveDataManager.Saves[Id]);
+                        SaveDataManager.Save(_id);
+                        UpdateTexts(SaveDataManager.SaveDataDic[_id]);
+                        UpdateImages(SaveDataManager.SaveDataDic[_id]);
                         break;
 
                     // ロード
                     case SaveDataCommandType.Load:
 
-                        if (IsAutoSave)
+                        if (_isAutoSave)
                         {
-                            SaveDataManager.LoadAuto();
+                            SaveDataManager.LoadAutoSaveData();
                         }
                         else
                         {
-                            SaveDataManager.Load(Id);
+                            SaveDataManager.Load(_id);
                         }
                         SceneChangeManager.StartChange(SceneNames.MyRoom);
                         break;
@@ -85,23 +89,41 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// セットアップする
+        /// キャラクターイメージを作る
+        /// </summary>
+        /// <param name="prefab">プレハブ</param>
+        /// <param name="number">作る数</param>
+        public void GenerateCharacterImages(Image prefab, int number)
+        {
+            _characterImages = new Image[number];
+            for (int i = 0; i < number; i++)
+            {
+                _characterImages[i] = Instantiate(prefab, _characterImagesRoot);
+            }
+        }
+
+        /// <summary>
+        /// 更新する
         /// </summary>
         /// <param name="command">セーブデータコマンド</param>
         /// <param name="id">セーブデータID</param>
         /// <param name="isAutoSave">オートセーブ</param>
-        public void SetUp(SaveDataCommandType command, int id, bool isAutoSave)
+        public void UpdateButton(SaveDataCommandType command, int id, bool isAutoSave)
         {
-            SaveDataMenu = command;
-            Id = id;
-            IsAutoSave = isAutoSave;
+            _commandType = command;
+            _id = id;
+            _isAutoSave = isAutoSave;
 
             // セーブデータ
-            SaveData saveData = isAutoSave switch
+            SaveData saveData = null;
+            if (_isAutoSave)
             {
-                true => SaveDataManager.AutoSaveData,
-                false => SaveDataManager.Saves[id]
-            };
+                saveData = SaveDataManager.AutoSaveData;
+            }
+            else if (SaveDataManager.SaveDataDic.TryGetValue(id, out SaveData value))
+            {
+                saveData = value;
+            }
 
             // テキストを更新する
             UpdateTexts(saveData, isAutoSave);
@@ -110,14 +132,14 @@ namespace SetsunaTsuyuri
             UpdateImages(saveData);
 
             // 空きデータはロードできないようにする
-            if (saveData is null && SaveDataMenu == SaveDataCommandType.Load)
+            if (saveData is null && _commandType == SaveDataCommandType.Load)
             {
                 SetInteractable(false);
             }
 
             // オートセーブ枠はセーブできないようにする
-            if (SaveDataMenu == SaveDataCommandType.Save &&
-                IsAutoSave)
+            if (_commandType == SaveDataCommandType.Save
+                && _isAutoSave)
             {
                 SetInteractable(false);
             }
@@ -130,27 +152,26 @@ namespace SetsunaTsuyuri
         /// <param name="isAutoSave">オートセーブ</param>
         private void UpdateTexts(SaveData save, bool isAutoSave = false)
         {
-            idText.text = string.Empty;
-            footer.text = string.Empty;
+            _idText.text = string.Empty;
+            _footer.text = string.Empty;
 
             if (isAutoSave)
             {
-                idText.text += "Auto Save ";
+                _idText.text += "Auto Save ";
             }
             else
             {
-                idText.text += $"No.{Id + 1} ";
+                _idText.text += $"No.{_id}";
             }
 
-            // セーブデータが存在する場合
             if (save != null)
             {
                 System.DateTime dateTime = System.DateTime.Parse(save.DateTime);
-                dateTimeText.text = dateTime.ToString("yyyy/MM/dd HH:mm:ss");
+                _dateTimeText.text = dateTime.ToString("yyyy/MM/dd HH:mm:ss");
             }
             else
             {
-                footer.text = "No Data";
+                _footer.text = "No Data";
             }
         }
 
@@ -160,25 +181,32 @@ namespace SetsunaTsuyuri
         /// <param name="saveData">セーブデータ</param>
         private void UpdateImages(SaveData saveData)
         {
-            // 各顔グラフィックを全て非表示にする
-            foreach (var face in alliesFace)
+            foreach (var image in _characterImages)
             {
-                face.enabled = false;
+                image.enabled = false;
             }
 
             // セーブデータが存在する場合
             if (saveData != null)
             {
-                // 味方全員のスプライト
-                Sprite[] sprites = saveData.Allies
+                var combatants = saveData.Allies
                     .Concat(saveData.ReserveAllies)
-                    .Select((x) => x.Data.GetFaceSpriteOrSprite())
+                    .ToArray();
+
+                // スプライトロード
+                foreach (var combatant in combatants)
+                {
+                    combatant.LoadSprites();
+                }
+
+                Sprite[] sprites = combatants
+                    .Select(x => x.GetFaceSpriteOrSprite())
                     .ToArray();
 
                 // スプライトが存在する場合のみ表示する
-                for (int i = 0; i < alliesFace.Length && i < sprites.Length; i++)
+                for (int i = 0; i < _characterImages.Length && i < sprites.Length; i++)
                 {
-                    Image image = alliesFace[i];
+                    Image image = _characterImages[i];
                     Sprite sprite = sprites[i];
 
                     image.sprite = sprites[i];

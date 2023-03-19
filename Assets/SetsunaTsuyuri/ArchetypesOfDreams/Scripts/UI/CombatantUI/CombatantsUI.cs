@@ -11,8 +11,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <typeparam name="TUI">UIの型</typeparam>
     /// <typeparam name="TParty">パーティの型</typeparam>
     /// <typeparam name="TContainer">戦闘者コンテナの型</typeparam>
-    public class CombatantContainersUI<TUI, TParty, TContainer> : GameUI
-        where TUI : CombatantContainerUI
+    public abstract class CombatantsUI<TUI, TParty, TContainer> : GameUI
+        where TUI : CombatantUI
         where TParty : CombatantsParty<TContainer>
         where TContainer : CombatantContainer 
     {

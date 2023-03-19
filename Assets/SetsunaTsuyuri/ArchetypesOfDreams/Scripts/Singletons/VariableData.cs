@@ -216,8 +216,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // アイテム
             ItemsDic[1] = 10;
             ItemsDic[2] = 10;
+            ItemsDic[3] = 10;
             ItemsDic[4] = 10;
-            ItemsDic[5] = 10;
 
             // 選択可能なダンジョン
             _selectableDungeons[1] = true;

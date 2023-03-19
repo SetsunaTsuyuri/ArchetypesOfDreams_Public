@@ -178,7 +178,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (Battle.IsRunning)
                 {
                     BeDeselectedAndClearHistory();
-                    user.Act(action, targets, () => _battle.OnActionEnd(action));
+                    _battle.ActorAction = action;
+                    _battle.ActorActionTargets = targets;
                 }
                 else
                 {

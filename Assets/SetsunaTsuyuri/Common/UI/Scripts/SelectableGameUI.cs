@@ -44,19 +44,6 @@ namespace SetsunaTsuyuri
             _layoutGroup = GetComponentInChildren<LayoutGroup>(true);
         }
 
-        public override void Hide()
-        {
-            base.Hide();
-
-            // ボタンが選択されている場合、それを外す
-            EventSystem eventSystem = EventSystem.current;
-            if (_lastSelected
-                && _lastSelected.gameObject == eventSystem.currentSelectedGameObject)
-            {
-                eventSystem.SetSelectedGameObject(null);
-            }
-        }
-
         /// <summary>
         /// セットアップする
         /// </summary>
@@ -130,25 +117,56 @@ namespace SetsunaTsuyuri
             base.BeSelected();
 
             Show();
+            SelectAnyButton();
+        }
 
-            if ( _lastSelected
+        /// <summary>
+        /// いずれかのボタンを選択する
+        /// </summary>
+        public void SelectAnyButton()
+        {
+            if (_lastSelected
                 && _lastSelected.isActiveAndEnabled
                 && _lastSelected.interactable)
             {
                 _lastSelected.Select();
+                return;
             }
-            else
+
+            foreach (var button in _buttons)
             {
-                foreach (var button in _buttons)
+                if (button.Button.isActiveAndEnabled
+                    && button.Button.interactable)
                 {
-                    if (button.Button.isActiveAndEnabled
-                        && button.Button.interactable)
-                    {
-                        button.Button.Select();
-                        break;
-                    }
+                    button.Button.Select();
+                    break;
                 }
             }
+        }
+
+        public override void BeDeselected()
+        {
+            DeselectButton();
+        }
+
+        /// <summary>
+        /// ボタンの選択を外す
+        /// </summary>
+        public void DeselectButton()
+        {
+            EventSystem eventSystem = EventSystem.current;
+            if (_buttons.Any(x => x.gameObject == eventSystem.currentSelectedGameObject))
+            {
+                eventSystem.SetSelectedGameObject(null);
+            };
+
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+
+            DeselectButton();
         }
 
         /// <summary>s

@@ -20,7 +20,7 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         public static byte[] Encrypt(byte[] bytes)
         {
-            AesManaged managed = CreateAesManaged();
+            using AesManaged managed = CreateAesManaged();
             ICryptoTransform encryptor = managed.CreateEncryptor();
             byte[] encrypted = encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
             return encrypted;
@@ -33,7 +33,7 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         public static byte[] Decrypt(byte[] bytes)
         {
-            AesManaged managed = CreateAesManaged();
+            using AesManaged managed = CreateAesManaged();
             ICryptoTransform decryptor = managed.CreateDecryptor();
             byte[] decrypted = decryptor.TransformFinalBlock(bytes, 0, bytes.Length);
             return decrypted;

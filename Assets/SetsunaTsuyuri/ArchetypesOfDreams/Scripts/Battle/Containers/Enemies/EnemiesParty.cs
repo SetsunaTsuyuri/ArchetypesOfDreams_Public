@@ -25,8 +25,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public override bool CanFight()
         {
             // 戦闘可能なコンテナが存在する
-            return Members
-                .Any(x => x.ContainsFightable());
+            return Members.Any(x => x.ContainsFightable);
         }
 
         protected override IEnumerable<CombatantContainer> GetContainers(TargetPosition position)

@@ -13,7 +13,7 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// コンテナ配列
         /// </summary>
-        readonly PooledObjectContainer<T>[] _containers = null;
+        readonly PooledObjectWrapper<T>[] _containers = null;
 
         /// <summary>
         /// オブジェクトが取得された際の処理
@@ -47,13 +47,13 @@ namespace SetsunaTsuyuri
         /// <param name="create">オブジェクトを作る関数</param>
         /// <param name="poolCapatity">プールする数</param>
         /// <returns></returns>
-        private PooledObjectContainer<T>[] CreateObjects(Func<T> create, int poolCapatity)
+        private PooledObjectWrapper<T>[] CreateObjects(Func<T> create, int poolCapatity)
         {
-            PooledObjectContainer<T>[] containers = new PooledObjectContainer<T>[poolCapatity];
+            PooledObjectWrapper<T>[] containers = new PooledObjectWrapper<T>[poolCapatity];
             for (int i = 0; i < poolCapatity; i++)
             {
                 T pooledObject = create?.Invoke();
-                PooledObjectContainer<T> container = new(pooledObject);
+                PooledObjectWrapper<T> container = new(pooledObject);
                 containers[i] = container;
             }
 
@@ -68,7 +68,7 @@ namespace SetsunaTsuyuri
         {
             T pooledObject = null;
             
-            PooledObjectContainer<T> container = _containers
+            PooledObjectWrapper<T> container = _containers
                 .FirstOrDefault(x => x.IsAvailable);
 
             if (container is not null)
@@ -85,7 +85,7 @@ namespace SetsunaTsuyuri
         /// <param name="pooledObject">解放するオブジェクト</param>
         public void Release(T pooledObject)
         {
-            PooledObjectContainer<T> container = _containers
+            PooledObjectWrapper<T> container = _containers
                 .FirstOrDefault(x => x.PooledObject == pooledObject);
 
             if (container is not null)

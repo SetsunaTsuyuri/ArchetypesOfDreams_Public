@@ -90,7 +90,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             // 戦闘可能な夢渡りが存在する
             return Members
-                .Where(x => x.ContainsFightable())
+                .Where(x => x.ContainsFightable)
                 .Any(x => x.Combatant is DreamWalker);
         }
 

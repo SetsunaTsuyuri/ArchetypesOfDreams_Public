@@ -171,7 +171,7 @@
                  "rotation":0,
                  "visible":true,
                  "width":32,
-                 "x":288,
+                 "x":192,
                  "y":320
                 }],
          "opacity":1,
@@ -192,7 +192,7 @@
         {
          "name":"max_enemy_id",
          "type":"int",
-         "value":4
+         "value":11
         }, 
         {
          "name":"min_enemy_id",

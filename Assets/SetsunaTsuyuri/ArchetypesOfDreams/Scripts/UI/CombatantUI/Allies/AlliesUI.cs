@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
     /// 味方コンテナUIの管理UI
     /// </summary>
-    public class AlliesUI : CombatantContainersUI<AllyUI, AlliesParty, AllyContainer>
+    public class AlliesUI : CombatantsUI<AllyUI, AlliesParty, AllyContainer>
     {
         /// <summary>
         /// スプライトを表示するImage

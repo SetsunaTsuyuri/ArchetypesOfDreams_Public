@@ -49,6 +49,9 @@ namespace SetsunaTsuyuri.Scenario
             {
                 actor.Initialize();
             }
+
+            autoPositionIndex = 0;
+            autoActorIdIndex = 0;
         }
 
         /// <summary>

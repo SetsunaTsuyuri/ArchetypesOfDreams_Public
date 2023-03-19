@@ -14,7 +14,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// シーンの種類
         /// </summary>
         [field: SerializeField]
-        public SceneType SceneType { get; set; } = SceneType.Title;
+        public SceneId SceneType { get; set; } = SceneId.Title;
 
         /// <summary>
         /// 説明文

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,16 +19,31 @@ namespace SetsunaTsuyuri
         /// ボタンのプレハブ
         /// </summary>
         [SerializeField]
-        SaveDataButton buttonPrefab = null;
+        SaveDataButton _buttonPrefab = null;
+
+        /// <summary>
+        /// キャラクターイメージプレハブ
+        /// </summary>
+        [SerializeField]
+        Image _characterImagePrefab = null;
+
+        /// <summary>
+        /// キャラクターイメージの最大数
+        /// </summary>
+        [SerializeField]
+        int _maxCharacterImages = 0;
 
         public override void SetUp()
         {
-            // オートセーブ+セーブの数だけボタンを作り配列化する
-            int numerOfButtons = SaveDataManager.Saves.Length + 1;
+            // オートセーブ+セーブの数だけボタンを作る
+            int numerOfButtons = SaveDataManager.SaveDataDic.Count + 1;
             _buttons = new SaveDataButton[numerOfButtons];
+
             for (int i = 0; i < numerOfButtons; i++)
             {
-                SaveDataButton button = Instantiate(buttonPrefab, _layoutGroup.transform);
+                SaveDataButton button = Instantiate(_buttonPrefab, _buttonsRoot.transform);
+                button.GenerateCharacterImages(_characterImagePrefab, _maxCharacterImages);
+
                 _buttons[i] = button;
             }
 
@@ -55,14 +69,14 @@ namespace SetsunaTsuyuri
         /// </summary>
         public void UpdateButtons()
         {
-            // オートセーブ用ボタンのセットアップ
-            _buttons[0].SetUp(_commandType, 0, true);
+            // オートセーブデータボタンのセットアップ
+            _buttons[0].UpdateButton(_commandType, 0, true);
 
-            // セーブ用ボタンのセットアップ
-            int saves = SaveDataManager.Saves.Length + 1;
+            // セーブデータボタンのセットアップ
+            int saves = SaveDataManager.SaveDataDic.Count + 1;
             for (int i = 1; i < saves; i++)
             {
-                _buttons[i].SetUp(_commandType, i - 1, false);
+                _buttons[i].UpdateButton(_commandType, i, false);
             }
 
             // ナビゲーション更新
