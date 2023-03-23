@@ -97,7 +97,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public abstract void SetValue(int value);
 
-        public UniTask GetUniTask(CancellationToken token)
+        public UniTask Resolve(CancellationToken token)
         {
             return Execute(token); 
         }

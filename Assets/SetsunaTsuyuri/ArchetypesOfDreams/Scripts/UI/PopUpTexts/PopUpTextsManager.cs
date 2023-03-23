@@ -61,12 +61,27 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 _popUpTexts.Add(instance);
             }
 
-            // 付与ステータス効果ポップアップ
+            // 失敗
+            MessageBrokersManager.Miss.Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(PopUpMiss);
+
+            // ダメージ
+            MessageBrokersManager.Damage.Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(PopUpDamage);
+
+            // 回復
+            MessageBrokersManager.Healing.Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(PopUpHealing);
+
+            // 付与ステータス効果
             MessageBrokersManager.OnStatusEffectAdded
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpAddedStatusEffect);
 
-            // 解除ステータス効果ポップアップ
+            // 解除ステータス効果
             MessageBrokersManager.OnStatusEffectsRemoved
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpRemovedStatusEffects);

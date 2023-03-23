@@ -13,6 +13,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public UniTask GetUniTask(CancellationToken token);
+        public UniTask Resolve(CancellationToken token);
     }
 }

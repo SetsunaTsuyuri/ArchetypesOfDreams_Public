@@ -111,6 +111,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public List<IAppearanceCondition> AppearanceConditions { get; set; } = new();
 
         /// <summary>
+        /// イベントID
+        /// </summary>
+        public string EventId { get; private set; } = string.Empty;
+
+        /// <summary>
         /// イベントリスト
         /// </summary>
         [field: SerializeReference]
@@ -123,9 +128,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public async UniTask ResolveEvents(CancellationToken token)
         {
+            if (!string.IsNullOrEmpty(EventId))
+            {
+                await GameEventsManager.Resolve(EventId, token);
+            }
+
             foreach (var gameEvent in Events)
             {
-                await gameEvent.GetUniTask(token);
+                await gameEvent.Resolve(token);
             }
         }
 
@@ -197,6 +207,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 移動パターン
             // 不動、プレイヤー追跡等
+
+            // イベントID
+            EventId = TiledMapUtility.GetPropertyValue(jToken, "event_id", string.Empty);
 
             // イベント
             string events = TiledMapUtility.GetPropertyValue(jToken, "events", string.Empty);

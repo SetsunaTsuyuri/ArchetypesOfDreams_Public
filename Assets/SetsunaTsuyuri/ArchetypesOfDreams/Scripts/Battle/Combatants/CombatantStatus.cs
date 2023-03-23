@@ -350,7 +350,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void ApplyEnemyStatusCorrection()
         {
             MaxHP = Mathf.FloorToInt(MaxHP * GameSettings.Enemies.HPScale);
-            MaxGP += GameSettings.Enemies.GPScale;
+            MaxGP += GameSettings.Enemies.GPValue;
         }
 
         /// <summary>

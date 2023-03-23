@@ -31,20 +31,9 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// シーンを変更する
         /// </summary>
-        /// <param name="type">シーンの種類</param>
+        /// <param name="id">シーンID</param>
         /// <param name="callback">シーン変更後に呼び出す関数</param>
-        public static void StartChange(SceneId type, UnityAction<Scene, LoadSceneMode> callback = null)
-        {
-            string name = type.ToString();
-            StartChange(name, callback);
-        }
-
-        /// <summary>
-        /// シーンを変更する
-        /// </summary>
-        /// <param name="name">シーンの名前</param>
-        /// <param name="callback">シーン変更後に呼び出す関数</param>
-        public static void StartChange(string name, UnityAction<Scene, LoadSceneMode> callback = null)
+        public static void StartChange(SceneId id, UnityAction<Scene, LoadSceneMode> callback = null)
         {
             // シーン変更中なら中止する
             if (Instance._isChangingScene)
@@ -53,20 +42,20 @@ namespace SetsunaTsuyuri
             }
 
             CancellationTokenSource source = new();
-            Instance.ChangeSceneAsync(name, callback, source.Token).Forget();
+            ChangeSceneAsync(id, callback, source.Token).Forget();
         }
 
         /// <summary>
         /// シーンを変更する(非同期)
         /// </summary>
-        /// <param name="name">シーンの名前</param>
+        /// <param name="id">シーンID</param>
         /// <param name="callback">シーン変更後に呼び出す関数</param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask ChangeSceneAsync(string name, UnityAction<Scene, LoadSceneMode> callback, CancellationToken token)
+        public static async UniTask ChangeSceneAsync(SceneId id, UnityAction<Scene, LoadSceneMode> callback, CancellationToken token)
         {
             // フラグON
-            _isChangingScene = true;
+            Instance._isChangingScene = true;
 
             // フェードアウト
             await FadeManager.FadeOut(token);
@@ -78,13 +67,13 @@ namespace SetsunaTsuyuri
             }
 
             // シーンロード
-            SceneManager.LoadScene(name);
+            SceneManager.LoadScene((int)id);
 
             // フェードイン
             await FadeManager.FadeIn(token);
 
             // フラグOFF
-            _isChangingScene = false;
+            Instance._isChangingScene = false;
         }
     }
 }

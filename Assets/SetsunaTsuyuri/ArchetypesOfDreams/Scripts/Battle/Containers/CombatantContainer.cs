@@ -118,24 +118,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         GameEventWithSkill onAction = null;
 
         /// <summary>
-        /// 回避したときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onMiss = null;
-
-        /// <summary>
-        /// ダメージが発生したときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onDamage = null;
-
-        /// <summary>
-        /// 回復が発生したときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onRecovery = null;
-
-        /// <summary>
         /// セットアップする
         /// </summary>
         /// <param name="allies">味方</param>
@@ -184,10 +166,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void OnMiss()
         {
-            if (onMiss)
-            {
-                onMiss.Invoke(this);
-            }
+            MessageBrokersManager.Miss.Publish(this);
         }
 
         /// <summary>
@@ -196,13 +175,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public virtual void OnDamage()
         {
             MessageBrokersManager.Damage.Publish(this);
-
             Damaged?.Invoke(this);
-
-            if (onDamage)
-            {
-                onDamage.Invoke(this);
-            }
         }
 
         /// <summary>
@@ -211,11 +184,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnHealing()
         {
             MessageBrokersManager.Healing.Publish(this);
-
-            if (onRecovery)
-            {
-                onRecovery.Invoke(this);
-            }
         }
 
         /// <summary>

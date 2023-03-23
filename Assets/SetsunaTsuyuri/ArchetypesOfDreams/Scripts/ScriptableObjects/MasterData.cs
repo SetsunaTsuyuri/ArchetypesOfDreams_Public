@@ -109,6 +109,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// アイテムデータのID配列を取得する
+        /// </summary>
+        /// <returns></returns>
+        public static int[] GetItemIds()
+        {
+            return Instance.Items
+                .Select(x => x.Id)
+                .ToArray();
+        }
+
+        /// <summary>
         /// 基本ステータス効果データを取得する
         /// </summary>
         /// <param name="id"></param>

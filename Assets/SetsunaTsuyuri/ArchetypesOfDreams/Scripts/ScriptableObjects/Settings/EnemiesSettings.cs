@@ -17,10 +17,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public float HPScale { get; private set; } = 0.5f;
 
         /// <summary>
-        /// GP倍率
+        /// GP補正値
         /// </summary>
         [field: SerializeField]
-        public int GPScale { get; private set; } = -2;
+        public int GPValue { get; private set; } = -2;
 
         /// <summary>
         /// UIの表示位置オフセット

@@ -435,7 +435,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (result == BattleResultType.Lose)
                 {
                     // マイルームに戻る
-                    SceneChangeManager.StartChange(SceneNames.MyRoom);
+                    SceneChangeManager.StartChange(SceneId.MyRoom);
                 }
                 else
                 {

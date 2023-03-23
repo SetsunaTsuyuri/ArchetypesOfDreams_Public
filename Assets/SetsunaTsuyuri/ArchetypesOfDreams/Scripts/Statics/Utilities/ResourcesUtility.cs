@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -14,6 +15,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         static readonly string s_sprites = "Sprites";
 
         /// <summary>
+        /// ゲームイベントフォルダ
+        /// </summary>
+        static readonly string s_gameEvents = "GameEvents";
+
+        /// <summary>
         /// スプライトをロードする
         /// </summary>
         /// <param name="name"></param>
@@ -22,6 +28,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             Sprite[] sprites = Resources.LoadAll<Sprite>($"{s_sprites}/{name}");
             return sprites;
+        }
+
+        /// <summary>
+        /// ゲームイベントをロードする
+        /// </summary>
+        /// <returns></returns>
+        public static Dictionary<string, string> LoadGameEvents()
+        {
+            TextAsset[] gameEventAssets = Resources.LoadAll<TextAsset>($"{s_gameEvents}");
+
+            Dictionary<string, string> gameEventDictionary = gameEventAssets
+                .ToDictionary(x => x.name, x => x.text);
+            return gameEventDictionary;
         }
     }
 }

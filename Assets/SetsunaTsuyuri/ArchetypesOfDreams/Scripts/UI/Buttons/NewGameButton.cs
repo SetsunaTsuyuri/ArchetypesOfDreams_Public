@@ -22,7 +22,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 VariableData.Instance.Initialize();
 
                 // 自室へ移動する
-                SceneChangeManager.StartChange(SceneNames.MyRoom);
+                SceneChangeManager.StartChange(SceneId.MyRoom);
 
                 //// 最初のダンジョンへ遷移する
                 //VariableData.DungeonId = 0;

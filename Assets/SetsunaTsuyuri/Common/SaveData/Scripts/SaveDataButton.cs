@@ -82,7 +82,7 @@ namespace SetsunaTsuyuri
                         {
                             SaveDataManager.Load(_id);
                         }
-                        SceneChangeManager.StartChange(SceneNames.MyRoom);
+                        SceneChangeManager.StartChange(SceneId.MyRoom);
                         break;
                 }
             });

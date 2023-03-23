@@ -16,6 +16,8 @@ namespace SetsunaTsuyuri.Scenario
     /// </summary>
     public class ScenarioManager : MonoBehaviour, IInitializable
     {
+        public static ScenarioManager InstanceInActiveScene = null;
+
         /// <summary>
         /// コメント行として扱う文字
         /// </summary>
@@ -161,6 +163,8 @@ namespace SetsunaTsuyuri.Scenario
         private void Awake()
         {
             SetUp();
+
+            InstanceInActiveScene = this;
         }
 
         /// <summary>
@@ -210,7 +214,31 @@ namespace SetsunaTsuyuri.Scenario
                 return;
             }
 
-            PlayAsync(csv, this.GetCancellationTokenOnDestroy()).Forget();
+            PlayCsv(csv, this.GetCancellationTokenOnDestroy()).Forget();
+        }
+
+        /// <summary>
+        /// 再生する
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="expressionId"></param>
+        /// <param name="name"></param>
+        /// <param name="message"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async UniTask Play(int actorId, int expressionId, string name, string message, CancellationToken token)
+        {
+            IsPlaying = true;
+            onScenarioPlayingStart.Invoke();
+
+            sentenceText.text = string.Empty;
+            ChangeNameText(name);
+
+            Show();
+            await DisplaySentenceAsync(message, token);
+
+            IsPlaying = false;
+            onScenarioPlayingEnd.Invoke();
         }
 
         /// <summary>
@@ -219,7 +247,7 @@ namespace SetsunaTsuyuri.Scenario
         /// <param name="csv">CSVテキスト</param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask PlayAsync(TextAsset csv, CancellationToken token)
+        public async UniTask PlayCsv(TextAsset csv, CancellationToken token)
         {
             // フラグON
             IsPlaying = true;

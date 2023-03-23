@@ -11,20 +11,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public enum BattleResultType
     {
+        None = 0,
+
         /// <summary>
         /// 勝利
         /// </summary>
-        Win = 0,
+        Win = 1,
 
         /// <summary>
         /// 敗北
         /// </summary>
-        Lose = 1,
+        Lose = 2,
 
         /// <summary>
         /// 中止
         /// </summary>
-        Canceled = 2
+        Canceled = 3
     }
 
     /// <summary>
@@ -32,9 +34,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public partial class Battle : MonoBehaviour, IInitializable
     {
-        /// <summary>
-        /// インスタンス
-        /// </summary>
         public static Battle InstanceInActiveScene { get; private set; } = null;
 
         /// <summary>

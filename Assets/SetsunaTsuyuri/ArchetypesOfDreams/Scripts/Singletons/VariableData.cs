@@ -84,12 +84,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// アイテム所持数ディクショナリー
         /// </summary>
-        readonly Dictionary<int, int> _itemsDic = new();
+        readonly Dictionary<int, int> _itemsDictionary = new();
 
         /// <summary>
         /// アイテム所持数ディクショナリー
         /// </summary>
-        public static Dictionary<int, int> ItemsDic => Instance._itemsDic;
+        public static Dictionary<int, int> ItemsDictionary => Instance._itemsDictionary;
 
         /// <summary>
         /// 選択可能なダンジョンフラグ
@@ -184,12 +184,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _steps = 0;
 
             // アイテム所持数ディクショナリー
-            _itemsDic.Clear();
-            int items = MasterData.CountItems();
-            for (int i = 1; i <= items; i++)
-            {
-                _itemsDic.Add(i, 0);
-            }
+            InitializeItems();
 
             // ダンジョン
             int dungeonNumber = MasterData.CountDungeons();
@@ -213,14 +208,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             player.Initialize();
             Allies.Add(player);
 
-            // アイテム
-            ItemsDic[1] = 10;
-            ItemsDic[2] = 10;
-            ItemsDic[3] = 10;
-            ItemsDic[4] = 10;
-
             // 選択可能なダンジョン
             _selectableDungeons[1] = true;
+        }
+
+        /// <summary>
+        /// 所持アイテムを初期化する
+        /// </summary>
+        private void InitializeItems()
+        {
+            _itemsDictionary.Clear();
+            int[] itemIds = MasterData.GetItemIds();
+            foreach (var itemId in itemIds)
+            {
+                _itemsDictionary.Add(itemId, 0);
+            }
+
+            ItemsDictionary[1] = 10;
+            ItemsDictionary[2] = 10;
+            ItemsDictionary[3] = 10;
+            ItemsDictionary[4] = 10;
         }
 
         /// <summary>

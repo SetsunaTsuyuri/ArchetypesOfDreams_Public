@@ -93,7 +93,7 @@ namespace SetsunaTsuyuri
             SpiritCoins = VariableData.SpiritCoins;
             Steps = VariableData.Steps;
 
-            Items = VariableData.ItemsDic.Values.ToArray();
+            Items = VariableData.ItemsDictionary.Values.ToArray();
 
             StroyProgressions = Copy(VariableData.StoryProgressions);
             SelectableDungeons = Copy(VariableData.SelectableDungeons);
@@ -112,10 +112,10 @@ namespace SetsunaTsuyuri
             VariableData.SpiritCoins = SpiritCoins;
             VariableData.Steps = Steps;
 
-            VariableData.ItemsDic.Clear();
+            VariableData.ItemsDictionary.Clear();
             for (int i = 0; i < Items.Length; i++)
             {
-                VariableData.ItemsDic.Add(i + 1, Items[i]);
+                VariableData.ItemsDictionary.Add(i + 1, Items[i]);
             }
 
             Overwrite(StroyProgressions, VariableData.StoryProgressions);

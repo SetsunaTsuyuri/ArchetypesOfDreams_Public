@@ -39,7 +39,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
-        public UniTask GetUniTask(CancellationToken token)
+        public UniTask Resolve(CancellationToken token)
         {
             return GameEventsManager.ResolveTravelEvent(this, token);
         }

@@ -45,13 +45,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             AddTrriger(EventTriggerType.Select, (_) => description.SetText(Data.Description));
 
             // キャンセルされたとき、自室シーンに移る
-            AddTrriger(EventTriggerType.Cancel, (_) => SceneChangeManager.StartChange(SceneNames.MyRoom));
+            AddTrriger(EventTriggerType.Cancel, (_) => SceneChangeManager.StartChange(SceneId.MyRoom));
             
             // 押されたとき、ダンジョンシーンに移行する
             AddPressedListener(() =>
             {
                 VariableData.DungeonId = Data.Id;
-                SceneChangeManager.StartChange(SceneNames.Dungeon);
+                SceneChangeManager.StartChange(SceneId.Dungeon);
             });
         }
     }
