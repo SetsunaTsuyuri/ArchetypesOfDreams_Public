@@ -131,10 +131,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// スキルを有している
         /// </summary>
         /// <returns></returns>
-        public bool HasAnySkill()
-        {
-            return Data.Skills.Any(x => x.AcquisitionLevel >= Level);
-        }
+        public bool HasAnySkill => Data.Skills.Any(x => x.AcquisitionLevel <= Level);
 
         /// <summary>
         /// 防御コマンドを選択できる

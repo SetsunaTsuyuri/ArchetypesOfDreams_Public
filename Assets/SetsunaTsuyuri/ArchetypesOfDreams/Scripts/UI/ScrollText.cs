@@ -72,6 +72,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
+        private void Start()
+        {
+            _textView.text = _textAsset.text;
+        }
+
         private void Update()
         {
             if (ScrollDirection == 0.0f)

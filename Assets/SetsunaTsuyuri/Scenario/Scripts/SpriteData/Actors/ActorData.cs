@@ -17,6 +17,12 @@ namespace SetsunaTsuyuri.Scenario
         public KeysAndValues<Attribute.Expression, Sprite> Expressions { get; private set; } = null;
 
         /// <summary>
+        /// 拡大率
+        /// </summary>
+        [field: SerializeField]
+        public float Scale { get; private set; } = 1.0f;
+
+        /// <summary>
         /// 表示位置オフセット
         /// </summary>
         [field: SerializeField]

@@ -5,14 +5,16 @@
     /// </summary>
     public enum DamageType
     {
+        None = 0,
+
         /// <summary>
         /// ダメージ
         /// </summary>
-        Damage = 0,
+        Damage = 1,
 
         /// <summary>
         /// 回復
         /// </summary>
-        Healing = 1
+        Healing = 2
     }
 }

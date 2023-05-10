@@ -12,7 +12,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 使用者
         /// </summary>
-        public CombatantContainer User { get; set; } = null;
+        CombatantContainer _user = null;
+
+        /// <summary>
+        /// 使用者
+        /// </summary>
+        public virtual CombatantContainer User
+        {
+            get => _user;
+            set => _user = value;
+        }
 
         /// <summary>
         /// セットアップする
@@ -31,11 +40,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 {
                     OnActionTargetSelection(targetSelection, button.Id);
                     Stack(typeof(TargetSelectionUI));
-                    Hide();
+                    SetEnabled(false);
                 });
             }
 
-            Hide();
+            SetEnabled(false);
         }
 
         /// <summary>
@@ -54,7 +63,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override void BeCanceled()
         {
-            Hide();
+            SetEnabled(false);
 
             base.BeCanceled();
         }

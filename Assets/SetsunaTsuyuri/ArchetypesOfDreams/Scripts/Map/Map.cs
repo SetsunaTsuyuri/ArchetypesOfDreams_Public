@@ -92,6 +92,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int MaxEnemyId { get; private set; } = 0;
 
         /// <summary>
+        /// ランダムエンカウントが有効である
+        /// </summary>
+        public bool EnablesRandomEncounterBattle
+        {
+            get => MinEnemyId != 0 && MaxEnemyId != 0;
+        }
+
+        /// <summary>
         /// セットアップする
         /// </summary>
         /// <param name="json"></param>

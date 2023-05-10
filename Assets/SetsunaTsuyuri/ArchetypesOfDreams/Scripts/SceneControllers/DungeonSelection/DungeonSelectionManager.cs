@@ -1,6 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -27,13 +28,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Start()
         {
+            CancellationToken token = this.GetCancellationTokenOnDestroy();
+            StartAsync(token).Forget();
+        }
+
+        private async UniTask StartAsync(CancellationToken token)
+        {
             // 戦闘者を移す
             allies.TransferCombatantsViriableDataToContainers();
 
             // UI初期化
             ui.Initialize();
 
-            // ボタン選択
+            await FadeManager.FadeIn(token);
+
             ui.DungeonButtons.BeSelected();
         }
     }

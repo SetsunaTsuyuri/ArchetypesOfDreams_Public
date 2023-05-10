@@ -10,16 +10,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class ActionInfo
     {
         /// <summary>
-        /// 名前
-        /// </summary>
-        public readonly string Name = string.Empty;
-
-        /// <summary>
-        /// 説明
-        /// </summary>
-        public readonly string Description = string.Empty;
-
-        /// <summary>
         /// スキル属性
         /// </summary>
         public readonly GameAttribute.Skill SkillAttribute = GameAttribute.Skill.Common;
@@ -65,58 +55,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public ActionInfo(SkillData skill)
         {
-            // 名前
-            Name = skill.Name;
-
-            // 説明
-            Description = skill.Description;
-
             // 消費DP
             ConsumptionDP = skill.Cost;
 
             // 効果データ
-            Effect = skill.Effect;
+            Effect = skill;
         }
 
         public ActionInfo(ItemData item)
         {
-            // 名前
-            Name = item.Name;
-
-            // 説明
-            Description = item.Description;
-
             // 効果データ
-            Effect = item.Effect;
+            Effect = item;
 
-            // 消費アイテムの場合
-            if (!item.IsReusable)
-            {
-                // 消費アイテムID
-                ConsumptionItemdId = item.Id;
-            }
-        }
-
-        /// <summary>
-        /// 攻撃属性を取得する
-        /// </summary>
-        /// <returns></returns>
-        public GameAttribute.Attack GetAttack()
-        {
-            GameAttribute.Attack userAttack = SkillAttribute switch
-            {
-                GameAttribute.Skill.PowerSkill => GameAttribute.Attack.Power,
-                GameAttribute.Skill.TechniqueSkill => GameAttribute.Attack.Technique,
-                _ => GameAttribute.Attack.Mix,
-            };
-
-            GameAttribute.Attack result = Effect.Attack switch
-            {
-                GameAttribute.Attack.User => userAttack,
-                _ => Effect.Attack
-            };
-
-            return result;
+            // 消費アイテムID
+            ConsumptionItemdId = !item.IsReusable ? item.Id : null;
         }
 
         /// <summary>

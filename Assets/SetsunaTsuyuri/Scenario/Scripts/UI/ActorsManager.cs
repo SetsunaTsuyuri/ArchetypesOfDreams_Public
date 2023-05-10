@@ -83,6 +83,59 @@ namespace SetsunaTsuyuri.Scenario
         }
 
         /// <summary>
+        /// 再生する
+        /// </summary>
+        /// <param name="actorDataId">演者データID</param>
+        /// <param name="expressionId">表情ID</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async UniTask Play(int actorDataId, int expressionId, CancellationToken token)
+        {
+            // 既に存在していないか調べる
+            Actor actor = actors.FirstOrDefault(x => x.HasData() && x.Data.Id == actorDataId);
+            bool exists = actor;
+
+            // 存在しない場合、新たにデータを設定する
+            if (!exists)
+            {
+                actor = actors.FirstOrDefault(a => a.Position == autoPositions[autoPositionIndex]);
+                autoPositionIndex = (autoPositionIndex + 1) % autoPositions.Length;
+
+                actor.Data = actorDataGroup.GetDataOrDefault(actorDataId);
+            }
+
+            // 表情を設定する
+            actor.ChangeExpression((Attribute.Expression)expressionId);
+            
+            // 強調
+            Spotlight(actor);
+
+            // 存在していなかった場合、フェードインで登場させる
+            if (!exists)
+            {
+                await FadeIn(actor, token);
+            }
+        }
+
+        /// <summary>
+        /// 演者の表示名を取得する
+        /// </summary>
+        /// <param name="actorDataId">演者データID</param>
+        /// <returns></returns>
+        public string GetDisplayName(int actorDataId)
+        {
+            string result = string.Empty;
+
+            ActorData actorData = actorDataGroup.GetDataOrDefault(actorDataId);
+            if (actorData is not null)
+            {
+                result = actorData.DisplayName;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 演者を探す
         /// </summary>
         /// <param name="command">コマンドデータ</param>

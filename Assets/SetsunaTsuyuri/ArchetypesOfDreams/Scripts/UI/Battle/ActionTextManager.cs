@@ -21,17 +21,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.Awake();
             text = GetComponentInChildren<TextMeshProUGUI>(true);
             
-            Hide();
+            SetEnabled(false);
         }
 
         /// <summary>
         /// 行動名を表示する
         /// </summary>
-        /// <param name="model">行動内容</param>
-        public void DisplaySkillName(ActionInfo model)
+        /// <param name="action">行動内容</param>
+        public void DisplaySkillName(ActionInfo action)
         {
-            text.text = model.Name;
-            Show();
+            text.text = action.Effect.Name;
+            SetEnabled(true);
         }
     }
 }

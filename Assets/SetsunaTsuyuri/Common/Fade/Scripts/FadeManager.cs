@@ -87,13 +87,21 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// フェードアウト
+        /// フェードアウトを開始する
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public static async UniTask FadeOut(CancellationToken token)
+        public static void StartFadeOut()
         {
-            await Instance.FadeOutInner(token);
+            CancellationToken token = Instance.GetCancellationTokenOnDestroy();
+            FadeOut(token).Forget();
+        }
+
+        /// <summary>
+        /// フェードインを開始する
+        /// </summary>
+        public static void StartFadeIn()
+        {
+            CancellationToken token = Instance.GetCancellationTokenOnDestroy();
+            FadeIn(token).Forget();
         }
 
         /// <summary>
@@ -101,14 +109,36 @@ namespace SetsunaTsuyuri
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        private async UniTask FadeOutInner(CancellationToken token)
+        public static async UniTask FadeOut(CancellationToken token)
+        {
+            await Instance.FadeOutInner(Instance.fadeDuration, token);
+        }
+
+        /// <summary>
+        /// フェードアウト
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static async UniTask FadeOut(float duration, CancellationToken token)
+        {
+            await Instance.FadeOutInner(duration, token);
+        }
+
+        /// <summary>
+        /// フェードアウト
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private async UniTask FadeOutInner(float duration, CancellationToken token)
         {
             if (state == FadeState.FadeOut)
             {
                 return;
             }
 
-            await Fade(fadeOut, fadeDuration, token);
+            await Fade(fadeOut, duration, token);
 
             state = FadeState.FadeOut;
         }
@@ -120,22 +150,34 @@ namespace SetsunaTsuyuri
         /// <returns></returns>
         public static async UniTask FadeIn(CancellationToken token)
         {
-            await Instance.FadeInInner(token);
+            await Instance.FadeInInner(Instance.fadeDuration, token);
+        }
+
+        /// <summary>
+        /// フェードアウト
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static async UniTask FadeIn(float duration, CancellationToken token)
+        {
+            await Instance.FadeInInner(duration, token);
         }
 
         /// <summary>
         /// フェードイン
         /// </summary>
+        /// <param name="duration"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        private async UniTask FadeInInner(CancellationToken token)
+        private async UniTask FadeInInner(float duration, CancellationToken token)
         {
             if (state == FadeState.FadeIn)
             {
                 return;
             }
 
-            await Fade(fadeIn, fadeDuration, token);
+            await Fade(fadeIn, duration, token);
 
             state = FadeState.FadeIn;
         }

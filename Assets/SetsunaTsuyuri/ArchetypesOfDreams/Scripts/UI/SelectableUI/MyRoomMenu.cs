@@ -56,7 +56,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.BeSelected();
 
-            _descriptionUI.Show();
+            _descriptionUI.SetEnabled(true);
             _playerInput.enabled = true;
         }
 
@@ -83,6 +83,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Stack(typeof(SaveDataMenu));
             });
             _saveButton.AddTrriger(EventTriggerType.Select, (_) => _descriptionUI.SetText(_saveDescription));
+
+            SetEnabled(false);
         }
 
         /// <summary>

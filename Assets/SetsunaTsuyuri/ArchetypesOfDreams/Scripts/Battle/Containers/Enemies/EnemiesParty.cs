@@ -28,9 +28,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             return Members.Any(x => x.ContainsFightable);
         }
 
-        protected override IEnumerable<CombatantContainer> GetContainers(TargetPosition position)
+        protected override IEnumerable<CombatantContainer> GetReserveMembers()
         {
-            return Members;
+            return Enumerable.Empty<CombatantContainer>();
         }
 
         /// <summary>

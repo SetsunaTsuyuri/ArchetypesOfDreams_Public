@@ -12,21 +12,16 @@ namespace SetsunaTsuyuri.Scenario
     public abstract class SpriteDataGroup<T> : ScriptableObject where T : SpriteData
     {
         [field: SerializeField]
-        public T[] Data { get; set; }
+        public T[] Data { get; private set; }
 
         /// <summary>
         /// スプライトデータを取得する
         /// </summary>
-        /// <param name="index">索引</param>
+        /// <param name="id">ID</param>
         /// <returns></returns>
-        public T GetDataOrDefault(int index)
+        public T GetDataOrDefault(int id)
         {
-            if (index < 0 || index >= Data.Length)
-            {
-                return null;
-            }
-
-            return Data[index];
+            return Data.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>
@@ -36,8 +31,7 @@ namespace SetsunaTsuyuri.Scenario
         /// <returns></returns>
         public T GetDataOrDefault(string name)
         {
-            T data = Data.FirstOrDefault(d => d.Name == name);
-            return data;
+            return Data.FirstOrDefault(d => d.Name == name);
         }
     }
 }

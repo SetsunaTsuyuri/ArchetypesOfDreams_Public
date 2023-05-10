@@ -29,8 +29,8 @@ namespace SetsunaTsuyuri.Scenario.Attribute
     public enum CommandOfScreen
     {
         None = 0,
-        FadeIn,
-        FadeOut
+        FadeIn = 1,
+        FadeOut = 2,
     }
 
     /// <summary>

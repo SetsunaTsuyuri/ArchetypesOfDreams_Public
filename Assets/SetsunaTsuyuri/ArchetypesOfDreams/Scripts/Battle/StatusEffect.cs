@@ -23,21 +23,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// ステータス効果
     /// </summary>
+    [System.Serializable]
     public class StatusEffect
     {
         /// <summary>
         /// データ
         /// </summary>
+        [field: SerializeField]
         public StatusEffectData Data { get; private set; } = null;
 
         /// <summary>
         /// 残りの有効ターン数
         /// </summary>
+        [field: SerializeField]
         public int RemainingTurns { get; set; } = 0;
 
         /// <summary>
         /// 永続する
         /// </summary>
+        [field: SerializeField]
         public bool IsPermanent { get; set; } = false;
 
         /// <summary>

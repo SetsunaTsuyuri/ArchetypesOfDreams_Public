@@ -5,8 +5,21 @@
     /// </summary>
     public enum TargetCondition
     {
-        Living = 0, // 生きている
-        KnockedOut = 1, // 倒されている
-        LivingAndKnockedOut = 2 // 生きているまたは倒されている
+        None = 0,
+
+        /// <summary>
+        /// 生存
+        /// </summary>
+        Living = 1,
+
+        /// <summary>
+        /// 戦闘不能
+        /// </summary>
+        KnockedOut = 2,
+
+        /// <summary>
+        /// 生存・戦闘不能
+        /// </summary>
+        LivingOrKnockedOut = 3,
     }
 }

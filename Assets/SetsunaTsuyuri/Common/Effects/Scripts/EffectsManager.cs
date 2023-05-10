@@ -24,9 +24,9 @@ namespace SetsunaTsuyuri
         EffectDataGroup _effectDataGroup = null;
 
         /// <summary>
-        /// エフェクトプール配列
+        /// プールディクショナリー
         /// </summary>
-        public ObjectPool<EffectObject>[] _effectPools = { };
+        readonly Dictionary<int, ObjectPool<EffectObject>> _poolDictionary = new();
 
         public override void Initialize()
         {
@@ -34,7 +34,7 @@ namespace SetsunaTsuyuri
 
             SceneManager.sceneLoaded += (_, _) =>
             {
-                foreach (var pool in _effectPools)
+                foreach (var pool in _poolDictionary.Values)
                 {
                     pool.ReleaseAll();
                 }
@@ -46,13 +46,10 @@ namespace SetsunaTsuyuri
         /// </summary>
         private void CreateEffectPools()
         {
-            int length = _effectDataGroup.Data.Length;
-            _effectPools = new ObjectPool<EffectObject>[length];
-            for (int i = 0; i < length; i++)
+            foreach (var data in _effectDataGroup.Data)
             {
-                EffectData data = _effectDataGroup[i];
                 ObjectPool<EffectObject> pool = CreateEffectPool(data);
-                _effectPools[i] = pool;
+                _poolDictionary.Add(data.Id, pool);
             }
         }
 
@@ -60,10 +57,19 @@ namespace SetsunaTsuyuri
         /// エフェクトのオブジェクトプールを作る
         /// </summary>
         /// <param name="data">エフェクトデータ</param>
-        private ObjectPool<EffectObject> CreateEffectPool(EffectData data)
+        private ObjectPool<EffectObject> CreateEffectPool(EffectObjectData data)
         {
+            string idName = data.Id.ToString();
+            if (System.Enum.IsDefined(typeof(EffectDataId), data.Id))
+            {
+                idName = ((EffectDataId)data.Id).ToString();
+            }
+            
+            GameObject poolObject = new(idName);
+            poolObject.transform.SetParent(transform, false);
+
             ObjectPool<EffectObject> pool = new(
-                () => EffectObject.Create(this, data),
+                () => EffectObject.Create(this, poolObject.transform, data),
                 (e) => e.OnGot(),
                 (e) => e.OnReleased(),
                 data.PoolCaptity);
@@ -77,7 +83,7 @@ namespace SetsunaTsuyuri
         /// <param name="effect"></param>
         public void ReleaseEffect(EffectObject effect)
         {
-            _effectPools[effect.Data.Id].Release(effect);
+            _poolDictionary[effect.Data.Id].Release(effect);
         }
 
         /// <summary>
@@ -86,9 +92,25 @@ namespace SetsunaTsuyuri
         /// <param name="type"></param>
         /// <param name="position"></param>
         /// <param name="isLoop"></param>
-        public static void Play(EffectType type, Vector3 position, bool isLoop)
+        public static void Play(EffectDataId type, Vector3 position, bool isLoop = false)
         {
-            EffectObject effect = Instance._effectPools[(int)type].Get();
+            Play((int)type, position, isLoop);
+        }
+
+        /// <summary>
+        /// エフェクトを再生する
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="position"></param>
+        /// <param name="isLoop"></param>
+        public static void Play(int id, Vector3 position, bool isLoop = false)
+        {
+            EffectObject effect = Instance._poolDictionary[id].Get();
+            if (effect == null)
+            {
+                return;
+            }
+
             effect.transform.position = position;
             effect.Play();
         }

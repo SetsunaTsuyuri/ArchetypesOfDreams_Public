@@ -11,9 +11,9 @@ namespace SetsunaTsuyuri
         where T : class
     {
         /// <summary>
-        /// コンテナ配列
+        /// ラッパー配列
         /// </summary>
-        readonly PooledObjectWrapper<T>[] _containers = null;
+        readonly PooledObjectWrapper<T>[] _wrappers = null;
 
         /// <summary>
         /// オブジェクトが取得された際の処理
@@ -34,7 +34,7 @@ namespace SetsunaTsuyuri
         /// <param name="poolCapatity">プールする数</param>
         public ObjectPool(Func<T> create, Action<T> onGot, Action<T> onReleased, int poolCapatity)
         {
-            _containers = CreateObjects(create, poolCapatity);
+            _wrappers = CreateObjects(create, poolCapatity);
             _onGot = onGot;
             _onReleased = onReleased;
 
@@ -68,12 +68,12 @@ namespace SetsunaTsuyuri
         {
             T pooledObject = null;
             
-            PooledObjectWrapper<T> container = _containers
+            PooledObjectWrapper<T> wrapper = _wrappers
                 .FirstOrDefault(x => x.IsAvailable);
 
-            if (container is not null)
+            if (wrapper is not null)
             {
-                pooledObject = container.Get(_onGot);
+                pooledObject = wrapper.Get(_onGot);
             }
 
             return pooledObject;
@@ -85,7 +85,7 @@ namespace SetsunaTsuyuri
         /// <param name="pooledObject">解放するオブジェクト</param>
         public void Release(T pooledObject)
         {
-            PooledObjectWrapper<T> container = _containers
+            PooledObjectWrapper<T> container = _wrappers
                 .FirstOrDefault(x => x.PooledObject == pooledObject);
 
             if (container is not null)
@@ -99,7 +99,7 @@ namespace SetsunaTsuyuri
         /// </summary>
         public void ReleaseAll()
         {
-            foreach (var container in _containers)
+            foreach (var container in _wrappers)
             {
                 container.Release(_onReleased);
             }

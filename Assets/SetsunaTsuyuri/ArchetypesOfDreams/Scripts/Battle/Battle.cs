@@ -60,24 +60,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         bool _isRunning = false;
 
         /// <summary>
-        /// コマンド選択開始時のイベント(削除予定)
-        /// </summary>
-        [SerializeField]
-        GameEventWithBattleManager onPlayerControlledCombatantCommandSelection = null;
-
-        /// <summary>
-        /// コマンド選択終了時のイベント(削除予定)
-        /// </summary>
-        [SerializeField]
-        GameEvent onCommandSelectionExit = null;
-
-        /// <summary>
-        /// 行動終了開始時のイベント(削除予定)
-        /// </summary>
-        [SerializeField]
-        GameEvent onTurnEndEnter = null;
-
-        /// <summary>
         /// 戦闘UI
         /// </summary>
         [field: SerializeField]
@@ -114,17 +96,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動者コンテナ
         /// </summary>
-        public CombatantContainer Actor { get; private set; } = null;
+        public CombatantContainer ActiveContainer { get; private set; } = null;
 
         /// <summary>
         /// 行動内容
         /// </summary>
-        public ActionInfo ActorAction { get; set; } = null;
+        public ActionInfo ActiveContainerAction { get; set; } = null;
 
         /// <summary>
         /// 行動の対象
         /// </summary>
-        public CombatantContainer[] ActorActionTargets { get; set; } = null;
+        public CombatantContainer[] ActiveContainerActionTargets { get; set; } = null;
 
         /// <summary>
         /// 得られる経験値
@@ -187,6 +169,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public async UniTask<BattleResultType> ExecuteRandomBattle(Map map, CancellationToken token)
         {
+            AudioManager.PlaySE(SEId.BattleStart);
+
             await FadeManager.FadeOut(token);
 
             Enemies.Initialize();
@@ -206,17 +190,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public async UniTask<BattleResultType> ExecuteEventBattle(BattleEvent battleEvent, CancellationToken token)
         {
+            AudioManager.PlaySE(SEId.BattleStart);
+
             await FadeManager.FadeOut(token);
 
             Enemies.Initialize();
             Enemies.CreateEnemies(battleEvent);
-
-            // ボス戦以外の場合
-            if (!battleEvent.IsBossBattle)
-            {
-                // 通常戦闘BGMを再生する
-                AudioManager.PlayBgm(BgmId.NormalBattle);
-            }
 
             return await ExecuteBattle(token);
         }
@@ -237,7 +216,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 // 時間経過
                 AdvanceTime();
-                if (Actor == null)
+                if (!ActiveContainer)
                 {
                     break;
                 }
@@ -245,11 +224,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // ターン開始
                 await StartTurn(token);
 
-                while (Actor.ContainsActionable)
+                while (ActiveContainer.ContainsActionable)
                 {
                     // 行動決定
                     await DecideActorAction(token);
-                    if (ActorAction is not null)
+                    if (ActiveContainerAction is not null)
                     {
                         // 行動実行
                         await ExecuteActorAction(token);
@@ -275,10 +254,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             await FadeManager.FadeOut(token);
 
-            // UI表示
-            BattleUI.Show();
+            // 通知
+            MessageBrokersManager.BattleStart.Publish(this);
 
-            // 位置表示
+            // UI表示
+            BattleUI.SetEnabled(true);
+
+            // 位置調整
             Enemies.AdjsutEnemiesPosition();
 
             await FadeManager.FadeIn(token);
@@ -306,13 +288,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 行動者を初期化する
-            Actor = null;
+            ActiveContainer = null;
 
             // 行動順を更新する
             UpdateOrderOfActions();
 
             // 行動者を決定する
-            Actor = OrderOfActions.FirstOrDefault();
+            ActiveContainer = OrderOfActions.FirstOrDefault();
         }
 
         /// <summary>
@@ -322,7 +304,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private async UniTask StartTurn(CancellationToken token)
         {
-            await Actor.OnTurnStart(token);
+            await ActiveContainer.OnTurnStart(token);
         }
 
         /// <summary>
@@ -332,11 +314,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private async UniTask DecideActorAction(CancellationToken token)
         {
-            ActorAction = null;
-            ActorActionTargets = null;
+            ActiveContainerAction = null;
+            ActiveContainerActionTargets = null;
 
             // 行動者が操作可能な場合
-            if (Actor.ContainsPlayerControlled())
+            if (ActiveContainer.ContainsPlayerControlled())
             {
                 // プレイヤーによる行動決定
                 await DecideByPlayer(token);
@@ -358,27 +340,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 行動が決定された
             bool ActionHasBeenDecided()
             {
-                return ActorAction is not null && ActorActionTargets is not null;
+                return ActiveContainerAction is not null && ActiveContainerActionTargets is not null;
             }
 
             // コマンド更新
-            BattleUI.UpdateUI(this);
+            BattleUI.UpdateUI(ActiveContainer);
 
             // コマンド選択
             BattleUI.BattleCommands.BeSelected();
 
-            // イベント実行
-            onPlayerControlledCombatantCommandSelection.Invoke(this);
-
+            // 行動決定まで待機
             await UniTask.WaitUntil(
                 ActionHasBeenDecided,
                 cancellationToken: token);
 
             // コマンド非表示
-            BattleUI.BattleCommands.Hide();
-
-            // イベント実行
-            onCommandSelectionExit.Invoke();
+            BattleUI.BattleCommands.SetEnabled(false);
         }
 
         /// <summary>
@@ -387,15 +364,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         private void DecideByAI()
         {
             // 行動決定
-            ActorAction = Actor.Combatant.DecideAction();
-            if (ActorAction is null)
+            ActiveContainerAction = ActiveContainer.Combatant.DecideAction();
+            if (ActiveContainerAction is null)
             {
                 return;
             }
 
             // 対象決定
-            CombatantContainer[] targetables = Actor.GetTargetables(ActorAction.Effect).ToArray();
-            ActorActionTargets = GetTargets(Actor, targetables, ActorAction.Effect);
+            CombatantContainer[] targetables = ActiveContainer.GetTargetables(ActiveContainerAction.Effect).ToArray();
+            ActiveContainerActionTargets = GetTargets(ActiveContainer, targetables, ActiveContainerAction.Effect);
         }
 
         /// <summary>
@@ -405,7 +382,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private async UniTask ExecuteActorAction(CancellationToken token)
         {
-            await Actor.Act(ActorAction, ActorActionTargets, token);
+            await ActiveContainer.Act(ActiveContainerAction, ActiveContainerActionTargets, token);
             UpdateOrderOfActions();
         }
 
@@ -416,8 +393,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private async UniTask EndTurn(CancellationToken token)
         {
-            onTurnEndEnter.Invoke();
-            await Actor.OnTurnEnd(token);
+            await ActiveContainer.OnTurnEnd(token);
         }
 
         /// <summary>
@@ -449,6 +425,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // フェードアウト
             await FadeManager.FadeOut(token);
 
+            // 戦闘終了通知
+            MessageBrokersManager.BattleEnd.Publish(this);
+
+            // 敵初期化
             Enemies.Initialize();
 
             // アセット解放
@@ -456,7 +436,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             token.ThrowIfCancellationRequested();
 
             // UIを隠す
-            BattleUI.Hide();
+            BattleUI.SetEnabled(false);
 
             // ★ 暫定
             await UniTask.Delay(500);
@@ -515,7 +495,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnEnemyKnockedOutOrPurified(CombatantContainer container)
         {
             // 経験値増加
-            RewardExperience += container.Combatant.GetRewardExperience();
+            RewardExperience += container.Combatant.CalculateRewardExperience();
         }
 
         /// <summary>
@@ -527,7 +507,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 再行動可能者→待機時間(小)→素早さ(大)→味方→ID(小)
             OrderOfActions = Allies.GetFightables()
                 .Concat(Enemies.GetFightables())
-                .OrderByDescending(x => x == Actor)
+                .OrderByDescending(x => x == ActiveContainer)
                 .ThenBy(x => x.Combatant.WaitTime)
                 .ThenByDescending(x => x.Combatant.Speed)
                 .ThenByDescending(x => x is AllyContainer)

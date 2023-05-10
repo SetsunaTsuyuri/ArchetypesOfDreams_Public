@@ -69,9 +69,6 @@ namespace SetsunaTsuyuri
             // シーンロード
             SceneManager.LoadScene((int)id);
 
-            // フェードイン
-            await FadeManager.FadeIn(token);
-
             // フラグOFF
             Instance._isChangingScene = false;
         }

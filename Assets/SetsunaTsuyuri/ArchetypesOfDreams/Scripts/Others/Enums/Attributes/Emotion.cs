@@ -5,6 +5,9 @@
     /// </summary>
     public enum Emotion
     {
+        /// <summary>
+        /// 使用者と同じ
+        /// </summary>
         User = -1,
 
         None = 0,
@@ -28,8 +31,5 @@
         /// 悲
         /// </summary>
         Sadness = 4,
-
-        Madness = 5,
-        Void = 6
     }
 }

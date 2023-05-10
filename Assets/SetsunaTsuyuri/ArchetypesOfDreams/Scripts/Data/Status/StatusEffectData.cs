@@ -75,6 +75,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 構え
         /// </summary>
         Stance = 4,
+
+        /// <summary>
+        /// 特殊
+        /// </summary>
+        Special = 5,
     }
 
     /// <summary>
@@ -119,7 +124,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 効果の属性
         /// </summary>
-        public StatusEffectCategory EffectAttribute = StatusEffectCategory.None;
+        public StatusEffectCategory Category = StatusEffectCategory.None;
 
         /// <summary>
         /// 行動への影響
@@ -164,22 +169,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 力依存の攻撃倍率
         /// </summary>
-        public float PowerAttackRate = 1.0f;
+        public float PowerAttackRate = 0.0f;
 
         /// <summary>
         /// 技依存の攻撃倍率
         /// </summary>
-        public float TechniqueAttackRate = 1.0f;
+        public float TechniqueAttackRate = 0.0f;
 
         /// <summary>
         /// 力依存の防御倍率
         /// </summary>
-        public float PowerDefenseRate = 1.0f;
+        public float PowerDefenseRate = 0.0f;
 
         /// <summary>
         /// 技依存の防御倍率
         /// </summary>
-        public float TechniqueDefenseRate = 1.0f;
+        public float TechniqueDefenseRate = 0.0f;
 
         /// <summary>
         /// HP増減率
@@ -220,6 +225,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 遅延時間
         /// </summary>
         public float DelayTime = 0.0f;
+
+        /// <summary>
+        /// 能力
+        /// </summary>
+        public AbilityData[] Abilities = { };
     }
 }
 

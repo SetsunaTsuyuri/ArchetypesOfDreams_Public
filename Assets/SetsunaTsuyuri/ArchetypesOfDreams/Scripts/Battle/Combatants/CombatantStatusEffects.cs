@@ -15,7 +15,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             bool result = false;
 
-            StatusEffect statusEffect = StatusEffects.FirstOrDefault(x => x.Data.Id == data.Id);
+            StatusEffect statusEffect = StatusEffects.FirstOrDefault(x => x.Data.Id == data.StatusEffectId);
             if (statusEffect is not null)
             {
                 result = statusEffect.Data.Stack switch
@@ -41,15 +41,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private bool AddNewStatusEffect(EffectData.StatusEffect data)
         {
-            StatusEffect statusEffect = new(data.Id, data.Turns, data.IsPermanent);
-
-            // リストに追加する
+            StatusEffect statusEffect = new(data.StatusEffectId, data.Turns, data.IsPermanent);
             StatusEffects.Add(statusEffect);
-
-            // 行動を遅らせる
             Delay(statusEffect.Data.DelayTime);
-
-            // ステータス更新
             RefreshStatus();
 
             return true;
@@ -65,6 +59,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             statusEffect.RemainingTurns += data.Turns;
             Delay(statusEffect.Data.DelayTime);
+
             return true;
         }
 
@@ -78,6 +73,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             statusEffect.RemainingTurns = data.Turns;
             Delay(statusEffect.Data.DelayTime);
+
             return true;
         }
 

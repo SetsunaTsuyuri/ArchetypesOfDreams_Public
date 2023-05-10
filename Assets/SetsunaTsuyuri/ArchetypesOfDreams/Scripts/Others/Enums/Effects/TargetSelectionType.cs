@@ -5,8 +5,21 @@
     /// </summary>
     public enum TargetSelectionType
     {
-        Single = 0, // 単体
-        All = 1, // 全体
-        Random = 2, // ランダム
+        None = 0,
+
+        /// <summary>
+        /// 単体
+        /// </summary>
+        Single = 1,
+
+        /// <summary>
+        /// 全体
+        /// </summary>
+        All = 2,
+
+        /// <summary>
+        /// ランダム
+        /// </summary>
+        Random = 3,
     }
 }

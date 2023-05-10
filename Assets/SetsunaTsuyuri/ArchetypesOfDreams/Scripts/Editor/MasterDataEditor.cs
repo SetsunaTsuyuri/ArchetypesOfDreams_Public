@@ -20,14 +20,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         static readonly string s_id = "Id";
 
         /// <summary>
+        /// SkillID
+        /// </summary>
+        static readonly string s_skillId = "SkillId";
+
+        /// <summary>
+        /// ItemID
+        /// </summary>
+        static readonly string s_itemId = "ItemId";
+
+        /// <summary>
         /// Skills
         /// </summary>
         static readonly string s_skills = "Skills";
 
         /// <summary>
-        /// Effect
+        /// Abilities
         /// </summary>
-        static readonly string s_effect = "Effect";
+        static readonly string s_abilities = "Abilities";
 
         /// <summary>
         /// DamageEffects
@@ -81,7 +91,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 UnityWebRequest request = UnityWebRequest.Get(_masterData.GasUrl);
 
                 await request.SendWebRequest();
-
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     UpdateMasterData(request.downloadHandler.text);
@@ -125,90 +134,62 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             JToken masterData = JToken.Parse(json);
 
             // 夢渡り
-            {
-                JToken dreamWalkers = masterData["DreamWalkers"];
-                JToken skills = masterData["DreamWalkerSkills"];
-                FormatCombatants(dreamWalkers, skills, "DreamWalkerId");
-            }
+            JToken dreamWalkers = masterData["DreamWalkers"];
+            JToken dreamWalkerSkills = masterData["DreamWalkerSkills"];
+            AddArray(dreamWalkers, dreamWalkerSkills, "DreamWalkerId", s_skills);
 
             // ナイトメア
-            {
-                JToken nightmares = masterData["Nightmares"];
-                JToken skills = masterData["NightmareSkills"];
-                FormatCombatants(nightmares, skills, "NightmareId");
-            }
+            JToken nightmares = masterData["Nightmares"];
+            JToken nightmareSkills = masterData["NightmareSkills"];
+            AddArray(nightmares, nightmareSkills, "NightmareId", s_skills);
 
-            //// スキル
-            //{
-            //    JToken skills = masterData["Skills"];
-            //    JToken effects = masterData["SkillEffects"];
-            //    JToken damageEffects = masterData["SkillDamageEffects"];
-            //    JToken statusEffects = masterData["SkillStatusEffects"];
-            //    FormatSkillsOrItems(skills, effects, damageEffects, statusEffects, "SkillId");
-            //}
+            // スキル
+            JToken skills = masterData["Skills"];
+            JToken skillDamageEffects = masterData["SkillDamageEffects"];
+            JToken skillStatusEffects = masterData["SkillStatusEffects"];
+            AddArray(skills, skillDamageEffects, s_skillId, s_damageEffects);
+            AddArray(skills, skillStatusEffects, s_skillId, s_statusEffects);
 
-            //// アイテム
-            //{
-            //    JToken items = masterData["Items"];
-            //    JToken effects = masterData["ItemEffects"];
-            //    JToken damageEffects = masterData["ItemDamageEffects"];
-            //    JToken statusEffects = masterData["ItemStatusEffects"];
-            //    FormatSkillsOrItems(items, effects, damageEffects, statusEffects, "ItemId");
-            //}
+            // アイテム
+            JToken items = masterData["Items"];
+            JToken itemDamageEffects = masterData["ItemDamageEffects"];
+            JToken itemStatusEffects = masterData["ItemStatusEffects"];
+            AddArray(items, itemDamageEffects, s_itemId, s_damageEffects);
+            AddArray(items, itemStatusEffects, s_itemId, s_statusEffects);
+
+            // エフェクトアニメーション
+            JToken effectAnimations = masterData["EffectAnimations"];
+            JToken effectAnimationElements = masterData["EffectAnimationElements"];
+            AddArray(effectAnimations, effectAnimationElements, "EffectAnimationId", "Elements");
+
+            // ステータス効果
+            JToken statusEffects = masterData["StatusEffects"];
+            JToken statusEffectAbilities = masterData["StatusEffectAbilities"];
+            AddArray(statusEffects, statusEffectAbilities, "StatusEffectId", s_abilities);
 
             string result = masterData.ToString();
             return result;
         }
 
         /// <summary>
-        /// 戦闘者データを整形する
+        /// 整形する
         /// </summary>
-        /// <param name="combatants"></param>
-        /// <param name="skills"></param>
+        /// <param name="mainTokens"></param>
+        /// <param name="arrayTokens"></param>
         /// <param name="id"></param>
-        private void FormatCombatants(JToken combatants, JToken skills, string id)
+        /// <param name="arrayName"></param>
+        private void AddArray(JToken mainTokens, JToken arrayTokens, string id, string arrayName)
         {
-            foreach (var combatant in combatants)
+            foreach (var mainToken in mainTokens)
             {
-                var acquisitionSkills = skills
-                    .Where(x => x[id].ToString() == combatant[s_id].ToString());
+                var filtered = arrayTokens
+                    .Where(x => x[id].ToString() == mainToken[s_id].ToString());
 
-                if (acquisitionSkills.Any())
+                if (filtered.Any())
                 {
-                    JArray skillArray = JArray.FromObject(acquisitionSkills);
-                    JObject combatantObject = (JObject)combatant;
-                    combatantObject.Add(s_skills, skillArray);
-                }
-            }
-        }
-
-        /// <summary>
-        /// スキルまたはアイテムのデータを整形する
-        /// </summary>
-        /// <param name="skillsOrItems"></param>
-        /// <param name="effects"></param>
-        /// <param name="damageEffects"></param>
-        /// <param name="statusEffects"></param>
-        /// <param name="id"></param>
-        private void FormatSkillsOrItems(JToken skillsOrItems, JToken effects, JToken damageEffects, JToken statusEffects, string id)
-        {
-            foreach (var skillOrItem in skillsOrItems)
-            {
-                JObject effect = (JObject)effects.FirstOrDefault(x => x[s_id].ToString() == skillOrItem[s_id].ToString());
-                if (effect is not null)
-                {
-                    var damage = damageEffects
-                        .Where(x => x[id].ToString() == skillOrItem[s_id].ToString());
-
-                    effect.Add(s_damageEffects, JArray.FromObject(damage));
-
-                    var status = statusEffects
-                        .Where(x => x[id].ToString() == skillOrItem[s_id].ToString());
-
-                    effect.Add(s_statusEffects, JArray.FromObject(status));
-
-                    JObject skillOrItemObject = (JObject)skillOrItem;
-                    skillOrItemObject.Add(s_effect, effect);
+                    JArray array = JArray.FromObject(filtered);
+                    JObject mainObject = (JObject)mainToken;
+                    mainObject.Add(arrayName, array);
                 }
             }
         }

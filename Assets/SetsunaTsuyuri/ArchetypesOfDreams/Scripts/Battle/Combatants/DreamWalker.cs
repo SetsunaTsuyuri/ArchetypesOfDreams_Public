@@ -5,19 +5,13 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 夢渡り
+    /// 夢魔
     /// </summary>
     [System.Serializable]
     public class DreamWalker : Combatant
     {
         /// <summary>
-        /// 共感力
-        /// </summary>
-        [field: SerializeField]
-        public int Empathy { get; set; } = 0;
-
-        /// <summary>
-        /// 夢渡りデータ
+        /// 夢魔データ
         /// </summary>
         /// <returns></returns>
         public DreamWalkerData DreamWalkerData

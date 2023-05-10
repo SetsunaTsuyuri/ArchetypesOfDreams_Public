@@ -38,7 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             _buttons[0].AddPressedListener(BeCanceled);
 
-            Hide();
+            SetEnabled(false);
         }
 
         public override void BeSelected()
@@ -57,16 +57,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override void BeCanceled()
         {
-            Hide();
+            SetEnabled(false);
 
             base.BeCanceled();
         }
 
-        public override void Hide()
+        public override void SetEnabled(bool enabled)
         {
-            base.Hide();
+            base.SetEnabled(enabled);
 
-            _playerInput.enabled = false;
+            if (!enabled)
+            {
+                _playerInput.enabled = false;
+            }
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -9,7 +8,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 戦闘イベント
     /// </summary>
-    public class BattleEvent : IGameEvent
+    [System.Serializable]
+    public class BattleEvent : GameEventBase
     {
         /// <summary>
         /// 敵グループID
@@ -25,19 +25,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public BattleEvent(string[] columns)
         {
-            if (int.TryParse(columns[1], out int enemyGroupId))
-            {
-                EnemyGroupId = enemyGroupId;
-            }
-
-            if (columns.Length > 2
-                && bool.TryParse(columns[2], out bool isBossBattle))
-            {
-                IsBossBattle = isBossBattle;
-            }
+            EnemyGroupId = ToInt(columns, 1);
+            IsBossBattle = ToBool(columns, 2);
         }
 
-        public UniTask Resolve(CancellationToken token)
+        public override UniTask Resolve(CancellationToken token)
         {
             return GameEventsManager.ResolveBattleEvent(this, token);
         }

@@ -70,24 +70,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 次のレベルに到達するまでに必要な経験値を取得する
+        /// 次のレベルに到達するまでに必要な経験値を計算する
         /// </summary>
         /// <returns></returns>
-        public int GetNextLevelExperience()
+        public int CalculateNextLevelExperience()
         {
-            // 次のレベルまでに必要な最低経験値
-            int min = ToMinExperience(Level + 1);
-
-            // 現在の経験値から最低経験値を引く
-            int next = Experience - min;
+            // 次のレベルまでに必要な最低経験値から現在値を引く
+            int next = ToMinExperience(Level + 1);
+            next -=  Experience;
             return next;
         }
 
         /// <summary>
-        /// 敵として倒された場合に得られる経験値を取得する
+        /// 敵として倒された場合に得られる経験値を計算する
         /// </summary>
         /// <returns></returns>
-        public int GetRewardExperience()
+        public int CalculateRewardExperience()
         {
             int experience = Data.RewardExperience;
             float increace = GameSettings.Combatants.PercentageIncreaceInExperienceRequiredToLevelUp;

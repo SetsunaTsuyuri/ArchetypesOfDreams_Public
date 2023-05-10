@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// 敵グループのデータ
     /// </summary>
     [System.Serializable]
-    public class EnemyGroupData : Data
+    public class EnemyGroupData : IdData
     {
         /// <summary>
         /// 敵の構成

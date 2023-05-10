@@ -14,9 +14,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         static readonly string s_path = "GameSettings/";
 
-        /// <summary>
-        /// 戦闘者の設定
-        /// </summary>
         CombatantsSettings _combatants = null;
 
         /// <summary>
@@ -27,9 +24,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._combatants;
         }
 
-        /// <summary>
-        /// 味方の設定
-        /// </summary>
         AlliesSettings _allies = null;
 
         /// <summary>
@@ -40,9 +34,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._allies;
         } 
 
-        /// <summary>
-        /// 敵の設定
-        /// </summary>
         EnemiesSettings _enemies = null;
 
         /// <summary>
@@ -53,9 +44,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._enemies;
         }
 
-        /// <summary>
-        /// マップオブジェクトの設定
-        /// </summary>
         MapObjectsSettings _mapObjects = null;
 
         /// <summary>
@@ -66,9 +54,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._mapObjects;
         }
 
-        /// <summary>
-        /// アイテムの設定
-        /// </summary>
         ItemsSettings _items = null;
 
         /// <summary>
@@ -79,9 +64,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._items;
         }
 
-        /// <summary>
-        /// 感情属性の設定
-        /// </summary>
         EmotionsSettings _emotions = null;
 
         /// <summary>
@@ -92,9 +74,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._emotions;
         }
 
-        /// <summary>
-        /// 有効性の倍率設定
-        /// </summary>
         EffectivenessSettings _effectiveness = null;
 
         /// <summary>
@@ -105,9 +84,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._effectiveness;
         }
 
-        /// <summary>
-        /// 視覚効果の設定
-        /// </summary>
         VisualEffectsSettings _visualEffects = null;
 
         /// <summary>
@@ -118,9 +94,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._visualEffects; 
         }
 
-        /// <summary>
-        /// 説明文の設定
-        /// </summary>
         DescriptionSettings _description = null;
 
         /// <summary>
@@ -131,9 +104,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._description;
         }
 
-        /// <summary>
-        /// ポップアップテキストの設定
-        /// </summary>
         PopUpTextsSettings _popUpTexts = null;
 
         /// <summary>
@@ -144,9 +114,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._popUpTexts;
         }
 
-        /// <summary>
-        /// 浄化の設定
-        /// </summary>
         PurificationSettings _purification = null;
 
         /// <summary>
@@ -157,9 +124,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._purification;
         }
 
+        CamerasSettings _cameras = null;
+
         /// <summary>
-        /// 用語の設定
+        /// カメラの設定
         /// </summary>
+        public static CamerasSettings Cameras
+        {
+            get => Instance._cameras;
+        }
+
         TermsSettings _terms = null;
 
         /// <summary>
@@ -170,9 +144,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._terms;
         }
 
-        /// <summary>
-        /// 待機時間の設定
-        /// </summary>
         WaitTimeSettings _waitTime = null;
 
         /// <summary>
@@ -183,9 +154,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._waitTime;
         }
 
-        /// <summary>
-        /// その他の設定
-        /// </summary>
         OtherSettings _other = null;
 
         /// <summary>
@@ -209,6 +177,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _description = Resources.Load<DescriptionSettings>(s_path + "Description");
             _popUpTexts = Resources.Load<PopUpTextsSettings>(s_path + "PopUpTexts");
             _purification = Resources.Load<PurificationSettings>(s_path + "Purification");
+            _cameras = Resources.Load<CamerasSettings>(s_path + "Cameras");
             _terms = Resources.Load<TermsSettings>(s_path + "Terms");
             _waitTime = Resources.Load<WaitTimeSettings>(s_path + "WaitTime");
             _other = Resources.Load<OtherSettings>(s_path + "Other");

@@ -48,6 +48,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public SkillButton Change { get; private set; } = null;
 
         /// <summary>
+        /// 使用者
+        /// </summary>
+        public CombatantContainer User { get; set; } = null;
+
+        /// <summary>
         /// セットアップする
         /// </summary>
         /// <param name="battle">戦闘</param>
@@ -81,7 +86,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // スキル
             Skills.AddPressedListener(() =>
             {
-                skillMenu.User = battle.Actor;
+                skillMenu.User = battle.ActiveContainer;
                 Stack(typeof(SkillMenu));
             });
             Skills.AddTrriger(EventTriggerType.Select, _ => description.SetText(GameSettings.Description.Skills));
@@ -89,12 +94,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // アイテム
             Items.AddPressedListener(() =>
             {
-                itemMenu.User = battle.Actor;
+                itemMenu.User = battle.ActiveContainer;
                 Stack(typeof(ItemMenu));
             });
             Items.AddTrriger(EventTriggerType.Select, _ => description.SetText(GameSettings.Description.Items));
 
-            Hide();
+            SetEnabled(false);
+        }
+
+        public override void BeSelected()
+        {
+            base.BeSelected();
+
+            // 通知
+            MessageBrokersManager.BattleCommandsSelected.Publish(User);
         }
 
         /// <summary>
@@ -108,41 +121,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             button.SetUp(battle.BattleUI.Description);
             button.AddPressedListener(() =>
             {
-                CombatantContainer user = battle.Actor;
+                CombatantContainer user = battle.ActiveContainer;
                 int id = (int)basicSkillId;
 
                 battle.BattleUI.TargetSelection.OnSkillTargetSelection(user, id);
                 Stack(typeof(TargetSelectionUI));
-                Hide();
             });
         }
 
         /// <summary>
         /// 各ボタンを更新する
         /// </summary>
-        /// <param name="battle">戦闘</param>
-        public void UpdateButtons(Battle battle)
+        /// <param name="activeContainer">行動者コンテナ</param>
+        public void UpdateButtons(CombatantContainer activeContainer)
         {
-            // 行動者
-            CombatantContainer actor = battle.Actor;
-            Combatant combatant = battle.Actor.Combatant;
-
             // 通常攻撃ボタン
             {
                 int id = (int)BasicSkillId.Attack;
-                bool canBeUsed = actor.CanUseSkill(id);
+                bool canBeUsed = activeContainer.CanUseSkill(id);
                 NormalAttack.UpdateButton(id, canBeUsed);
             }
 
             // スキルボタン
-            Skills.SetInteractable(actor.CanUseAnySkill());
+            Skills.SetInteractable(activeContainer.CanUseAnySkill());
 
             // 浄化ボタン
-            Purification.gameObject.SetActive(combatant is DreamWalker);
+            Purification.gameObject.SetActive(activeContainer.Combatant is DreamWalker);
             if (Purification.isActiveAndEnabled)
             {
                 int id = (int)BasicSkillId.Purification;
-                bool canBeUsed = actor.CanUseSkill(id);
+                bool canBeUsed = activeContainer.CanUseSkill(id);
                 Purification.UpdateButton(id, canBeUsed);
             }
             else
@@ -151,11 +159,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // 交代ボタン
-            Change.gameObject.SetActive(combatant is Nightmare);
+            Change.gameObject.SetActive(activeContainer.Combatant is Nightmare);
             if (Change.isActiveAndEnabled)
             {
                 int id = (int)BasicSkillId.Change;
-                bool canBeUsed = actor.CanUseSkill(id);
+                bool canBeUsed = activeContainer.CanUseSkill(id);
                 Change.UpdateButton(id, canBeUsed);
             }
             else
@@ -166,12 +174,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 防御ボタン
             {
                 int id = (int)BasicSkillId.Defense;
-                bool canBeUsed = actor.CanUseSkill(id);
+                bool canBeUsed = activeContainer.CanUseSkill(id);
                 Defense.UpdateButton(id, canBeUsed);
             }
 
             // アイテムボタン
-            Items.SetInteractable(actor.CanUseAnyItem());
+            Items.SetInteractable(activeContainer.CanUseAnyItem());
 
             // ナビゲーション更新
             UpdateButtonNavigations();

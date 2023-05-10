@@ -22,6 +22,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         TextMeshProUGUI _level = null;
 
         /// <summary>
+        /// 次のレベルまでに必要な経験値
+        /// </summary>
+        [SerializeField]
+        TextMeshProUGUI _nextLevelExperience = null;
+
+        /// <summary>
         /// 現在HP
         /// </summary>
         [SerializeField]
@@ -94,10 +100,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void UpdateView(Combatant combatant)
         {
             // 名前
-            _name.text = combatant.Data.Name;
+            string name = combatant.Data.Name;
+            if (combatant is DreamWalker dreamWalker)
+            {
+                name = dreamWalker.DreamWalkerData.FullName;
+            }
+            _name.text = name;
 
             // レベル
             _level.text = combatant.Level.ToString();
+
+            // 次のレベルまでに必要な経験値
+            _nextLevelExperience.text = combatant.CalculateNextLevelExperience().ToString();
 
             // HP
             _currentHP.text = combatant.CurrentHP.ToString();

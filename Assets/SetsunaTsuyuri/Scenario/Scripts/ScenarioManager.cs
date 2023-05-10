@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
-using TMPro;
 using Cysharp.Threading.Tasks;
+using SetsunaTsuyuri.ArchetypesOfDreams;
 
 namespace SetsunaTsuyuri.Scenario
 {
@@ -16,7 +12,7 @@ namespace SetsunaTsuyuri.Scenario
     /// </summary>
     public class ScenarioManager : MonoBehaviour, IInitializable
     {
-        public static ScenarioManager InstanceInActiveScene = null;
+        public static ScenarioManager InstanceInActiveScene { get; private set; } = null;
 
         /// <summary>
         /// コメント行として扱う文字
@@ -25,40 +21,10 @@ namespace SetsunaTsuyuri.Scenario
         char commentChar = '*';
 
         /// <summary>
-        /// 自動的に文章を読み進める
-        /// </summary>
-        [field: SerializeField]
-        public bool Auto { get; set; } = false;
-
-        /// <summary>
-        /// 演者の名前を伏せる場合に表示される名前
-        /// </summary>
-        [SerializeField]
-        string anonymous = "???";
-
-        /// <summary>
-        /// 自動的にメッセージを送る際に最低限待つ時間
-        /// </summary>
-        [SerializeField]
-        public float waitTimeForAuto = 3.0f;
-
-        /// <summary>
-        /// 1文字毎の待機時間
-        /// </summary>
-        [SerializeField]
-        public float waitTimePerCharacter = 0.1f;
-
-        /// <summary>
         /// 背景データグループ
         /// </summary>
         [SerializeField]
         BackgroundDataGroup backgroundDataGroup = null;
-
-        /// <summary>
-        /// メッセージ速度
-        /// </summary>
-        [SerializeField]
-        float waitTimeForMessage = 0.05f;
 
         /// <summary>
         /// フェード速度(画面)
@@ -79,18 +45,6 @@ namespace SetsunaTsuyuri.Scenario
         ImageController background = null;
 
         /// <summary>
-        /// 名前テキスト
-        /// </summary>
-        [SerializeField]
-        TextMeshProUGUI nameText = null;
-
-        /// <summary>
-        /// メッセージテキスト
-        /// </summary>
-        [SerializeField]
-        TextMeshProUGUI sentenceText = null;
-
-        /// <summary>
         /// フェード画像
         /// </summary>
         [SerializeField]
@@ -100,25 +54,19 @@ namespace SetsunaTsuyuri.Scenario
         /// 演者の管理者
         /// </summary>
         [SerializeField]
-        ActorsManager actors = null;
+        ActorsManager _actors = null;
+
+        /// <summary>
+        /// 文章の管理者
+        /// </summary>
+        [SerializeField]
+        TextsManager _texts = null;
 
         /// <summary>
         /// 選択肢ボタンの管理者
         /// </summary>
         [SerializeField]
         SelectionButtonsManager selectionButtons = null;
-
-        /// <summary>
-        /// シナリオ再生開始時のイベント
-        /// </summary>
-        [SerializeField]
-        GameEvent onScenarioPlayingStart = null;
-
-        /// <summary>
-        /// シナリオ再生終了時のイベント
-        /// </summary>
-        [SerializeField]
-        GameEvent onScenarioPlayingEnd = null;
 
         /// <summary>
         /// 選択中である
@@ -160,6 +108,21 @@ namespace SetsunaTsuyuri.Scenario
         /// </summary>
         CanvasGroup canvasGroup = null;
 
+        /// <summary>
+        /// タスクリスト
+        /// </summary>
+        readonly List<UniTask> _tasks = new();
+
+        public static void EndIfPlaying()
+        {
+            if (!InstanceInActiveScene)
+            {
+                return;
+            }
+
+            InstanceInActiveScene.End();
+        }
+
         private void Awake()
         {
             SetUp();
@@ -176,7 +139,8 @@ namespace SetsunaTsuyuri.Scenario
             canvasGroup = GetComponent<CanvasGroup>();
             Hide();
 
-            actors.SetUp(this);
+            _actors.SetUp(this);
+            _texts.SetUp(IsRequestedToSkip);
             selectionButtons.SetUp(this);
 
             screenFade.IsRequestedToSkip += IsRequestedToSkip;
@@ -204,6 +168,19 @@ namespace SetsunaTsuyuri.Scenario
         }
 
         /// <summary>
+        /// タスクリストが終わるまで待機し、終了後にタスクリストをクリアする
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private async UniTask WhenAllAndClearTasks(CancellationToken token)
+        {
+            await UniTask.WhenAll(_tasks);
+            token.ThrowIfCancellationRequested();
+
+            _tasks.Clear();
+        }
+
+        /// <summary>
         /// 再生を開始する
         /// </summary>
         /// <param name="csv">CSVテキスト</param>
@@ -223,22 +200,82 @@ namespace SetsunaTsuyuri.Scenario
         /// <param name="actorId"></param>
         /// <param name="expressionId"></param>
         /// <param name="name"></param>
-        /// <param name="message"></param>
+        /// <param name="dialog"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask Play(int actorId, int expressionId, string name, string message, CancellationToken token)
+        public async UniTask Play(int actorId, int expressionId, string name, string dialog, CancellationToken token)
         {
+            // 開始
+            if (!IsPlaying)
+            {
+                OnSrart();
+            }
+
+            // 名前の表示
+            string displayName = name;
+            if (string.IsNullOrEmpty(displayName) && actorId > 0)
+            {
+                displayName = _actors.GetDisplayName(actorId);
+            }
+            _texts.SetNameText(displayName);
+
+
+            // 演者の表示
+            if (actorId > 0)
+            {
+                _tasks.Add(_actors.Play(actorId, expressionId, token));
+            }
+
+            // 文章の表示
+            _tasks.Add(_texts.Play(dialog, token));
+
+            await WhenAllAndClearTasks(token);
+        }
+
+        /// <summary>
+        /// 再生開始時の処理
+        /// </summary>
+        private void OnSrart()
+        {
+            Initialize();
             IsPlaying = true;
-            onScenarioPlayingStart.Invoke();
-
-            sentenceText.text = string.Empty;
-            ChangeNameText(name);
-
             Show();
-            await DisplaySentenceAsync(message, token);
 
+            MessageBrokersManager.ScenarioStart.Publish(this);
+        }
+
+        /// <summary>
+        /// 再生を終了する
+        /// </summary>
+        public void End()
+        {
             IsPlaying = false;
-            onScenarioPlayingEnd.Invoke();
+            Hide();
+
+            MessageBrokersManager.ScenarioEnd.Publish(this);
+        }
+
+        /// <summary>
+        /// 画面のフェードイン・アウトを行う
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="duration"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async UniTask FadeScreen(Attribute.CommandOfScreen command, float duration, CancellationToken token)
+        {
+            switch (command)
+            {
+                // フェードイン
+                case Attribute.CommandOfScreen.FadeIn:
+                    await ScreenFadeIn(duration, token);
+                    break;
+
+                // フェードアウト
+                case Attribute.CommandOfScreen.FadeOut:
+                    await ScreenFadeOut(duration, token);
+                    break;
+            }
         }
 
         /// <summary>
@@ -252,8 +289,8 @@ namespace SetsunaTsuyuri.Scenario
             // フラグON
             IsPlaying = true;
 
-            // イベント呼び出し
-            onScenarioPlayingStart.Invoke();
+            // 通知
+            MessageBrokersManager.ScenarioStart.Publish(this);
 
             // 初期化
             Initialize();
@@ -315,8 +352,8 @@ namespace SetsunaTsuyuri.Scenario
             // 隠す
             Hide();
 
-            // イベント呼び出し
-            onScenarioPlayingEnd.Invoke();
+            // 通知
+            MessageBrokersManager.ScenarioEnd.Publish(this);
 
             // フラグOFF
             IsPlaying = false;
@@ -324,8 +361,10 @@ namespace SetsunaTsuyuri.Scenario
 
         public void Initialize()
         {
-            ClearNameAndSentence();
-            actors.Initialize();
+            _tasks.Clear();
+
+            _actors.Initialize();
+            _texts.Initialize();
         }
 
         /// <summary>
@@ -392,13 +431,13 @@ namespace SetsunaTsuyuri.Scenario
             if (command.HasSentence() && command.CommandAttribute != Attribute.Command.Selection)
             {
                 // 文章表示
-                tasks.Add(DisplaySentenceAsync(command.Sentence, token));
+                tasks.Add(_texts.Play(command.Sentence, token));
 
                 // 演者の台詞または名前表示コマンドでなければ名前欄を空欄にする
                 if (command.CommandAttribute != Attribute.Command.Actor &&
                     command.CommandAttribute != Attribute.Command.Name)
                 {
-                    ChangeNameText(string.Empty);
+                    _texts.SetNameText(string.Empty);
                 }
             }
             switch (command.CommandAttribute)
@@ -410,7 +449,7 @@ namespace SetsunaTsuyuri.Scenario
 
                 case Attribute.Command.ClearSentence:
                     // 文章をクリアする
-                    ClearNameAndSentence();
+                    _texts.Clear();
                     break;
 
                 case Attribute.Command.Name:
@@ -485,16 +524,13 @@ namespace SetsunaTsuyuri.Scenario
         private void OnCommandOfName(CommandData command)
         {
             // 表示する名前
-            string name = anonymous;
+            _texts.SetAnonymousText();
 
             // 名前が設定されているなら、その名前にする
             if (!string.IsNullOrEmpty(command.Name))
             {
-                name = command.Name;
+                _texts.SetNameText(command.Name);
             }
-
-            // 名前表示変更
-            ChangeNameText(name);
         }
 
         private void OnCommandOfActor(List<UniTask> tasks, CommandData command, CancellationToken token)
@@ -505,37 +541,37 @@ namespace SetsunaTsuyuri.Scenario
             {
                 // 名前のみ
                 case Attribute.CommandOfActor.NameOnly:
-                    string name = actors.FindNameOrEmpty(command);
-                    ChangeNameText(name);
+                    string name = _actors.FindNameOrEmpty(command);
+                    _texts.SetNameText(name);
                     break;
 
                 // フェードイン
                 case Attribute.CommandOfActor.FadeIn:
-                    target = actors.FindAndSetData(command);
-                    tasks.Add(actors.FadeIn(target, token));
+                    target = _actors.FindAndSetData(command);
+                    tasks.Add(_actors.FadeIn(target, token));
                     break;
 
                 // フェードアウト
                 case Attribute.CommandOfActor.FadeOut:
-                    target = actors.Find(command);
-                    tasks.Add(actors.FadeOut(target, token));
+                    target = _actors.Find(command);
+                    tasks.Add(_actors.FadeOut(target, token));
                     break;
 
                 // 全てフェードアウト
                 case Attribute.CommandOfActor.FadeOutAll:
-                    target = actors.Find(command);
-                    tasks.Add(actors.FadeOutAll(token));
+                    target = _actors.Find(command);
+                    tasks.Add(_actors.FadeOutAll(token));
                     break;
 
                 // 演者取得
                 default:
-                    target = actors.Find(command);
+                    target = _actors.Find(command);
 
                     // 見つからなければフェードインで作る
                     if (!target)
                     {
-                        target = actors.FindAndSetData(command);
-                        tasks.Add(actors.FadeIn(target, token));
+                        target = _actors.FindAndSetData(command);
+                        tasks.Add(_actors.FadeIn(target, token));
                     }
                     break;
             }
@@ -555,19 +591,19 @@ namespace SetsunaTsuyuri.Scenario
                     if (command.Anonymous)
                     {
                         // 匿名表示
-                        ChangeNameText(anonymous);
+                        _texts.SetAnonymousText();
                     }
                     else
                     {
                         // 演者の名前表示
-                        ChangeNameText(target.Data.DisplayName);
+                        _texts.SetNameText(target.Data.DisplayName);
                     }
                 }
 
                 // 強調
                 if (command.HasSentence())
                 {
-                    actors.Spotlight(target);
+                    _actors.Spotlight(target);
                 }
             }
         }
@@ -649,7 +685,7 @@ namespace SetsunaTsuyuri.Scenario
                     {
                         // ジャンプ先設定 選択肢終了へ
                         int local = commandsIndex;
-                        jumpTo = () => IEnumerableUtility.IndexOf(currentCommands, command => command.IsSelectionEnd(), local);
+                        jumpTo = () => currentCommands.IndexOf(command => command.IsSelectionEnd(), local);
                     }
                     else
                     {
@@ -658,7 +694,7 @@ namespace SetsunaTsuyuri.Scenario
 
                         // ジャンプ先設定 選択肢分岐点の次へ
                         int local = commandsIndex;
-                        jumpTo = () => IEnumerableUtility.IndexOf(currentCommands, command => command.IsSelectionCase(requestedCaseIndex), local) + 1;
+                        jumpTo = () => currentCommands.IndexOf(command => command.IsSelectionCase(requestedCaseIndex), local) + 1;
 
                         // いずれかのボタンが押されるのを待つ
                         tasks.Add(selectionButtons.WaitUntilAnyButtonPressed(token));
@@ -708,90 +744,6 @@ namespace SetsunaTsuyuri.Scenario
             }
         }
 
-        private async UniTask DisplaySentenceAsync(string sentence, CancellationToken token)
-        {
-            // 表示できる文字数をゼロにする
-            sentenceText.maxVisibleCharacters = 0;
-
-            // テキストを更新する
-            sentenceText.text = sentence;
-
-            // GetParsedText()の前に更新する
-            sentenceText.ForceMeshUpdate();
-
-            // タグを除いた文字数
-            int maxCharacters = sentenceText.GetParsedText().Length;
-
-            // 表示する文字数
-            int displayCharacters = 0;
-
-            // 1文字ずつ表示する
-            while (displayCharacters < maxCharacters)
-            {
-                displayCharacters++;
-                sentenceText.maxVisibleCharacters = displayCharacters;
-
-                float time = 0.0f;
-                bool skip = false;
-                while (time < waitTimeForMessage)
-                {
-                    time += Time.deltaTime;
-                    await UniTask.Yield(token);
-
-                    // スキップ
-                    if (IsRequestedToSkip())
-                    {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip)
-                {
-                    break;
-                }
-            }
-
-            // 全ての文字を表示する
-            sentenceText.maxVisibleCharacters = maxCharacters;
-            await UniTask.Yield(token);
-
-            // 自動モード時の待機時間カウンター
-            float timeCountForAuto = 0.0f;
-
-            // 文字数に応じて待機時間を変える
-            float maxTimeCountForAuto = sentence.Length * waitTimePerCharacter;
-
-            // 待機時間が短すぎないようにする
-            if (maxTimeCountForAuto < waitTimeForAuto)
-            {
-                maxTimeCountForAuto = waitTimeForAuto;
-            }
-
-            // 入力 or (自動モードのみ)待機時間終了を待つ
-            while (!IsRequestedToSkip())
-            {
-                if (Auto && timeCountForAuto >= maxTimeCountForAuto)
-                {
-                    break;
-                }
-                else if (timeCountForAuto < maxTimeCountForAuto)
-                {
-                    timeCountForAuto += Time.deltaTime;
-                }
-
-                await UniTask.Yield(token);
-            }
-        }
-
-        /// <summary>
-        /// 文章を空にする
-        /// </summary>
-        private void ClearNameAndSentence()
-        {
-            nameText.text = "";
-            sentenceText.text = "";
-        }
-
         /// <summary>
         /// 画面フェードイン
         /// </summary>
@@ -830,15 +782,6 @@ namespace SetsunaTsuyuri.Scenario
             }
 
             await background.CrossFade(sprite, duration, token);
-        }
-
-        /// <summary>
-        /// 名前の表示を変更する
-        /// </summary>
-        /// <param name="name">名前</param>
-        public void ChangeNameText(string name)
-        {
-            nameText.text = name;
         }
 
         /// <summary>

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 夢渡りのデータ
+    /// 夢魔のデータ
     /// </summary>
     [System.Serializable]
     public class DreamWalkerData : CombatantData

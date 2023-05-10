@@ -123,7 +123,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             });
 
             // 帰還
-            if (SceneManager.GetActiveScene().buildIndex != (int)SceneId.MyRoom)
+            if (SceneManager.GetActiveScene().buildIndex != (int)SceneId.MyRoom
+                && VariableData.Flags.Get(FlagId.ReturnButtonIsVisible))
             {
                 _return.SetUp(DescriptionUI);
             }
@@ -137,7 +138,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _options.AddPressedListener(() => Stack(typeof(OptionsMenu)));
 
             UpdateButtons();
-            Hide();
+            SetEnabled(false);
         }
 
         public override void BeSelected()
@@ -149,20 +150,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (_menuMapCamera)
             {
                 _menuMapCamera.enabled = true;
-                _menuMap.Show();
+                _menuMap.SetEnabled(true);
             }
             else
             {
-                _menuMap.Hide();
+                _menuMap.SetEnabled(false);
             }
 
-            DescriptionUI.Show();
+            DescriptionUI.SetEnabled(true);
         }
 
         public override void BeCanceled()
         {
-            DescriptionUI.Hide();
-            Hide();
+            DescriptionUI.SetEnabled(false);
+            SetEnabled(false);
 
             base.BeCanceled();
         }
@@ -176,10 +177,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _skill.IsSeald = !_allies.HasAnySkill;
 
             // アイテム
-            _item.IsSeald = !ItemUtility.HasAnyItem();
+            _item.IsSeald = !VariableData.Items.HasAny;
 
             // 編成
-            _formation.IsSeald = _allies.CountChangeables() < 2;
+            _formation.IsSeald = !_allies.CanChangeFormation;
 
             UpdateButtonNavigations();
         }

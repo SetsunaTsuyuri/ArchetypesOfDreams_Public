@@ -5,8 +5,9 @@
     /// </summary>
     public enum AffectedStatusType
     {
-        HP = 0,
-        DP = 1,
-        GP = 2
+        None = 0,
+        HP = 1,
+        DP = 2,
+        GP = 3,
     }
 }

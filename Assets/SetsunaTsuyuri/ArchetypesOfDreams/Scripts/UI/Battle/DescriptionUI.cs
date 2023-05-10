@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -20,6 +21,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.Awake();
 
             _text = GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+
+        private void Start()
+        {
+            // 戦闘開始
+            MessageBrokersManager.BattleStart
+                .Receive<Battle>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => SetEnabled(true));
+
+            // 戦闘終了
+            MessageBrokersManager.BattleEnd
+                .Receive<Battle>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => SetEnabled(false));
         }
 
         /// <summary>
@@ -47,7 +63,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void DisplayActionName(ActionInfo action)
         {
             _text.alignment = TextAlignmentOptions.Center;
-            _text.text = action.Name;
+            _text.text = action.Effect.Name;
         }
     }
 }

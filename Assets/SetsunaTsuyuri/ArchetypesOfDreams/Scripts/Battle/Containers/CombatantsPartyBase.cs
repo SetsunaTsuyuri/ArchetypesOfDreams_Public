@@ -14,7 +14,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public bool HasAnySkill
         {
-            get => GetNonEmptyContainers().Any(x => x.HasAnySkill());
+            get => GetNonEmptyContainers().Any(x => x.HasAnySkill);
         }
 
         /// <summary>

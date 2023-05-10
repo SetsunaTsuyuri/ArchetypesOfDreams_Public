@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -20,6 +21,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Transform _target = null;
 
         /// <summary>
+        /// 視点となるトランスフォーム
+        /// </summary>
+        public Transform Target
+        {
+            get => _target;
+            set
+            {
+                _previousTarget = _target;
+                _target = value;
+                UpdatePositionAndRotation();
+            }
+        }
+
+        /// <summary>
         /// 直前の視点となるトランスフォーム
         /// </summary>
         Transform _previousTarget = null;
@@ -35,22 +50,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool CanUpdatePosition { get; set; } = true;
 
         /// <summary>
-        /// 視点となるトランスフォーム
+        /// カメラシェイクTweener
         /// </summary>
-        public Transform Target
-        {
-            get => _target;
-            set
-            {
-                _previousTarget = _target;
-                _target = value;
-                UpdatePositionAndRotation();
-            }
-        }
+        Tween _shakeTween = null;
 
         private void Awake()
         {
-            Camera = GetComponent<Camera>();
+            Camera = GetComponentInChildren<Camera>();
         }
 
         private void LateUpdate()
@@ -90,6 +96,38 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             Target = _previousTarget;
+        }
+
+        /// <summary>
+        /// カメラを振動させる
+        /// </summary>
+        /// <param name="duration"></param>
+        public void Shake(float duration)
+        {
+            float strength = GameSettings.Cameras.ShakeStrength;
+            int vibrato = GameSettings.Cameras.ShakeVibrato;
+            Shake(duration, strength, vibrato);
+        }
+
+        /// <summary>
+        /// カメラを振動させる
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <param name="strength"></param>
+        /// <param name="vibrato"></param>
+        public void Shake(float duration, float strength, int vibrato)
+        {
+            if (_shakeTween.IsActive())
+            {
+                _shakeTween.Kill(true);
+            }
+
+            Vector3 startPosition = Camera.transform.localPosition;
+
+            _shakeTween = Camera
+                .DOShakePosition(duration, strength, vibrato)
+                .SetLink(Camera.gameObject)
+                .OnComplete(() => Camera.transform.localPosition = startPosition);
         }
     }
 }

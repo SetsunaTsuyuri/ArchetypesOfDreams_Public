@@ -18,7 +18,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public TContainer[] Members { get; private set; } = null;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             // IDを割り振る
             CombatantContainer[] containers = GetAllContainers().ToArray();
@@ -48,6 +48,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 container.Initialize();
             }
+        }
+
+        /// <summary>
+        /// 戦闘者の追加を試みる
+        /// </summary>
+        /// <param name="combatant"></param>
+        /// <returns></returns>
+        public bool TryAdd(Combatant combatant)
+        {
+            CombatantContainer available = GetAllContainers()
+                .FirstOrDefault(x => !x.ContainsCombatant);
+
+            if (available)
+            {
+                available.Combatant = combatant;
+            }
+
+            return available;
         }
 
         /// <summary>
@@ -173,34 +191,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override bool ContainsTargetables(CombatantContainer user, EffectData effect)
         {
-            return GetContainers(effect.TargetPosition)
-                .Any(x => (effect.CanTargetUser || x != user) && x.ContainsTargetable(effect.TargetCondition));
+            return GetContainers(user, effect.TargetPosition)
+                .Any(x => x.ContainsTargetable(effect.TargetCondition));
         }
 
         public override IEnumerable<CombatantContainer> GetTargetables(CombatantContainer user, EffectData effect)
         {
-            return GetContainers(effect.TargetPosition)
-                .Where(x => (effect.CanTargetUser || x != user) && x.ContainsTargetable(effect.TargetCondition));
+            return GetContainers(user, effect.TargetPosition)
+                .Where(x => x.ContainsTargetable(effect.TargetCondition));
         }
 
         /// <summary>
         /// コンテナを取得する
         /// </summary>
+        /// <param name="user">使用者</param>
         /// <param name="position">対象にできるコンテナの立場</param>
         /// <returns></returns>
-        protected abstract IEnumerable<CombatantContainer> GetContainers(TargetPosition position);
+        protected IEnumerable<CombatantContainer> GetContainers(CombatantContainer user, TargetPosition position)
+        {
+            var containers = position switch
+            {
+                TargetPosition.AlliesOtherThanOneself => Members.Where(x => x != user),
+                TargetPosition.Reserves => GetReserveMembers(),
+                _ => Members
+            };
+
+            return containers;
+        }
 
         /// <summary>
-        /// 行動対象にできるコンテナを取得する
+        /// 控えの味方を取得する
         /// </summary>
-        /// <param name="condition">対象にできる戦闘者の状態</param>
         /// <returns></returns>
-        public CombatantContainer[] GetTargetables(TargetCondition condition)
-        {
-            return Members
-                .Where(x => x.ContainsTargetable(condition))
-                .ToArray();
-        }
+        protected abstract IEnumerable<CombatantContainer> GetReserveMembers();
 
         /// <summary>
         /// 全ての戦闘者のステータスを初期化する

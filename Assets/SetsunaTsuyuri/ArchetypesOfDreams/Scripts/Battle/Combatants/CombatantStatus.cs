@@ -156,7 +156,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ステータス効果リスト
         /// </summary>
-        public readonly List<StatusEffect> StatusEffects = new();
+        [field: SerializeField]
+        public List<StatusEffect> StatusEffects { get; protected set; } = new();
 
         /// <summary>
         /// 命中
@@ -222,7 +223,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
             else if (CurrentHP > 0)
             {
-                RemoveStatusEffect(effect.Id);
+                RemoveStatusEffect(effect.StatusEffectId);
             }
         }
 
@@ -239,7 +240,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
             else if (CurrentGP > 0)
             {
-                RemoveStatusEffect(effect.Id);
+                RemoveStatusEffect(effect.StatusEffectId);
             }
         }
 
@@ -349,6 +350,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void ApplyEnemyStatusCorrection()
         {
+            // ボス耐性持ちは補正なし
+            if (HasBossResistance)
+            {
+                return;
+            }
+
             MaxHP = Mathf.FloorToInt(MaxHP * GameSettings.Enemies.HPScale);
             MaxGP += GameSettings.Enemies.GPValue;
         }
@@ -449,6 +456,42 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void RecoverGP()
         {
             CurrentGP = MaxGP;
+        }
+
+        /// <summary>
+        /// ステータスの現在値を取得する
+        /// </summary>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        public int GetCurrentStatus(AffectedStatusType statusType)
+        {
+            int result = statusType switch
+            {
+                AffectedStatusType.HP => CurrentHP,
+                AffectedStatusType.DP => CurrentDP,
+                AffectedStatusType.GP => CurrentGP,
+                _ => 0
+            };
+
+            return result;
+        }
+
+        /// <summary>
+        /// ステータスの最大値を取得する
+        /// </summary>
+        /// <param name="statusType"></param>
+        /// <returns></returns>
+        public int GetMaxStatus(AffectedStatusType statusType)
+        {
+            int result = statusType switch
+            {
+                AffectedStatusType.HP => MaxHP,
+                AffectedStatusType.DP => MaxDP,
+                AffectedStatusType.GP => MaxGP,
+                _ => 0
+            };
+
+            return result;
         }
     }
 }

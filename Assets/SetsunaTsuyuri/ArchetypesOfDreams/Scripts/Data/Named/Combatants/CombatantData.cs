@@ -70,6 +70,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public float SpriteScale = 1.0f;
 
         /// <summary>
+        /// X軸味方スプライトオフセット
+        /// </summary>
+        public float AllySpriteOffsetX = 0.0f;
+
+        /// <summary>
+        /// Y軸味方スプライトオフセット
+        /// </summary>
+        public float AllySpriteOffsetY = 0.0f;
+
+        /// <summary>
+        /// 通常攻撃アニメーションID
+        /// </summary>
+        public int AttackAnimationId = 0;
+
+        /// <summary>
         /// 敵UI表示位置オフセット
         /// </summary>
         [field: SerializeField]

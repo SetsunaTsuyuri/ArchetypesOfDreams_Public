@@ -9,7 +9,7 @@ namespace SetsunaTsuyuri
     /// </summary>
     /// <typeparam name="TData">データの型</typeparam>
     public abstract class DataGroup<TData> : ScriptableObject
-        where TData : Data
+        where TData : IdData
     {
         /// <summary>
         /// データ

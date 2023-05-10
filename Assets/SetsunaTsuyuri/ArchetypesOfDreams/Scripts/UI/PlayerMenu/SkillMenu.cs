@@ -14,12 +14,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 使用者配列
         /// </summary>
         CombatantContainer[] _users = null;
-        
+
         /// <summary>
         /// 使用者インデックス
         /// </summary>
         int _userIndex = 0;
-        
+
         /// <summary>
         /// 使用者を変更できる
         /// </summary>
@@ -29,6 +29,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 味方UI
         /// </summary>
         AlliesUI _alliesUI = null;
+
+        public override CombatantContainer User
+        {
+            get => base.User;
+            set
+            {
+                base.User = value;
+                MessageBrokersManager.SkillMenuUserSet.Publish(User);
+            }
+        }
 
         /// <summary>
         /// セットアップする
@@ -60,17 +70,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 非戦闘中は使用者を変更できる
             if (!Battle.IsRunning)
             {
-                _users = User.Allies.GetNonEmptyContainers() 
-                    .Where(x => x.HasAnySkill())
+                _users = User.Allies.GetNonEmptyContainers()
+                    .Where(x => x.HasAnySkill)
                     .ToArray();
 
                 _userIndex = System.Array.IndexOf(_users, User);
                 _canChangeUser = _users.Length > 1;
-
-                if (User.Combatant.Sprite != _alliesUI.ActorSprite)
-                {
-                    _alliesUI.DisplayActorSprite(User);
-                }
             }
 
             base.BeSelected();
@@ -80,7 +85,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             if (!Battle.IsRunning)
             {
-                _alliesUI.HideActorSprite();
+                _alliesUI.HideActiveCombatantSprite();
             }
 
             base.BeCanceled();
@@ -94,11 +99,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         protected override (int, bool)[] GetIdAndCanBeUsed()
         {
             var ids = User.Combatant.GetAcquisitionSkillIds();
-            
+
             (int, bool)[] result = ids
                 .Select(x => (x, User.CanUseSkill(x)))
                 .ToArray();
-                
+
             return result;
         }
 
@@ -142,7 +147,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             User = _users[_userIndex];
-            _alliesUI.DisplayActorSprite(User);
             UpdateButtons();
             SelectAnyButton();
         }

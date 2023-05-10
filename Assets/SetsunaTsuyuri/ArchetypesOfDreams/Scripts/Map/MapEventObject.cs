@@ -113,6 +113,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// イベントID
         /// </summary>
+        [field: SerializeField]
         public string EventId { get; private set; } = string.Empty;
 
         /// <summary>
@@ -258,7 +259,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             IAppearanceCondition appearanceTrigger = columns[0] switch
             {
-                "Story" => new StoryCondition(columns),
+                "Progress" => new ProgressCondition(columns),
                 _ => null
             };
 
@@ -279,7 +280,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 "Battle" => new BattleEvent(columns),
                 "Scenario" => new IdScenarioEvent(columns),
                 "Travel" => new TravelEvent(columns),
-                "Story" => new StoryEvent(columns),
                 _ => null
             };
 

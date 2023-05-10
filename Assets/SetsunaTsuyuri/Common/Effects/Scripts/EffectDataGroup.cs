@@ -5,16 +5,21 @@ using UnityEngine;
 namespace SetsunaTsuyuri
 {
     /// <summary>
-    /// エフェクトタイプ
+    /// エフェクトデータID
     /// </summary>
-    public enum EffectType
+    public enum EffectDataId
     {
-        Purification = 0
+        None = 0,
+
+        /// <summary>
+        /// 浄化
+        /// </summary>
+        Purification = 1
     }
 
     /// <summary>
     /// エフェクトデータグループ
     /// </summary>
     [CreateAssetMenu(fileName = "Effects", menuName = "SetsunaTsuyuri/Effects")]
-    public class EffectDataGroup : DataGroup<EffectData> { }
+    public class EffectDataGroup : DataGroup<EffectObjectData> { }
 }

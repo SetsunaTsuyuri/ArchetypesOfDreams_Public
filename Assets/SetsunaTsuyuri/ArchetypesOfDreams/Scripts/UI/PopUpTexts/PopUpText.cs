@@ -25,7 +25,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 初期のアルファ値
         /// </summary>
-        float initialAlpha = 0.0f;
+        float _initialAlpha = 0.0f;
 
         /// <summary>
         /// ループするTweener
@@ -38,7 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.Awake();
 
-            initialAlpha = _canvasGroup.alpha;
+            _initialAlpha = _canvasGroup.alpha;
             Text = GetComponentInChildren<TextMeshProUGUI>();
             RectTransform = GetComponent<RectTransform>();
         }
@@ -51,8 +51,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="color">色</param>
         public void Show(Vector3 position, string text, Color color)
         {
-            Show();
-
             // 位置変更
             transform.position = position;
 
@@ -63,23 +61,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Text.color = color;
 
             // アルファ値初期化
-            _canvasGroup.alpha = initialAlpha;
+            _canvasGroup.alpha = _initialAlpha;
 
-            // 有効化
             enabled = true;
+            SetEnabled(true);
         }
 
         /// <summary>
         /// 非表示にする
         /// </summary>
-        public override void Hide()
+        public override void SetEnabled(bool enabled)
         {
-            base.Hide();
+            base.SetEnabled(enabled);
 
-            _loopTweener.Kill();
-
-            // 無効化
-            enabled = false;
+            if (!enabled)
+            {
+                _loopTweener.Kill();
+                this.enabled = false;
+            }
         }
 
         /// <summary>
@@ -127,7 +126,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .Append(move)
                 .Append(fadeout)
                 .SetLink(gameObject)
-                .OnComplete(Hide);
+                .OnComplete(() => SetEnabled(false));
         }
     }
 }

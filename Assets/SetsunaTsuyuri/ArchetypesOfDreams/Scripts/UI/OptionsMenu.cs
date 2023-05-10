@@ -65,14 +65,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             AddVolumeChangeButtonTrigger(_seVolume, AudioManager.SEVolume);
 
-            Hide();
+            SetEnabled(false);
         }
 
         public override void BeCanceled()
         {
             SaveDataManager.SaveSystemData();
 
-            Hide();
+            SetEnabled(false);
 
             base.BeCanceled();
         }

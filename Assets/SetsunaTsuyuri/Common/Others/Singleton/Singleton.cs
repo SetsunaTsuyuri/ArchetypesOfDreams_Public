@@ -7,8 +7,8 @@ namespace SetsunaTsuyuri
     /// <summary>
     /// シングルトン
     /// </summary>
-    /// <typeparam name="T">シングルトンの型</typeparam>
-    public class Singleton<T> where T : class, IInitializable, new()
+    /// <typeparam name="T"></typeparam>
+    public abstract class Singleton<T> where T : class, IInitializable, new()
     {
         /// <summary>
         /// インスタンス
@@ -35,7 +35,7 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        protected Singleton(){}
+        protected Singleton() { }
 
         /// <summary>
         /// 初期化する

@@ -116,7 +116,7 @@ namespace SetsunaTsuyuri
         {
             base.BeSelected();
 
-            Show();
+            SetEnabled(true);
             SelectAnyButton();
         }
 
@@ -162,11 +162,14 @@ namespace SetsunaTsuyuri
 
         }
 
-        public override void Hide()
+        public override void SetEnabled(bool enabled)
         {
-            base.Hide();
+            base.SetEnabled(enabled);
 
-            DeselectButton();
+            if (!enabled)
+            {
+                DeselectButton();
+            }
         }
 
         /// <summary>s

@@ -74,7 +74,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// クリティカルヒットしたときのダメージ倍率
         /// </summary>
         [field: SerializeField]
-        public float CriticalDamageCorrection { get; private set; } = 1.5f;
+        public float CriticalDamageScale { get; private set; } = 1.5f;
 
         /// <summary>
         /// クリティカルヒットしたときのGPダメージ

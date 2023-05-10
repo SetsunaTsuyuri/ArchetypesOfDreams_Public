@@ -18,7 +18,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.UpdateButton(id, canBeUsed);
 
             ItemData item = MasterData.GetItemData(id);
-            UpdateTexts(item, () => ItemUtility.GetNumberOfItems(id).ToString());
+            UpdateTexts(item, () => VariableData.Items.GetNumber(id).ToString());
         }
     }
 }

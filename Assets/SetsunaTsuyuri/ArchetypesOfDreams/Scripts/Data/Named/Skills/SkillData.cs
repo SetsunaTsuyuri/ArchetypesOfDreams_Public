@@ -34,17 +34,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     /// <typeparam name="T">行動内容</typeparam>
     [System.Serializable]
-    public class SkillData : NameDescriptionData
+    public class SkillData : EffectData
     {
         /// <summary>
         /// 消費DP
         /// </summary>
         public int Cost = 0;
-
-        /// <summary>
-        /// 効果
-        /// </summary>
-        [field: SerializeField]
-        public EffectData Effect { get; private set; }
     }
 }

@@ -10,6 +10,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public partial class Combatant
     {
         /// <summary>
+        /// 通常攻撃アニメーションIDに置き換えられる値
+        /// </summary>
+        static readonly int s_attackAnimationId = -1;
+
+        /// <summary>
         /// 最後に取った行動
         /// </summary>
         ActionInfo _lastAction = null;
@@ -139,7 +144,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="token"></param>
         private async UniTask UpdateStatusEffectsRemoval(RemovalTiming timing, CancellationToken token)
         {
-            bool gp0 = IsAffected(GameSettings.Combatants.EffectGP0.Id);
+            bool gp0 = IsAffected(GameSettings.Combatants.EffectGP0.StatusEffectId);
 
             var effects = StatusEffects.Where(x => x.Data.RemovalTiming == timing);
             foreach (var effect in effects)
@@ -157,7 +162,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             StatusEffects.RemoveAll(effect => effect.MustBeRemoved);
 
             // GP0の効果が解除された場合、GPを全回復する
-            if (gp0 && !IsAffected(GameSettings.Combatants.EffectGP0.Id))
+            if (gp0 && !IsAffected(GameSettings.Combatants.EffectGP0.StatusEffectId))
             {
                 Results.Healing.AddGP(MaxGP);
                 await ApplyHealing(token);
@@ -276,7 +281,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // アイテムを消費する
             if (action.ConsumptionItemdId.HasValue)
             {
-                ItemUtility.ConsumeItem(action.ConsumptionItemdId.Value);
+                VariableData.Items.Decrease(action.ConsumptionItemdId.Value);
             }
 
             // 行動時イベント
@@ -286,7 +291,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             await UniTask.Delay(200, cancellationToken: token);
 
             // 実行回数分繰り返す
-            for (int i = 0; i < action.Effect.Executions; i++)
+            for (int i = 0; i < action.Effect.ExtraExecutions; i++)
             {
                 // 対象の戦闘者を取り出す
                 Combatant[] targetCombatants = GetTargetCombatants(
@@ -303,9 +308,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     // 結果を反映させる
                     foreach (var targetCombatant in targetCombatants)
                     {
-                        if (action.Effect.EffectsAndSEs.Any())
+                        if (action.Effect.AnimationId != 0)
                         {
-                            await PlayBattleEffect(action, targetCombatant, token);
+                            await PlayEffectAnimation(action, targetCombatant, token);
                         }
 
                         await targetCombatant.ApplyResults(token);
@@ -333,35 +338,72 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 戦闘エフェクトを再生する
+        /// エフェクトアニメーションを再生する
         /// </summary>
         /// <param name="action"></param>
         /// <param name="target"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        private async UniTask PlayBattleEffect(ActionInfo action, Combatant target, CancellationToken token)
+        private async UniTask PlayEffectAnimation(ActionInfo action, Combatant target, CancellationToken token)
         {
-            Queue<EffectData.EffectAndSE> queue = new(action.Effect.EffectsAndSEs);
-            while (queue.Any())
+            int animationId = action.Effect.AnimationId;
+            if (animationId == s_attackAnimationId)
             {
-                float timer = 0.0f;
-                EffectData.EffectAndSE effectAndSE = queue.Dequeue();
+                animationId = Data.AttackAnimationId;
+            }
 
-                if (timer >= effectAndSE.Timing)
+            EffectAnimationData animation = MasterData.GetEffectAnimationData(animationId);
+            if (animation is null)
+            {
+                return;
+            }
+
+            Queue<EffectAnimationElementData> queue = new(animation.Elements.OrderBy(x => x.Timing));
+            EffectAnimationElementData element = null;
+            if (queue.TryDequeue(out EffectAnimationElementData firstElement))
+            {
+                element = firstElement;
+            }
+
+            float timer = 0.0f;
+            while (timer <= animation.Duration)
+            {
+                if (element is not null
+                    && timer >= element.Timing)
                 {
                     // エフェクト再生位置
-                    Vector3 position = effectAndSE.EffectPlayPosition switch
+                    Vector3 position = element.EffectPosition switch
                     {
-                        EffectPlayPositionType.Targrt => target.Container.transform.position,
-                        EffectPlayPositionType.Self => Container.transform.position,
+                        EffectAnimationPositionType.Targets => target.Container.transform.position,
+                        EffectAnimationPositionType.User => Container.transform.position,
                         _ => Vector3.zero
                     };
 
-                    // エフェクトを再生する
-                    EffectsManager.Play(effectAndSE.Effect, position, false);
+                    // エフェクト再生
+                    if (element.EffectId > 0)
+                    {
+                        EffectsManager.Play(element.EffectId, position);
+                    }
 
-                    await UniTask.Yield(token);
+                    // SE再生
+                    if (element.SEId > 0)
+                    {
+                        AudioManager.PlaySE(element.SEId, element.SEVolume);
+                    }
+
+                    // 次の要素を取り出す
+                    if (queue.TryDequeue(out EffectAnimationElementData nextElement))
+                    {
+                        element = nextElement;
+                    }
+                    else
+                    {
+                        element = null;
+                    }
                 }
+
+                timer += Time.deltaTime;
+                await UniTask.Yield(token);
             }
         }
 
@@ -410,6 +452,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     StatusEffects.Remove(status);
                 }
 
+                // 解除されたステータス効果
+                var removedEffects = Results.RemovedStatusEffects
+                    .Select(x => x.Data)
+                    .ToArray();
+
+                Container.OnStatusEffectsRemoved(removedEffects);
+
                 RefreshStatus();
             }
 
@@ -454,9 +503,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             bool crush = IsAffected(StatusEffectId.Crush);
 
             DamageResult damage = Results.Damage;
-            CurrentHP -= damage.HP.GetValueOrDefault();
-            CurrentDP -= damage.DP.GetValueOrDefault();
-            CurrentGP -= damage.GP.GetValueOrDefault();
+
+            int damageHP = damage.HP.GetValueOrDefault();
+            int damageDP = damage.DP.GetValueOrDefault();
+            int damageGP = damage.GP.GetValueOrDefault();
+
+            // 致死ダメージ耐久判定
+            if (damage.HP >= CurrentHP
+                && JudgeSurvivour())
+            {
+                damageHP = CurrentHP - 1;
+            }
+
+            CurrentHP -= damageHP;
+            CurrentDP -= damageDP;
+            CurrentGP -= damageGP;
 
             if (!crush)
             {
@@ -518,17 +579,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="token"></param>
         private async UniTask BePurified(CancellationToken token)
         {
-            AudioManager.PlaySE(SEId.Healing);
-
-            // コンテナの処理
-            if (Container)
+            if (Container is EnemyContainer enemyContainer)
             {
-                // 敵コンテナに格納されている場合
-                EnemyContainer enemyContainer = Container as EnemyContainer;
-                if (enemyContainer)
-                {
-                    await enemyContainer.OnPurified(token);
-                }
+                await enemyContainer.OnPurified(token);
             }
         }
 
@@ -632,10 +685,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     target.Results.Effectiveness = target.GetEffectiveness(action.GetEmotion(this));
                 }
 
-                // ダメージ・回復量を決定する
+                // ダメージ・回復を決定する
                 foreach (var status in effect.DamageEffects)
                 {
-                    CalculateDamageOrHealing(action, target, status);
+                    CreateDamageOrHealingResult(action, target, status);
                 }
 
                 // 追加GPダメージを決定する
@@ -652,11 +705,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // ステータス効果
             foreach (var data in effect.StatusEffects)
             {
-                if (CanBeAffected(data.Id)
-                    && RandomUtility.Percent(data.Rate))
+                if (CanBeAffected(data.StatusEffectId)
+                    && !data.IsRemoval
+                    && RandomUtility.Percent(data.Probability))
                 {
                     // ステータス効果を追加する
                     target.Results.AddedStatusEffects.Add(data);
+                }
+                else if (data.IsRemoval)
+                {
+                    // ID指定
+                    var removalEffectsById = target.StatusEffects
+                        .Where(x => x.Data.Id == data.StatusEffectId);
+
+                    // カテゴリ指定
+                    var removalEffectsByCategory = target.StatusEffects
+                        .Where(x => x.Data.Category == data.RemovalCategory);
+
+                    // ステータス効果を解除する
+                    var removalEffects = removalEffectsById.Concat(removalEffectsByCategory);
+                    target.Results.RemovedStatusEffects.AddRange(removalEffects);
                 }
             }
 
@@ -733,78 +801,72 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ダメージまたは回復量を決定する
+        /// ダメージまたは回復の結果を作る
         /// </summary>
         /// <param name="action">行動内容</param>
         /// <param name="target">対象</param>
-        /// <param name="damage">ダメージ効果</param>
-        private void CalculateDamageOrHealing(ActionInfo action, Combatant target, EffectData.DamageEffect damage)
+        /// <param name="damageEffect">ダメージ効果</param>
+        private void CreateDamageOrHealingResult(ActionInfo action, Combatant target, EffectData.DamageEffect damageEffect)
         {
-            // 値にステータス効果を適用する
-            void ApplyStatusEffect(ref int value, float power, float technique)
-            {
-                float rate = action.GetAttack() switch
-                {
-                    GameAttribute.Attack.Power => power,
-                    GameAttribute.Attack.Technique => technique,
-                    GameAttribute.Attack.Mix => (power + technique) / 2,
-                    _ => 1.0f
-                };
-                CalculationUtility.Multiply(ref value, rate);
-            }
-
             // 基本値
-            int value = CalculateBasicValue(action.GetAttack(), damage, target);
-
-            // 威力補正
-            value = Mathf.FloorToInt(value * damage.Parameter);
+            float value = CalculateBasicValue(damageEffect, target);
 
             // 攻撃的な効果の場合
             if (action.Effect.IsOffensive)
             {
                 // 感情属性補正
-                CalculationUtility.Multiply(ref value, GameSettings.Effectiveness.Rates.GetValueOrDefault(target.GetEffectiveness(action.GetEmotion(this))));
+                value *= GameSettings.Effectiveness.Rates.GetValueOrDefault(target.GetEffectiveness(action.GetEmotion(this)));
 
                 // クリティカル補正
                 if (target.Results.Damage.IsCritical)
                 {
-                    CalculationUtility.Multiply(ref value, GameSettings.Combatants.CriticalDamageCorrection);
+                    value *= GameSettings.Combatants.CriticalDamageScale;
                 }
 
                 // 攻撃倍率
                 foreach (var statusEffect in StatusEffects)
                 {
-                    float power = statusEffect.Data.PowerAttackRate;
-                    float technique = statusEffect.Data.TechniqueAttackRate;
-                    ApplyStatusEffect(ref value, power, technique);
+                    value *= 1.0f + statusEffect.Data.PowerAttackRate * damageEffect.Power;
+                    value *= 1.0f + statusEffect.Data.TechniqueAttackRate * damageEffect.Technique;
                 }
 
                 // 防御倍率
                 foreach (var statusEffect in target.StatusEffects)
                 {
-                    float power = statusEffect.Data.PowerDefenseRate;
-                    float technique = statusEffect.Data.TechniqueDefenseRate;
-                    ApplyStatusEffect(ref value, power, technique);
+                    value *= 1.0f - statusEffect.Data.PowerDefenseRate * damageEffect.Power;
+                    value *= 1.0f - statusEffect.Data.TechniqueDefenseRate * damageEffect.Technique;
                 }
             }
 
-            // 固定値を加算する
-            value += damage.Fixed;
+            // 固定値
+            value += damageEffect.Fixed;
 
-            // 固定乱数値を加算する
-            value += Random.Range(0, damage.Random);
+            // 固定乱数値
+            value += Random.Range(0, damageEffect.Random);
 
             // 影響するステータスに応じて結果に値を加算する
-            switch (damage.Affected)
+            int valueInt = Mathf.FloorToInt(value);
+            AddDamageOrHealingResult(target, valueInt, damageEffect);
+        }
+
+        /// <summary>
+        /// 対象にダメージまたは回復の結果を追加する
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="value"></param>
+        /// <param name="damageEffect"></param>
+        private void AddDamageOrHealingResult(Combatant target, int value, EffectData.DamageEffect damageEffect)
+        {
+            switch (damageEffect.AffectedStatusType)
             {
                 // HP
                 case AffectedStatusType.HP:
 
                     // ダメージ
-                    if (damage.DamageType == DamageType.Damage)
+                    if (damageEffect.DamageType == DamageType.Damage)
                     {
                         // ゼロにしない場合
-                        if (damage.DontToZero && value >= target.CurrentHP)
+                        if (damageEffect.DontKill && value >= target.CurrentHP)
                         {
                             value = target.CurrentHP - 1;
                         }
@@ -821,10 +883,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 case AffectedStatusType.DP:
 
                     // ダメージ
-                    if (damage.DamageType == DamageType.Damage)
+                    if (damageEffect.DamageType == DamageType.Damage)
                     {
                         // ゼロにしない場合
-                        if (damage.DontToZero && value >= target.CurrentDP)
+                        if (damageEffect.DontKill && value >= target.CurrentDP)
                         {
                             value = target.CurrentDP - 1;
                         }
@@ -841,10 +903,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 case AffectedStatusType.GP:
 
                     // ダメージ
-                    if (damage.DamageType == DamageType.Damage)
+                    if (damageEffect.DamageType == DamageType.Damage)
                     {
                         // ゼロにしない場合
-                        if (damage.DontToZero && value >= target.CurrentGP)
+                        if (damageEffect.DontKill && value >= target.CurrentGP)
                         {
                             value = target.CurrentGP - 1;
                         }
@@ -865,53 +927,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ダメージor回復量の基本値を決定する
         /// </summary>
-        /// <param name="attack">攻撃属性</param>
         /// <param name="damage">ダメージ効果</param>
         /// <param name="target">対象</param>
         /// <returns></returns>
-        private int CalculateBasicValue(GameAttribute.Attack attack, EffectData.DamageEffect damage, Combatant target)
+        private float CalculateBasicValue(EffectData.DamageEffect damage, Combatant target)
         {
-            int result = damage.Formula switch
-            {
-                Formula.Status => CalculateBasicValueByStatus(attack),
-                Formula.Rate => CalculateBasicValueByRate(damage.Affected, target),
-                _ => 0
-            };
+            float result = 0.0f;
+
+            result += Power * damage.Power;
+            result += Technique * damage.Technique;
+            result += target.GetCurrentStatus(damage.AffectedStatusType) * damage.Current;
+            result += target.GetMaxStatus(damage.AffectedStatusType) * damage.Max;
 
             return result;
-        }
-
-        /// <summary>
-        /// ステータスによるダメージor回復値の基本値を決定する
-        /// </summary>
-        /// <param name="attack">攻撃属性</param>
-        /// <returns></returns>
-        private int CalculateBasicValueByStatus(GameAttribute.Attack attack)
-        {
-            return attack switch
-            {
-                GameAttribute.Attack.Power => Power,
-                GameAttribute.Attack.Technique => Technique,
-                GameAttribute.Attack.Mix => Power + Technique / 2,
-                _ => 0
-            };
-        }
-
-        /// <summary>
-        /// 割合ダメージor回復の基本値を決定する
-        /// </summary>
-        /// <param name="affected">影響するステータスの種類</param>
-        /// <param name="target">対象</param>
-        /// <returns></returns>
-        private int CalculateBasicValueByRate(AffectedStatusType affected, Combatant target)
-        {
-            return affected switch
-            {
-                AffectedStatusType.HP => target.MaxHP,
-                AffectedStatusType.DP => target.MaxDP,
-                AffectedStatusType.GP => target.MaxGP,
-                _ => 0
-            };
         }
 
         /// <summary>
@@ -928,7 +956,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             switch (target.Results.Effectiveness)
             {
                 case GameAttribute.Effectiveness.Weakness:
-                    damage += effect.ExtraGPDamage;
+                    damage++;
                     break;
 
                 case GameAttribute.Effectiveness.SuperWeakness:

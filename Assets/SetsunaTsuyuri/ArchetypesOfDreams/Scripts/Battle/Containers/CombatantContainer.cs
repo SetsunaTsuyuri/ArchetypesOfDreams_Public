@@ -64,6 +64,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (_combatant != null)
                 {
                     _combatant.Container = this;
+                    _combatant.RefreshStatus();
                 }
 
                 onCombatantSet.Invoke(this);
@@ -187,14 +188,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ステータス効果追加
+        /// ステータス効果付与
         /// </summary>
         /// <param name="effect"></param>
         public void OnStatusEffectAdded(EffectData.StatusEffect effect)
         {
-            StatusEffectData data = MasterData.GetStatusEffectData(effect.Id);
+            StatusEffectData data = MasterData.GetStatusEffectData(effect.StatusEffectId);
             AddedStatusEffectResult result = new(this, data);
-            MessageBrokersManager.FireStatusEffectAdded(result);
+            MessageBrokersManager.StatusEffectAdded.Publish(result);
         }
 
         /// <summary>
@@ -204,7 +205,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void OnStatusEffectsRemoved(StatusEffectData[] effects)
         {
             StatusEffectsResult result = new(this, effects);
-            MessageBrokersManager.FireStatusEffectsRemoved(result);
+            MessageBrokersManager.StatusEffectsRemoved.Publish(result);
         }
 
         /// <summary>
@@ -337,7 +338,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 TargetCondition.Living => ContainsFightable,
                 TargetCondition.KnockedOut => ContainsKnockedOut,
-                TargetCondition.LivingAndKnockedOut => ContainsCombatant,
+                TargetCondition.LivingOrKnockedOut => ContainsCombatant,
                 _ => false
             };
         }
@@ -412,10 +413,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 何らかのスキルを持っている
         /// </summary>
         /// <returns></returns>
-        public bool HasAnySkill()
-        {
-            return Combatant.HasAnySkill();
-        }
+        public bool HasAnySkill => Combatant.HasAnySkill;
 
         /// <summary>
         /// 何らかのスキルを使用できる
@@ -434,7 +432,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool CanUseAnyItem()
         {
-            var ids = ItemUtility.GetOwnedItemIds();
+            var ids = VariableData.Items.OwnedItemIds;
             bool result = ids.Any(x => CanUseItem(x));
             return result;
         }
@@ -447,8 +445,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool CanUseSkill(int id)
         {
             SkillData skill = MasterData.GetSkillData(id);
+            bool isSealed = Combatant.SkillIsSealed(id);
             bool canConsumeDP = Combatant.CurrentDP >= skill.Cost;
-            return canConsumeDP && CanUse(skill.Effect);
+            return !isSealed && canConsumeDP && CanUse(skill);
         }
 
         /// <summary>
@@ -459,7 +458,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool CanUseItem(int id)
         {
             ItemData item = MasterData.GetItemData(id);
-            return CanUse(item.Effect);
+            return CanUse(item);
         }
 
         /// <summary>
@@ -486,9 +485,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 TargetPosition.Allies => ExistsTargetables(effect, Allies),
                 TargetPosition.Both => ExistsTargetables(effect, Allies, Enemies),
                 TargetPosition.Oneself => true,
+                TargetPosition.AlliesOtherThanOneself => ExistsTargetables(effect, Allies),
                 TargetPosition.Reserves => ExistsTargetables(effect, Allies),
                 _ => false
-            };
+            }; ;
 
             return result;
         }
@@ -497,15 +497,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 対象にできるコンテナが存在する
         /// </summary>
         /// <param name="effect"></param>
-        /// <param name="containers"></param>
+        /// <param name="party"></param>
         /// <returns></returns>
-        private bool ExistsTargetables(EffectData effect, CombatantsPartyBase containers)
+        private bool ExistsTargetables(EffectData effect, CombatantsPartyBase party)
         {
             bool result = false;
 
-            if (containers != null)
+            if (party)
             {
-                result = containers.ContainsTargetables(this, effect);
+                result = party.ContainsTargetables(this, effect);
             }
 
             return result;
@@ -531,7 +531,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public List<CombatantContainer> GetTargetables(EffectData effect)
         {
             List<CombatantContainer> targetables = new();
-
             switch (effect.TargetPosition)
             {
                 case TargetPosition.Enemies:
@@ -539,6 +538,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     break;
 
                 case TargetPosition.Allies:
+                case TargetPosition.AlliesOtherThanOneself:
                     AddTargetables(targetables, effect, Allies);
                     break;
 
@@ -567,15 +567,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="targetables"></param>
         /// <param name="effect"></param>
-        /// <param name="containers"></param>
-        private void AddTargetables(List<CombatantContainer> targetables, EffectData effect, CombatantsPartyBase containers)
+        /// <param name="party"></param>
+        private void AddTargetables(List<CombatantContainer> targetables, EffectData effect, CombatantsPartyBase party)
         {
-            if (containers == null)
+            if (!party)
             {
                 return;
             }
 
-            var added = containers.GetTargetables(this, effect);
+            var added = party.GetTargetables(this, effect);
             targetables.AddRange(added);
         }
 

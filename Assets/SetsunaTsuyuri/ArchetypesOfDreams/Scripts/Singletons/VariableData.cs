@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
-    /// <summary>
-    /// ストーリータイプ
-    /// </summary>
-    public enum StoryType
-    {
-        Main = 0
-    }
-
     /// <summary>
     /// プレイヤーの初期位置の種類
     /// </summary>
@@ -30,47 +22,24 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 味方
         /// </summary>
+        public static List<Combatant> Allies => Instance._allies;
         readonly List<Combatant> _allies = new();
 
         /// <summary>
-        /// 味方
-        /// </summary>
-        public static List<Combatant> Allies
-        {
-            get => Instance._allies;
-        }
-
-        /// <summary>
         /// 控えの味方
         /// </summary>
+        public static List<Combatant> ReserveAllies => Instance._resrveAllies;
         readonly List<Combatant> _resrveAllies = new();
 
         /// <summary>
-        /// 控えの味方
+        /// 精気
         /// </summary>
-        public static List<Combatant> ReserveAllies
+        public static int Spirit
         {
-            get => Instance._resrveAllies;
+            get => Instance._spirit;
+            set => Instance._spirit = Math.Clamp(value, 0, GameSettings.Other.MaxSpirit);
         }
-
-        /// <summary>
-        /// 精貨
-        /// </summary>
-        int _spiritCoins = 0;
-
-        /// <summary>
-        /// 精貨
-        /// </summary>
-        public static int SpiritCoins
-        {
-            get => Instance._spiritCoins;
-            set => Instance._spiritCoins = Math.Clamp(value, 0, GameSettings.Other.MaxSpiritCoins);
-        }
-
-        /// <summary>
-        /// 歩数
-        /// </summary>
-        int _steps = 0;
+        int _spirit = 0;
 
         /// <summary>
         /// 歩数
@@ -80,17 +49,26 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => Instance._steps;
             set => Instance._steps = value;
         }
+        int _steps = 0;
 
         /// <summary>
-        /// アイテム所持数ディクショナリー
+        /// アイテム
         /// </summary>
-        readonly Dictionary<int, int> _itemsDictionary = new();
+        public static ItemsController Items => Instance._items;
+        readonly ItemsController _items = new();
 
         /// <summary>
-        /// アイテム所持数ディクショナリー
+        /// イベント進行度
         /// </summary>
-        public static Dictionary<int, int> ItemsDictionary => Instance._itemsDictionary;
+        public static ProgressesController Progresses => Instance._progresses;
+        readonly ProgressesController _progresses = new();
 
+        /// <summary>
+        /// イベントフラグ
+        /// </summary>
+        public static FlagsController Flags => Instance.flagsManager;
+        readonly FlagsController flagsManager = new();
+        
         /// <summary>
         /// 選択可能なダンジョンフラグ
         /// </summary>
@@ -134,20 +112,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 物語の進行度
-        /// </summary>
-        int[] _stroyProgressions = null;
-
-        /// <summary>
-        /// 物語の進行度
-        /// </summary>
-        public static int[] StoryProgressions
-        {
-            get => Instance._stroyProgressions;
-            set => Instance._stroyProgressions = value;
-        }
-
-        /// <summary>
         /// プレイするダンジョンID
         /// </summary>
         int _dungeonId = 0;
@@ -177,14 +141,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override void Initialize()
         {
+            // プレイするダンジョンID
+            DungeonId = 0;
+
             // 精貨
-            _spiritCoins = 0;
-            
+            _spirit = 0;
+
             // 歩数
             _steps = 0;
 
-            // アイテム所持数ディクショナリー
-            InitializeItems();
+            // アイテム
+            Items.Initialize();
+
+            // 進行度
+            Progresses.Initialize();
+
+            // フラグ
+            Flags.Initialize();
 
             // ダンジョン
             int dungeonNumber = MasterData.CountDungeons();
@@ -192,14 +165,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _clearedDungeons = new bool[dungeonNumber];
             _obtainedTreasures = new bool[30];
 
-            // ストーリー
-            int storyNumber = Enum.GetValues(typeof(StoryType)).Length;
-            _stroyProgressions = new int[storyNumber];
-
+            // 味方パーティ
             _allies.Clear();
             _resrveAllies.Clear();
-
-            // 味方パーティ
             Combatant player = new DreamWalker()
             {
                 DataId = 1,
@@ -213,46 +181,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 所持アイテムを初期化する
+        /// 味方をセーブする
         /// </summary>
-        private void InitializeItems()
+        public static void SaveAllies()
         {
-            _itemsDictionary.Clear();
-            int[] itemIds = MasterData.GetItemIds();
-            foreach (var itemId in itemIds)
+            AlliesParty allies = AlliesParty.InstanceInActiveScene;
+            if (!allies)
             {
-                _itemsDictionary.Add(itemId, 0);
+                return;
             }
 
-            ItemsDictionary[1] = 10;
-            ItemsDictionary[2] = 10;
-            ItemsDictionary[3] = 10;
-            ItemsDictionary[4] = 10;
-        }
-
-        /// <summary>
-        /// 味方を設定する
-        /// </summary>
-        /// <param name="allies"></param>
-        public static void SetAllies(IEnumerable<Combatant> allies)
-        {
+            // 味方
             Allies.Clear();
-            foreach (var ally in allies)
-            {
-                Allies.Add(ally);
-            }
-        }
+            var members = allies.Members
+                .Where(x => x.ContainsCombatant)
+                .Select(x => x.Combatant);
 
-        /// <summary>
-        /// 控えの味方を設定する
-        /// </summary>
-        /// <param name="reserveAllies"></param>
-        public static void SetReserveAllies(IEnumerable<Combatant> reserveAllies)
-        {
-            ReserveAllies.Clear();
-            foreach (var ally in reserveAllies)
+            foreach (var member in members)
             {
-                ReserveAllies.Add(ally);
+                Allies.Add(member);
+            }
+
+            // 控えの味方
+            ReserveAllies.Clear();
+            var reseveMembers = allies.ReserveMembers
+                .Where(x => x.ContainsCombatant)
+                .Select(x => x.Combatant);
+
+            foreach (var reserveMember in reseveMembers)
+            {
+                ReserveAllies.Add(reserveMember);
             }
         }
     }

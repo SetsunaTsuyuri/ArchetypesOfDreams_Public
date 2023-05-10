@@ -15,5 +15,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public string Infinity { get; private set; } = "∞";
+
+        /// <summary>
+        /// 最大所持数
+        /// </summary>
+        [field: SerializeField]
+        public int MaxItems { get; private set; } = 999;
     }
 }

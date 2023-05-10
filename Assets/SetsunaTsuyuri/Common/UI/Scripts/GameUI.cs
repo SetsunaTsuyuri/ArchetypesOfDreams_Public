@@ -32,15 +32,30 @@ namespace SetsunaTsuyuri
         Tween _shakeTween = null;
 
         /// <summary>
-        /// 有効である
+        /// 有効状態の保存
+        /// </summary>
+        bool? _enabledSave = false;
+
+        /// <summary>
+        /// 表示されている
         /// </summary>
         /// <returns></returns>
-        public bool IsEnabled => _canvas.enabled;
+        public bool IsEnabled => _canvas.enabled && _canvasGroup.alpha > 0.0f;
 
         protected virtual void Awake()
         {
             _canvas = GetComponent<Canvas>();
             _canvasGroup = GetComponent<CanvasGroup>();
+        }
+
+        /// <summary>
+        /// 有効状態を設定する
+        /// </summary>
+        /// <param name="enabled"></param>
+        public virtual void SetEnabled(bool enabled)
+        {
+            _canvas.enabled = enabled;
+            SetInteractable(enabled);
         }
 
         /// <summary>
@@ -53,21 +68,29 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// 見せる
+        /// 有効状態を保存してから非表示にする
         /// </summary>
-        public virtual void Show()
+        public void SaveEnabledAndHide()
         {
-            _canvas.enabled = true;
-            SetInteractable(true);
+            _enabledSave = IsEnabled;
+            if (IsEnabled)
+            {
+                SetEnabled(false);
+            }
         }
 
         /// <summary>
-        /// 隠す
+        /// 有効状態を再生する
         /// </summary>
-        public virtual void Hide()
+        public void LoadEnabled()
         {
-            _canvas.enabled = false;
-            SetInteractable(false);
+            if (!_enabledSave.HasValue)
+            {
+                return;
+            }
+
+            SetEnabled(_enabledSave.Value);
+            _enabledSave = null;
         }
 
         /// <summary>
@@ -76,7 +99,7 @@ namespace SetsunaTsuyuri
         public virtual void ActivateAndShow()
         {
             gameObject.SetActive(true);
-            Show();
+            SetEnabled(true);
         }
 
         /// <summary>
@@ -85,7 +108,7 @@ namespace SetsunaTsuyuri
         public virtual void DeactivateAndHide()
         {
             gameObject.SetActive(false);
-            Hide();
+            SetEnabled(false);
         }
 
         /// <summary>
@@ -96,7 +119,7 @@ namespace SetsunaTsuyuri
         {
             KillIfFadeTweenIsActive();
 
-            Show();
+            SetEnabled(true);
 
             _canvasGroup.alpha = 0.0f;
             _fadeTween = _canvasGroup.DOFade(1.0f, duration)

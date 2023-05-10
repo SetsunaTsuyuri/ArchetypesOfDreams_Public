@@ -57,32 +57,37 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             for (int i = 0; i < _numberToInstantiate; i++)
             {
                 PopUpText instance = Instantiate(_prefab, transform);
-                instance.Hide();
+                instance.SetEnabled(false);
                 _popUpTexts.Add(instance);
             }
 
             // 失敗
-            MessageBrokersManager.Miss.Receive<CombatantContainer>()
+            MessageBrokersManager.Miss
+                .Receive<CombatantContainer>()
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpMiss);
 
             // ダメージ
-            MessageBrokersManager.Damage.Receive<CombatantContainer>()
+            MessageBrokersManager.Damage
+                .Receive<CombatantContainer>()
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpDamage);
 
             // 回復
-            MessageBrokersManager.Healing.Receive<CombatantContainer>()
+            MessageBrokersManager.Healing
+                .Receive<CombatantContainer>()
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpHealing);
 
-            // 付与ステータス効果
-            MessageBrokersManager.OnStatusEffectAdded
+            // ステータス効果付与
+            MessageBrokersManager.StatusEffectAdded
+                .Receive<AddedStatusEffectResult>()
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpAddedStatusEffect);
 
-            // 解除ステータス効果
-            MessageBrokersManager.OnStatusEffectsRemoved
+            // ステータス効果解除
+            MessageBrokersManager.StatusEffectsRemoved
+                .Receive<StatusEffectsResult>()
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(PopUpRemovedStatusEffects);
         }
@@ -94,7 +99,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void SetUp(TargetSelectionUI targetSelection)
         {
             targetSelection.AllyTargetSelectionStart += OnAllyTargeSelectionEnter;
-            targetSelection.AllyTargetSelectionEnd += OnTAllyargetSelectionExit;
+            targetSelection.AllyTargetSelectionEnd += OnAllyargetSelectionExit;
         }
 
         /// <summary>
@@ -135,13 +140,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 対象選択終了時の処理
         /// </summary>
-        public void OnTAllyargetSelectionExit()
+        public void OnAllyargetSelectionExit()
         {
             // ループ表示を止める
             var loops = _popUpTexts.Where(x => x.IsLoop);
             foreach (var loop in loops)
             {
-                loop.Hide();
+                loop.SetEnabled(false);
             }
         }
 
@@ -233,7 +238,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void PopUpAddedStatusEffect(AddedStatusEffectResult result)
         {
             string text = result.Effect.Name;
-            Color color = result.Effect.EffectAttribute switch
+            Color color = result.Effect.Category switch
             {
                 StatusEffectCategory.Abnormality => GameSettings.PopUpTexts.AbnormalityColor,
                 StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
@@ -268,7 +273,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             foreach (var effect in effects)
             {
                 string text = effect.Name;
-                Color color = effect.EffectAttribute switch
+                Color color = effect.Category switch
                 {
                     StatusEffectCategory.Abnormality => GameSettings.PopUpTexts.AbnormalityColor,
                     StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,

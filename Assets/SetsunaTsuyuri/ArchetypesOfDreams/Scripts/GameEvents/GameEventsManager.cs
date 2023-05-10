@@ -12,7 +12,61 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public enum GameEventType
     {
         None = 0,
+
+        /// <summary>
+        /// シナリオ
+        /// </summary>
         Scenario = 1,
+
+        /// <summary>
+        /// シナリオ フェード
+        /// </summary>
+        ScenarioFade = 2,
+
+        /// <summary>
+        /// 待機
+        /// </summary>
+        Wait = 101,
+
+        /// <summary>
+        /// 戦闘
+        /// </summary>
+        Battle = 201,
+
+        /// <summary>
+        /// BGM
+        /// </summary>
+        Bgm = 301,
+
+        /// <summary>
+        /// SE
+        /// </summary>
+        SE = 401,
+
+        /// <summary>
+        /// カメラ振動
+        /// </summary>
+        CameraShake = 601,
+
+        /// <summary>
+        /// イベント進行度
+        /// </summary>
+        Progression = 1001,
+
+        /// <summary>
+        /// イベントフラグ
+        /// </summary>
+        Flag = 1002,
+
+        /// <summary>
+        /// 味方追加
+        /// </summary>
+        AllyAdding = 1101,
+
+        /// <summary>
+        /// ステータス効果
+        /// </summary>
+        StatusEffect = 1201,
     }
 
     /// <summary>
@@ -43,52 +97,50 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 return;
             }
 
-            string gameEventAsset = Instance._gameEventDictionary[key];
-            List<List<string>> columns = CSVReader.ParseCSV(gameEventAsset);
-            List<IGameEvent> gameEvents = new();
-
-            foreach (var column in columns)
-            {
-                GameEventType type = System.Enum.Parse<GameEventType>(column[0]);
-                IGameEvent gameEvent = type switch
-                {
-                    GameEventType.Scenario => new ScenarioEvent(column.ToArray()),
-                    _ => null
-                };
-
-                if (gameEvent is not null)
-                {
-                    gameEvents.Add(gameEvent);
-                }
-            }
+            string csv = Instance._gameEventDictionary[key];
+            List<List<string>> columnsList = CSVReader.ParseCSV(csv);
+            List<IGameEvent> gameEvents = ToGameEventList(columnsList);
 
             foreach (var gameEvent in gameEvents)
             {
                 await gameEvent.Resolve(token);
             }
+
+            ScenarioManager.EndIfPlaying();
         }
 
         /// <summary>
-        /// CSVをゲームイベントにする
+        /// CSVをゲームイベントリストにする
         /// </summary>
-        /// <param name="columns"></param>
+        /// <param name="columnsList"></param>
         /// <returns></returns>
-        public static List<IGameEvent> ToGameEvent(List<List<string>> columns)
+        public static List<IGameEvent> ToGameEventList(List<List<string>> columnsList)
         {
             List<IGameEvent> gameEvents = new();
 
-            foreach (var column in columns)
+            foreach (var columns in columnsList)
             {
-                GameEventType type = System.Enum.Parse<GameEventType>(column[0]);
-                IGameEvent gameEvent = type switch
+                if (System.Enum.TryParse(columns[0], out GameEventType type))
                 {
-                    GameEventType.Scenario => new ScenarioEvent(column.ToArray()),
-                    _ => null
-                };
+                    IGameEvent gameEvent = type switch
+                    {
+                        GameEventType.Scenario => new ScenarioEvent(columns.ToArray()),
+                        GameEventType.ScenarioFade => new ScenarioFadeEvent(columns.ToArray()),
+                        GameEventType.Battle => new BattleEvent(columns.ToArray()),
+                        GameEventType.Bgm => new BgmEvent(columns.ToArray()),
+                        GameEventType.SE => new SEEvent(columns.ToArray()),
+                        GameEventType.CameraShake => new CameraShakeEvent(columns.ToArray()),
+                        GameEventType.Progression => new ProgressEvent(columns.ToArray()),
+                        GameEventType.Flag => new FlagEvent(columns.ToArray()),
+                        GameEventType.AllyAdding => new AllyAddingEvent(columns.ToArray()),
+                        GameEventType.StatusEffect => new StatusEffectEvent(columns.ToArray()),
+                        _ => null
+                    };
 
-                if (gameEvent is not null)
-                {
-                    gameEvents.Add(gameEvent);
+                    if (gameEvent is not null)
+                    {
+                        gameEvents.Add(gameEvent);
+                    }
                 }
             }
 
@@ -103,6 +155,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public static async UniTask ResolveBattleEvent(BattleEvent battleEvent, CancellationToken token)
         {
+            ScenarioManager.EndIfPlaying();
+
             Battle battle = Battle.InstanceInActiveScene;
             if (!battle)
             {
@@ -153,7 +207,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // フェードアウト
             await FadeManager.FadeOut(token);
 
-            if (travelEvent.DestinationIsMyRoom())
+            if (travelEvent.DestinationIsMyRoom)
             {
                 // 自室シーンに移行する
                 SceneChangeManager.StartChange(SceneId.MyRoom);

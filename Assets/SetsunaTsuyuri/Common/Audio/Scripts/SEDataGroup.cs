@@ -7,6 +7,7 @@ namespace SetsunaTsuyuri
     /// </summary>
     public enum SEId
     {
+        None = 0,
         Damage = 1,
         Healing = 2,
         FocusMove = 3,
@@ -14,7 +15,8 @@ namespace SetsunaTsuyuri
         Cancel = 5,
         Purification = 6,
         Collapse = 7,
-        BattleStart = 8
+        BattleStart = 8,
+        Slash1 = 101,
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -113,6 +114,46 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             SetUp();
 
+            CancellationToken token = this.GetCancellationTokenOnDestroy();
+            StartAsync(token).Forget();
+        }
+
+        private async UniTask StartAsync(CancellationToken token)
+        {
+            await FadeManager.FadeIn(token);
+            State.StartChange<MapEventsResolution>(this);
+        }
+
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        private void SetUp()
+        {
+            _ui.SetUp(_player, _allies, _battle);
+
+            _allies.SetUp(_battle.Enemies);
+            _battle.Enemies.SetUp(_allies);
+
+            // 戦闘開始
+            MessageBrokersManager.BattleStart
+                .Receive<Battle>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ =>
+                {
+                    Map.gameObject.SetActive(false);
+                    _ui.Main.SetEnabled(false);
+                });
+
+            // 戦闘終了
+            MessageBrokersManager.BattleEnd
+                .Receive<Battle>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ =>
+                {
+                    Map.gameObject.SetActive(true);
+                    _ui.Main.SetEnabled(true);
+                });
+
             // データを設定する
             int id = VariableData.DungeonId;
             _data = MasterData.GetDungeonData(id);
@@ -141,22 +182,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _miniMapCamera.Target = _player.MiniMapTransform;
 
             // 説明文UIを非表示にする
-            _ui.Description.Hide();
+            _ui.Description.SetEnabled(false);
 
+            // BGM再生
             AudioManager.PlayBgm(BgmId.Dungeon);
-
-            State.StartChange<MapEventsResolution>(this);
-        }
-
-        /// <summary>
-        /// セットアップする
-        /// </summary>
-        private void SetUp()
-        {
-            _ui.SetUp(_player, _allies, _battle);
-
-            _allies.SetUp(_battle.Enemies);
-            _battle.Enemies.SetUp(_allies);
         }
 
         private void Update()
@@ -178,6 +207,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 if (map.TryGetMapEventObject(player.Position, MapEventTriggerType.Touch, out MapEventObject mapEventObject))
                 {
+                    if (context._ui.Main.IsEnabled)
+                    {
+                        context._ui.Main.FadeOut();
+                    }
+
                     await mapEventObject.ResolveEvents(token);
 
                     // イベントにより移動した場合、移動先でもイベントが発生する可能性があるためやり直す
@@ -213,6 +247,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                 // ランダムエンカウントを許可する
                 context._allowRandomEncounter = true;
+
+                // メインUI表示
+                if (!context._ui.Main.IsEnabled)
+                {
+                    context._ui.Main.FadeIn();
+                }
             }
 
             public override void Update(Dungeon context)
@@ -255,7 +295,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 AudioManager.PlaySE(SEId.Select);
 
-                context._ui.Main.Hide();
+                context._ui.Main.SetEnabled(false);
                 context._player.DisableInput();
                 context._playerMenu.BeSelected();
             }
@@ -333,6 +373,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 MapEventObject mapEventObject = context._reservedMapEventObject;
                 if (mapEventObject)
                 {
+                    if (context._ui.Main.IsEnabled)
+                    {
+                        context._ui.Main.FadeOut();
+                    }
+
                     Vector2Int previousPlayerPosition = context._player.Position;
 
                     await mapEventObject.ResolveEvents(token);
@@ -399,10 +444,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 await base.EnterAsync(context, token);
 
+                if (!context.Map.EnablesRandomEncounterBattle)
+                {
+                    context.State.SetNextState<PlayerControl>();
+                    return;
+                }
+
                 context._enemiesEncounterValue += context._enemiesEncounterValueIncrease;
-
-                Debug.Log(context._enemiesEncounterValue);
-
                 if (context._enemiesEncounterValue < context._enemiesEncounterThreshold)
                 {
                     context.State.SetNextState<PlayerControl>();
@@ -414,19 +462,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // BGMを保存する
                 AudioManager.SaveBgm();
                 AudioManager.StopBgm(1.0f);
-                AudioManager.PlaySE(SEId.BattleStart);
-
-                // フェードアウト
-                await FadeManager.FadeOut(token);
-
-                // 非アクティブにする
-                context.Map.gameObject.SetActive(false);
-
-                // UIを無効化する
-                context._ui.Main.Hide();
-
-                // 説明文UIを表示する
-                context._ui.Description.Show();
 
                 // 戦闘を行う
                 BattleResultType result = await context._battle.ExecuteRandomBattle(context.Map, token);
@@ -439,10 +474,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 }
                 else
                 {
-
-                    // アクティブにする
-                    context.Map.gameObject.SetActive(true);
-
                     // カメラをプレイヤー視点にする
                     context._cameraController.Target = context._player.transform;
 
@@ -452,9 +483,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     // フェードイン
                     await FadeManager.FadeIn(token);
 
-                    // UIをフェードインする
-                    context._ui.Main.FadeIn();
-
                     context.State.SetNextState<PlayerControl>();
                 }
             }
@@ -462,7 +490,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             public override void Exit(Dungeon context)
             {
                 // 説明文UIを非表示にする
-                context._ui.Description.Hide();
+                context._ui.Description.SetEnabled(false);
             }
         }
     }

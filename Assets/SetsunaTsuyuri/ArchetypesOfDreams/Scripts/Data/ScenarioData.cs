@@ -8,7 +8,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// シナリオデータ
     /// </summary>
     [System.Serializable]
-    public class ScenarioData : Data
+    public class ScenarioData : IdData
     {
         /// <summary>
         /// CSVテキスト

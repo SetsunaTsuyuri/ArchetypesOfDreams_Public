@@ -154,6 +154,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             _user.Combatant.CreateActionResultsOnTargetSelection(action, _targetables);
             AllyTargetSelectionStart?.Invoke(action.Effect, _targetables);
+
+            // 通知
+            MessageBrokersManager.TargetSelectionStart.Publish(user);
         }
 
         /// <summary>
@@ -178,8 +181,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 if (Battle.IsRunning)
                 {
                     BeDeselectedAndClearHistory();
-                    _battle.ActorAction = action;
-                    _battle.ActorActionTargets = targets;
+                    _battle.ActiveContainerAction = action;
+                    _battle.ActiveContainerActionTargets = targets;
                 }
                 else
                 {

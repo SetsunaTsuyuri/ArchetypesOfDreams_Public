@@ -1,6 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -17,9 +18,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Start()
         {
-            _ui.SetUp();
+            CancellationToken token = this.GetCancellationTokenOnDestroy();
+            StartAsync(token).Forget();
+        }
 
+        private async UniTask StartAsync(CancellationToken token)
+        {
+            await FadeManager.FadeOut(0.0f, token);
+
+            _ui.SetUp();
             AudioManager.PlayBgm(BgmId.Title);
+
+            await FadeManager.FadeIn(token);
+
             _ui.TitleMenu.BeSelected();
         }
     }

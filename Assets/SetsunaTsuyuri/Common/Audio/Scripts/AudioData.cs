@@ -6,7 +6,7 @@ namespace SetsunaTsuyuri
     /// オーディオデータ
     /// </summary>
     [System.Serializable]
-    public class AudioData : Data
+    public class AudioData : IdData
     {
         /// <summary>
         /// 名前

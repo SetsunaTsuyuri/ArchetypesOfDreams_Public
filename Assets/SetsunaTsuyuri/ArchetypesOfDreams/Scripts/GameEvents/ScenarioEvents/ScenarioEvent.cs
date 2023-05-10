@@ -9,7 +9,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// シナリオイベント
     /// </summary>
-    public class ScenarioEvent : IGameEvent
+    public class ScenarioEvent : GameEventBase
     {
         /// <summary>
         /// 演者ID
@@ -35,23 +35,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public string Message { get; set; } = string.Empty;
 
-        public ScenarioEvent(string[] column)
+        public ScenarioEvent(string[] columns)
         {
-            if (int.TryParse(column[1], out int actorId))
-            {
-                ActorId = actorId;
-            }
-
-            if (int.TryParse(column[2], out int expressionId))
-            {
-                ExpressionId = expressionId;
-            }
-
-            Name = column[3];
-            Message = column[4];
+            ActorId = ToInt(columns, 1);
+            ExpressionId = ToInt(columns, 2);
+            Name = GetString(columns, 3);
+            Message = GetString(columns, 4);
         }
 
-        public async UniTask Resolve(CancellationToken token)
+        public override async UniTask Resolve(CancellationToken token)
         {
             ScenarioManager scenario = ScenarioManager.InstanceInActiveScene;
             if (!scenario)
@@ -59,7 +51,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 return;
             }
 
-            // TODO: 連続して文章を表示する場合、シナリオウィンドウを閉じないようにする
             await scenario.Play(ActorId, ExpressionId, Name, Message, token);
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,16 +7,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 進行度によるマップイベント出現条件
     /// </summary>
-    public abstract class ProgressionCondition : IAppearanceCondition
+    public class ProgressCondition : IAppearanceCondition
     {
         /// <summary>
         /// 式の種類
         /// </summary>
         public enum FormulaType
         {
-            Equal = 0,
-            OrMore = 1,
-            OrLess = 2
+            None = 0,
+            Equal = 1,
+            OrMore = 2,
+            OrLess = 3
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public int Parameter { get; private set; } = 0;
 
-        public ProgressionCondition(string[] columns)
+        public ProgressCondition(string[] columns)
         {
             if (int.TryParse(columns[1], out int id))
             {
@@ -56,34 +56,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
+        /// <summary>
+        /// 評価する
+        /// </summary>
+        /// <returns></returns>
         public bool Evaluate()
         {
-            bool result = false;
-
-            int value = GetValue();
-            switch (Formula)
+            int value = VariableData.Progresses.Get(Id);
+            bool result = Formula switch
             {
-                case FormulaType.Equal:
-                    result = value == Parameter;
-                    break;
-
-                case FormulaType.OrMore:
-                    result = value >= Parameter;
-                    break;
-
-                case FormulaType.OrLess:
-                    result = value <= Parameter;
-                    break;
-            }
+                FormulaType.Equal => value == Parameter,
+                FormulaType.OrMore => value >= Parameter,
+                FormulaType.OrLess => value <= Parameter,
+                _ => false
+            };
 
             return result;
         }
-
-        /// <summary>
-        /// 値を取得する
-        /// </summary>
-        /// <returns></returns>
-        public abstract int GetValue();
     }
 }
 

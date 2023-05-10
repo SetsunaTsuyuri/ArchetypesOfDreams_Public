@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using UniRx;
+using SetsunaTsuyuri.Scenario;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -16,43 +17,41 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// スプライトを表示するImage
         /// </summary>
         [SerializeField]
-        Image image = null;
-
-        /// <summary>
-        /// 行動者のスプライト
-        /// </summary>
-        public Sprite ActorSprite => image.sprite;
-
-        /// <summary>
-        /// 行動者の表示位置オフセット
-        /// </summary>
-        [SerializeField]
-        float performerPositionOffset = 0.25f;
+        Image _activeCombatantImage = null;
 
         /// <summary>
         /// 行動者がスライドする距離
         /// </summary>
         [SerializeField]
-        float performerSlideDistance = 25.0f;
+        float _activeCombatantSlideDistance = 25.0f;
 
         /// <summary>
         /// 行動者がスライドする時間
         /// </summary>
         [SerializeField]
-        float performerSlideDuration = 0.2f;
+        float _activeCombatantSlideDuration = 0.2f;
 
+        /// <summary>
+        /// 行動者のフェードインする時間
+        /// </summary>
         [SerializeField]
-        float perfomerFadeDuration = 0.2f;
+        float _activeCombatantFadeInDuration = 0.2f;
+
+        /// <summary>
+        /// 行動者の初期X座標
+        /// </summary>
+        Vector2 _activeCombatantInitialAnchoredPosition = Vector2.zero;
 
         /// <summary>
         /// 行動者のアニメーションシーケンス
         /// </summary>
-        Sequence actorSpriteSequence = null;
+        Sequence _activeCombatantSpriteSequence = null;
 
         /// <summary>
         /// 解放ボタンの管理者
         /// </summary>
         public ReleaseButtonsManager ReleaseButtons { get; private set; } = null;
+        
 
         protected override void Awake()
         {
@@ -65,82 +64,137 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.Start();
 
+            _activeCombatantInitialAnchoredPosition = _activeCombatantImage.rectTransform.anchoredPosition;
+
             ReleaseButtons.SetUp();
-            ReleaseButtons.Hide();
+            ReleaseButtons.SetEnabled(false);
 
             for (int i = 0; i < _party.Members.Length; i++)
             {
                 _party.Members[i].Damaged += _uiArray[i].OnDamage;
             }
-        }
 
-        /// <summary>
-        /// コマンド選択開始時の処理
-        /// </summary>
-        /// <param name="combatant">戦闘の管理者</param>
-        public void OnPlayerControlledCombatantCommandSelection(Battle battle)
-        {
-            // スプライトを表示する
-            DisplayActorSprite(battle.Actor);
+            // シナリオ開始
+            MessageBrokersManager.ScenarioStart
+                .Receive<ScenarioManager>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => SaveEnabledAndHide());
+
+            // シナリオ終了
+            MessageBrokersManager.ScenarioEnd
+                .Receive<ScenarioManager>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => LoadEnabled());
+
+            // ステータスメニュー
+            MessageBrokersManager.StatusMenuUserSet
+                .Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(DisplayActiveCombatantSprite);
+
+            // ステータスメニュー終了
+            MessageBrokersManager.StatusMenuClosed
+                .Receive<StatusMenu>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => HideActiveCombatantSprite());
+
+            // 戦闘コマンド選択
+            MessageBrokersManager.BattleCommandsSelected
+                .Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(DisplayActiveCombatantSprite);
+
+            // スキル選択
+            MessageBrokersManager.SkillMenuUserSet
+                .Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(DisplayActiveCombatantSprite);
+
+            // 戦闘中のアイテム選択
+            MessageBrokersManager.ItemMenuSelected
+                .Receive<CombatantContainer>()
+                .Where(_ => Battle.IsRunning)
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(DisplayActiveCombatantSprite);
+
+            // 戦闘中の対象選択
+            MessageBrokersManager.TargetSelectionStart
+                .Receive<CombatantContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Where(_ => Battle.IsRunning)
+                .Subscribe(_ => HideActiveCombatantSprite());
         }
 
         /// <summary>
         /// 行動者のスプライトを表示する
         /// </summary>
         /// <param name="container"></param>
-        public void DisplayActorSprite(CombatantContainer container)
+        public void DisplayActiveCombatantSprite(CombatantContainer container)
         {
+            if (!container)
+            {
+                return;
+            }
+
+            // スプライトが存在しないか、同じスプライトなら処理しない
             Sprite sprite = container.Combatant.Sprite;
-            if (!sprite)
+            if (!sprite || _activeCombatantImage.sprite == sprite)
             {
                 return;
             }
 
             // Imageにスプライトを設定する
-            image.sprite = sprite;
-            image.SetNativeSize();
-            image.rectTransform.sizeDelta *= container.Combatant.Data.SpriteScale;
+            _activeCombatantImage.sprite = sprite;
+            _activeCombatantImage.SetNativeSize();
+            _activeCombatantImage.rectTransform.sizeDelta *= container.Combatant.Data.SpriteScale;
 
             // Imageの位置を調整する
-            Vector3 newPosition = image.rectTransform.anchoredPosition;
-            newPosition.x = performerSlideDistance;
-            newPosition.y = -image.sprite.rect.height * performerPositionOffset;
-            image.rectTransform.anchoredPosition = newPosition;
+            Vector3 newPosition = _activeCombatantInitialAnchoredPosition;
+            float offsetX = container.Combatant.Data.AllySpriteOffsetX;
+            newPosition.x = offsetX + _activeCombatantSlideDistance;
+            newPosition.y = container.Combatant.Data.AllySpriteOffsetY;
+            //newPosition.y = -_activeCombatantImage.sprite.rect.height * _activeCombatantPositionOffset;
+
+            _activeCombatantImage.rectTransform.anchoredPosition = newPosition;
 
             // Imageを有効化する
-            image.enabled = true;
+            _activeCombatantImage.enabled = true;
 
             // Imageを透明にする
-            image.ChangeAlpha(0.0f);
+            _activeCombatantImage.ChangeAlpha(0.0f);
+
+            // シーケンス終了時のX座標
+            float endX = offsetX + _activeCombatantInitialAnchoredPosition.x;
 
             // シーケンス開始
-            actorSpriteSequence = DOTween.Sequence()
-                .Join(image.DOFade(1.0f, perfomerFadeDuration))
-                .Join(image.rectTransform.DOAnchorPosX(0.0f, performerSlideDuration))
-                .SetLink(image.gameObject);
-        }
-
-        /// <summary>
-        /// コマンド選択終了時の処理
-        /// </summary>
-        public void OnCommandSelectionExit()
-        {
-            HideActorSprite();
+            KillActiveCombatantSpriteSequence();
+            _activeCombatantSpriteSequence = DOTween.Sequence()
+                .Join(_activeCombatantImage.DOFade(1.0f, _activeCombatantFadeInDuration))
+                .Join(_activeCombatantImage.rectTransform.DOAnchorPosX(endX, _activeCombatantSlideDuration))
+                .SetLink(_activeCombatantImage.gameObject);
         }
 
         /// <summary>
         /// 行動者のスプライトを非表示にする
         /// </summary>
-        public void HideActorSprite()
+        public void HideActiveCombatantSprite()
         {
-            // シーケンス終了
-            if (actorSpriteSequence.IsActive())
+            KillActiveCombatantSpriteSequence();
+            _activeCombatantImage.sprite = null;
+            _activeCombatantImage.enabled = false;
+        }
+
+        /// <summary>
+        /// 行動者のスプライト表示シーケンスを終了する
+        /// </summary>
+        private void KillActiveCombatantSpriteSequence()
+        {
+            if (!_activeCombatantSpriteSequence.IsActive())
             {
-                actorSpriteSequence.Kill();
+                return;
             }
 
-            image.sprite = null;
-            image.enabled = false;
+            _activeCombatantSpriteSequence.Kill();
         }
 
         /// <summary>

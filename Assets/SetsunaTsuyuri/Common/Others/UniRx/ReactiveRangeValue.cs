@@ -7,6 +7,7 @@ namespace SetsunaTsuyuri
     /// <summary>
     /// 最小値と最大値を設定できるstructのリアクティブプロパティ
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ReactiveRangeValue<T> where T : struct, System.IComparable<T>
     {
         public ReactiveRangeValue(T initialValue, T min, T max)

@@ -188,10 +188,7 @@ namespace SetsunaTsuyuri
                 controller.PlaybackPosition = position;
             }
 
-            Instance._bgmCancellationTokenSource?.Cancel();
-            Instance._bgmCancellationTokenSource?.Dispose();
-            Instance._bgmCancellationTokenSource = new();
-
+            ResetBgmCancellationTokenSource();
             controller.PlayWithFadeIn(duration, Instance._bgmCancellationTokenSource.Token).Forget();
         }
 
@@ -201,16 +198,26 @@ namespace SetsunaTsuyuri
         /// <param name="duration">フェード時間</param>
         public static void StopBgm(float duration = 0.5f)
         {
-            Instance._bgmCancellationTokenSource?.Cancel();
-
+            ResetBgmCancellationTokenSource();
             Instance._bgmSource.StopWithFadeOut(duration, Instance._bgmCancellationTokenSource.Token).Forget();
+        }
+
+        /// <summary>
+        /// BGMキャンセレーショントークンソースをリセットする
+        /// </summary>
+        private static void ResetBgmCancellationTokenSource()
+        {
+            Instance._bgmCancellationTokenSource?.Cancel();
+            Instance._bgmCancellationTokenSource?.Dispose();
+            Instance._bgmCancellationTokenSource = new();
         }
 
         /// <summary>
         /// SEを再生する
         /// </summary>
         /// <param name="id">SEID</param>
-        public static void PlaySE(SEId id)
+        /// <param name="volume"></param>
+        public static void PlaySE(SEId id, float volume = 1.0f)
         {
             AudioData data = Instance._seDataGroup[id];
             if (data is null)
@@ -219,14 +226,32 @@ namespace SetsunaTsuyuri
                 return;
             }
 
-            PlaySE(data);
+            PlaySE(data, volume);
+        }
+
+        /// <summary>
+        /// SEを再生する
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="volume"></param>
+        public static void PlaySE(int id, float volume = 1.0f)
+        {
+            AudioData data = Instance._seDataGroup[id];
+            if (data is null)
+            {
+                Debug.LogError($"ID: {id} is not found");
+                return;
+            }
+
+            PlaySE(data, volume);
         }
 
         /// <summary>
         /// SEを再生する
         /// </summary>
         /// <param name="name"></param>
-        public static void PlaySE(string name)
+        /// <param name="volume"></param>
+        public static void PlaySE(string name, float volume = 1.0f)
         {
             AudioData data = Instance._seDataGroup[name];
             if (data is null)
@@ -235,7 +260,7 @@ namespace SetsunaTsuyuri
                 return;
             }
 
-            PlaySE(data);
+            PlaySE(data, volume);
         }
 
 
@@ -243,7 +268,8 @@ namespace SetsunaTsuyuri
         /// SEを再生する
         /// </summary>
         /// <param name="name">SEの名前</param>
-        public static void PlaySE(AudioData data)
+        /// <param name="volume"></param>
+        public static void PlaySE(AudioData data, float volume = 1.0f)
         {
             Instance._seSource.Data = data;
             Instance._seSource.PlayOneShot();

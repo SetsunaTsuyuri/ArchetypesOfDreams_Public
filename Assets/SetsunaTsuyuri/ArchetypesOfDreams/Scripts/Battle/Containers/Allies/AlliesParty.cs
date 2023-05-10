@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,6 +12,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public class AlliesParty : CombatantsParty<AllyContainer>
     {
+        public static AlliesParty InstanceInActiveScene { get; private set; } = null;
+
         /// <summary>
         /// 味方UIの管理者
         /// </summary>
@@ -41,6 +42,40 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public CombatantContainer MenuUser => Members[0];
 
+        /// <summary>
+        /// 編成を変更できる
+        /// </summary>
+        public bool CanChangeFormation => CountChangeables() >= 2;
+
+        /// <summary>
+        /// 夢魔の最大経験値
+        /// </summary>
+        public int MaxDreamWalkerExperience
+        {
+            get
+            {
+                int max = 0;
+
+                var dreamWalkers = GetAllContainers()
+                    .Where(x => x.Combatant is DreamWalker)
+                    .Select(x => x.Combatant);
+
+                if (dreamWalkers.Any())
+                {
+                    max = dreamWalkers.Max(x => x.Experience);
+                }
+
+                return max;
+            }
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            InstanceInActiveScene = this;
+        }
+
         public override void OnBattleStart()
         {
             base.OnBattleStart();
@@ -51,14 +86,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
         }
 
-        protected override IEnumerable<CombatantContainer> GetContainers(TargetPosition position)
+        protected override IEnumerable<CombatantContainer> GetReserveMembers()
         {
-            if (position == TargetPosition.Reserves)
-            {
-                return ReserveMembers;
-            }
-
-            return Members;
+            return ReserveMembers;
         }
 
         /// <summary>
@@ -127,17 +157,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void OnDestroy()
         {
-            var allies = Members
-                .Where(x => x.ContainsCombatant)
-                .Select(x => x.Combatant);
-
-            VariableData.SetAllies(allies);
-
-            var reserveAllies = ReserveMembers
-                .Where(x => x.ContainsCombatant)
-                .Select(x => x.Combatant);
-
-            VariableData.SetReserveAllies(reserveAllies);
+            VariableData.SaveAllies();
         }
 
         public override AllyContainer FindAvailable()
@@ -193,7 +213,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 PurifiedEnemy = purified;
                 releaseButtons.UpdateButtonsAndSelect(this);
                 await releaseButtons.WaitForAnyButtonPressed(token);
-                releaseButtons.Hide();
+                releaseButtons.SetEnabled(false);
 
                 // 選択したコンテナに格納されている戦闘者を解放する
                 ToBeReleased.Release();

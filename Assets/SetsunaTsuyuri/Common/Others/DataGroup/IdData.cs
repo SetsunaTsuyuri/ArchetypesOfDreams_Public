@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri
     /// <summary>
     /// データ
     /// </summary>
-    public class Data
+    public class IdData
     {
         /// <summary>
         /// ID

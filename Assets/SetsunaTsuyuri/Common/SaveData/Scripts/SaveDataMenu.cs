@@ -49,7 +49,7 @@ namespace SetsunaTsuyuri
 
             base.SetUp();
 
-            Hide();
+            SetEnabled(false);
         }
 
         public override void BeSelected()
@@ -61,7 +61,7 @@ namespace SetsunaTsuyuri
         public override void BeCanceled()
         {
             base.BeCanceled();
-            Hide();
+            SetEnabled(false);
         }
 
         /// <summary>

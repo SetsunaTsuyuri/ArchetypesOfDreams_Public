@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using SetsunaTsuyuri.ArchetypesOfDreams;
 
@@ -37,10 +36,10 @@ namespace SetsunaTsuyuri
         public List<Combatant> ReserveAllies { get; set; } = new();
 
         /// <summary>
-        /// 精貨
+        /// 精気
         /// </summary>
         [field: SerializeField]
-        public int SpiritCoins { get; set; } = 0;
+        public int Spirit { get; set; } = 0;
 
         /// <summary>
         /// 歩数
@@ -49,16 +48,22 @@ namespace SetsunaTsuyuri
         public int Steps { get; set; } = 0;
 
         /// <summary>
-        /// アイテム所持数配列
+        /// アイテム所持数
         /// </summary>
         [field: SerializeField]
-        public int[] Items { get; set; } = { };
+        public SerializableKeyValuePair<int, int>[] Items { get; set; } = { };
 
         /// <summary>
-        /// 物語の進行度
+        /// イベント進行度
         /// </summary>
         [field: SerializeField]
-        public int[] StroyProgressions { get; set; } = { };
+        public SerializableKeyValuePair<int, int>[] Progresses { get; set; } = { };
+
+        /// <summary>
+        /// イベントフラグ
+        /// </summary>
+        [field: SerializeField]
+        public SerializableKeyValuePair<int, bool>[] Flags { get; set; } = { };
 
         /// <summary>
         /// 選択可能なダンジョンフラグ配列
@@ -87,15 +92,18 @@ namespace SetsunaTsuyuri
             Id = id;
             DateTime = System.DateTime.Now.ToString();
 
+            VariableData.SaveAllies();
+
             Copy(VariableData.Allies, Allies);
             Copy(VariableData.ReserveAllies, ReserveAllies);
 
-            SpiritCoins = VariableData.SpiritCoins;
+            Spirit = VariableData.Spirit;
             Steps = VariableData.Steps;
 
-            Items = VariableData.ItemsDictionary.Values.ToArray();
+            Items = VariableData.Items.ToSerializableKeyValuePair();
+            Progresses = VariableData.Progresses.ToSerializableKeyValuePair();
+            Flags = VariableData.Flags.ToSerializableKeyValuePair();
 
-            StroyProgressions = Copy(VariableData.StoryProgressions);
             SelectableDungeons = Copy(VariableData.SelectableDungeons);
             ClearedDungeons = Copy(VariableData.ClearedDungeons);
             ObtainedTreasures = Copy(VariableData.ObtainedTreasures);
@@ -109,16 +117,13 @@ namespace SetsunaTsuyuri
             Copy(Allies, VariableData.Allies);
             Copy(ReserveAllies, VariableData.ReserveAllies);
 
-            VariableData.SpiritCoins = SpiritCoins;
+            VariableData.Spirit = Spirit;
             VariableData.Steps = Steps;
 
-            VariableData.ItemsDictionary.Clear();
-            for (int i = 0; i < Items.Length; i++)
-            {
-                VariableData.ItemsDictionary.Add(i + 1, Items[i]);
-            }
+            VariableData.Items.FromSerializableKeyValuePair(Items);
+            VariableData.Progresses.FromSerializableKeyValuePair(Progresses);
+            VariableData.Flags.FromSerializableKeyValuePair(Flags);
 
-            Overwrite(StroyProgressions, VariableData.StoryProgressions);
             Overwrite(SelectableDungeons, VariableData.SelectableDungeons);
             Overwrite(ClearedDungeons, VariableData.ClearedDungeons);
             Overwrite(ObtainedTreasures, VariableData.ObtainedTreasures);

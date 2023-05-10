@@ -2,7 +2,6 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -11,12 +10,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public class StatusMenu : SelectableGameUI<GameButton>
     {
-        /// <summary>
-        /// 対象のイメージ
-        /// </summary>
-        [SerializeField]
-        Image _targetImage = null;
-
         /// <summary>
         /// 対象配列
         /// </summary>
@@ -37,6 +30,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         DetailedStatusUI _detailedStatus = null;
 
+        /// <summary>
+        /// 使用者
+        /// </summary>
+        public CombatantContainer User => _targetables[_targetIndex];
+
         public override void SetUp()
         {
             base.SetUp();
@@ -56,7 +54,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             _detailedStatus = GetComponentInChildren<DetailedStatusUI>();
-            Hide();
+            SetEnabled(false);
         }
 
         public override void BeSelected()
@@ -69,9 +67,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override void BeCanceled()
         {
-            Hide();
+            SetEnabled(false);
 
             base.BeCanceled();
+        }
+
+        public override void SetEnabled(bool enabled)
+        {
+            base.SetEnabled(enabled);
+
+            if (!enabled)
+            {
+                MessageBrokersManager.StatusMenuClosed.Publish(this);
+            }
         }
 
         /// <summary>
@@ -137,9 +145,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             CombatantContainer target = _targetables[_targetIndex];
             _detailedStatus.UpdateView(target.Combatant);
-            _targetImage.sprite = target.Combatant.Sprite;
-            _targetImage.SetNativeSize();
-            _targetImage.enabled = true;
+            MessageBrokersManager.StatusMenuUserSet.Publish(target);
         }
     }
 }

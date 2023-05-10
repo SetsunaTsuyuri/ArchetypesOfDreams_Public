@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -8,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// アイテムデータ
     /// </summary>
     [System.Serializable]
-    public class ItemData : NameDescriptionData
+    public class ItemData : EffectData
     {
         /// <summary>
         /// 価格
@@ -19,10 +18,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 使ってもなくならない
         /// </summary>
         public bool IsReusable = false;
-
-        /// <summary>
-        /// 効果データ
-        /// </summary>
-        public EffectData Effect = null;
     }
 }

@@ -1,12 +1,10 @@
-﻿【ゲームデザイン・プログラミング】
+﻿【ゲームデザイン・シナリオ・プログラミング・キャラクター原案】
 Kairi Kawasaki
 
-【イラスト】
-Kairi Kawasaki
+【イラストレーション・キャラクターデザイン・ロゴデザイン】
 摩
 
 【素材提供】
-
 Copyright (c) 2019 Yoshifumi Kawai / Cysharp, Inc.
 Released under the MIT license
 https://github.com/Cysharp/UniTask/blob/master/LICENSE

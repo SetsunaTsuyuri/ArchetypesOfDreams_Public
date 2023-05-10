@@ -44,6 +44,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public StatusEffectData[] StatusEffects = { };
 
         /// <summary>
+        /// 効果アニメーション
+        /// </summary>
+        public EffectAnimationData[] EffectAnimations = { };
+
+        /// <summary>
         /// ダンジョン
         /// </summary>
         public DungeonData[] Dungeons = { };
@@ -109,14 +114,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// アイテムデータのID配列を取得する
+        /// アイテムデータのIDを全て取得する
         /// </summary>
         /// <returns></returns>
-        public static int[] GetItemIds()
+        public static IEnumerable<int> GetItemIds()
         {
-            return Instance.Items
-                .Select(x => x.Id)
-                .ToArray();
+            return Instance.Items.Select(x => x.Id);
         }
 
         /// <summary>
@@ -137,6 +140,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static StatusEffectData GetStatusEffectData(int id)
         {
             return Instance.StatusEffects.FirstOrDefault(x => x.Id == id);
+        }
+
+        /// <summary>
+        /// 効果アニメーションのデータを取得する
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static EffectAnimationData GetEffectAnimationData(int id)
+        {
+            return Instance.EffectAnimations.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>

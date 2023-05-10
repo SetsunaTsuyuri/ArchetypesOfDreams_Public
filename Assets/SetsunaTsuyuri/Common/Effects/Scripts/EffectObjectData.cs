@@ -4,8 +4,11 @@ using UnityEngine;
 
 namespace SetsunaTsuyuri
 {
+    /// <summary>
+    /// エフェクトオブジェクトデータ
+    /// </summary>
     [System.Serializable]
-    public class EffectData : Data
+    public class EffectObjectData : IdData
     {
         /// <summary>
         /// パーティクルシステム

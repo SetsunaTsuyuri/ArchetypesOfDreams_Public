@@ -49,17 +49,57 @@ namespace SetsunaTsuyuri.Scenario.Attribute
         /// </summary>
         NoChange = -1,
 
+        None = 0,
+
         /// <summary>
         /// 通常
         /// </summary>
-        Normal = 0,
+        Normal = 1,
 
-        Smile,
-        Angry,
-        Sad,
-        Fear,
-        Surprised,
-        Tearful
+        /// <summary>
+        /// 通常赤面
+        /// </summary>
+        NormalBlush = 2,
+
+        /// <summary>
+        /// 通常疲れ
+        /// </summary>
+        NormalTired = 3,
+
+        /// <summary>
+        /// 笑顔
+        /// </summary>
+        Smile = 11,
+
+        /// <summary>
+        /// 笑顔赤面
+        /// </summary>
+        SmileBlush = 12,
+
+        /// <summary>
+        /// 笑顔疲れ
+        /// </summary>
+        SmileTired = 13,
+
+        /// <summary>
+        /// 怒り
+        /// </summary>
+        Angry = 21,
+
+        /// <summary>
+        /// 怒り赤面
+        /// </summary>
+        AngryBlush = 22,
+
+        /// <summary>
+        /// 怒り疲れ
+        /// </summary>
+        AngryTired = 23,
+
+        /// <summary>
+        /// 口付け
+        /// </summary>
+        Kiss = 101,
     }
 }
 
@@ -162,7 +202,9 @@ namespace SetsunaTsuyuri.Scenario
             {
                 Image.sprite = Data.Expressions.GetValueOrDefault(Expression);
                 Image.color = Color.white;
-                Image.SetNativeSize();
+                float width = Image.sprite.texture.width;
+                float height = Image.sprite.texture.height;
+                Image.rectTransform.sizeDelta = new Vector2(width, height) * Data.Scale;
                 Image.rectTransform.anchoredPosition = Data.PositionOffset;
             }
             else

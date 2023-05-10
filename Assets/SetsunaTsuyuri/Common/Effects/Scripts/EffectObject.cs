@@ -12,7 +12,7 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// データ
         /// </summary>
-        public EffectData Data { get; set; } = null;
+        public EffectObjectData Data { get; set; } = null;
 
         /// <summary>
         /// パーティクルシステム
@@ -28,11 +28,12 @@ namespace SetsunaTsuyuri
         /// エフェクトを作る
         /// </summary>
         /// <param name="manager">エフェクトの管理者</param>
+        /// <param name="parent">親トランスフォーム</param>
         /// <param name="data">エフェクトデータ</param>
         /// <returns></returns>
-        public static EffectObject Create(EffectsManager manager, EffectData data)
+        public static EffectObject Create(EffectsManager manager, Transform parent, EffectObjectData data)
         {
-            ParticleSystem particleSystem = Instantiate(data.ParticleSystem, manager.transform);
+            ParticleSystem particleSystem = Instantiate(data.ParticleSystem, parent);
 
             EffectObject effect = particleSystem.gameObject.AddComponent<EffectObject>();
             effect.Data = data;

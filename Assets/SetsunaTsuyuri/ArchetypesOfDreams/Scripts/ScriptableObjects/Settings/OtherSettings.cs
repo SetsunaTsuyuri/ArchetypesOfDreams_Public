@@ -10,9 +10,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class OtherSettings : ScriptableObject
     {
         /// <summary>
-        /// 精貨の最大数
+        /// 精気の最大値
         /// </summary>
         [field: SerializeField]
-        public int MaxSpiritCoins { get; private set; } = 999999999;
+        public int MaxSpirit { get; private set; } = 999999999;
+
+        /// <summary>
+        /// 歩数の最大値
+        /// </summary>
+        [field: SerializeField]
+        public int MaxSteps { get; private set; } = 999999999;
     }
 }

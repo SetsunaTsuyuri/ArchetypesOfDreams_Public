@@ -60,11 +60,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="container">戦闘者コンテナ</param>
         public void OnCombatantSet(CombatantContainer container)
         {
-            if (_uiArray is null)
+            if (_uiArray == null)
             {
                 return;
             }
-
             TUI ui = _uiArray[container.Id];
             ui.OnCombatantSet(container.ContainsCombatant);
         }
