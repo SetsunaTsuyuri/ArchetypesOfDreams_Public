@@ -31,6 +31,7 @@
 /[Aa]ssets/**/*.wav
 /[Aa]ssets/**/*.ogg
 /[Aa]ssets/**/*.mp3
+/[Aa]ssets/**/*.renderTexture
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 #!/[Aa]ssets/**/*.meta
