@@ -73,7 +73,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ステータス効果
+        /// ステータス効果付与
         /// </summary>
         [Serializable]
         public class StatusEffect
@@ -84,19 +84,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             public int StatusEffectId = 0;
 
             /// <summary>
-            /// 解除する
+            /// ステータス効果カテゴリ
             /// </summary>
-            public bool IsRemoval = false;
-
-            /// <summary>
-            /// 解除するカテゴリ
-            /// </summary>
-            public StatusEffectCategory RemovalCategory = StatusEffectCategory.None;
+            public StatusEffectCategory StatusEffectCategory = StatusEffectCategory.None;
 
             /// <summary>
             /// 付与・解除確率
             /// </summary>
             public int Probability = 100;
+
+            /// <summary>
+            /// 解除する
+            /// </summary>
+            public bool IsRemoval = false;
 
             /// <summary>
             /// 有効ターン数
@@ -155,14 +155,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public float ActionTime = 1.0f;
 
         /// <summary>
-        /// 浄化スキルである
+        /// 浄化する
         /// </summary>
         public bool IsPurification = false;
 
         /// <summary>
-        /// 交代スキルである
+        /// 交代する
         /// </summary>
         public bool IsChange = false;
+
+        /// <summary>
+        /// 逃走する
+        /// </summary>
+        public bool IsEscape = false;
 
         /// <summary>
         /// 効果適用後、再び行動できる
@@ -194,5 +199,50 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <returns></returns>
         public bool HasDamageEffects => DamageEffects.Length > 0;
+
+        /// <summary>
+        /// 置換された説明文を取得する
+        /// </summary>
+        /// <returns></returns>
+        public string GetReplacedDescription()
+        {
+            // 状態
+            string condition = TargetCondition switch
+            {
+                TargetCondition.KnockedOut => GameSettings.Terms.TargetKnockedOut,
+                _ => string.Empty
+            };
+
+            // 立場
+            string position = TargetPosition switch
+            {
+                TargetPosition.Enemies => GameSettings.Terms.TargetEnemies,
+                TargetPosition.Allies => GameSettings.Terms.TargetAllies,
+                TargetPosition.Both => GameSettings.Terms.TargetBoth,
+                TargetPosition.Oneself => GameSettings.Terms.TargetOneself,
+                TargetPosition.AlliesOtherThanOneself => GameSettings.Terms.TargetAlliesOtherThanOneself,
+                TargetPosition.Reserves => GameSettings.Terms.TargetReserves,
+                _ => string.Empty
+            };
+
+            // 選択方法
+            string selection = string.Empty;
+            if (TargetPosition != TargetPosition.Oneself)
+            {
+                selection = TargetSelection switch
+                {
+                    TargetSelectionType.Single => GameSettings.Terms.TargetSingle,
+                    TargetSelectionType.All => GameSettings.Terms.TargetAll,
+                    TargetSelectionType.Random => GameSettings.Terms.TargetRandom,
+                    _ => string.Empty
+                };
+            }
+
+            // 置換する
+            string result = Description
+                .Replace("{targets}", $"{condition}{position}{selection}");
+
+            return result;
+        }
     }
 }

@@ -16,6 +16,8 @@ namespace SetsunaTsuyuri
         Purification = 6,
         Collapse = 7,
         BattleStart = 8,
+        Escape = 9,
+        EnemyDamage = 10,
         Slash1 = 101,
     }
 

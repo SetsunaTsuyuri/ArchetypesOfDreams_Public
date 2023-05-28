@@ -3,11 +3,11 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/001_prologue.json",
+    "activeFile": "maps/201.json",
     "expandedProjectPaths": [
-        "tilesets",
         ".",
-        "maps"
+        "maps",
+        "tilesets"
     ],
     "file.lastUsedOpenFilter": "すべてのファイル (*)",
     "fileStates": {
@@ -51,8 +51,8 @@
             "scale": 1.082109375,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 271.22951411450435,
-                "y": 260.60212259042675
+                "x": 311.89083820662773,
+                "y": 252.2850335715833
             }
         },
         "maps/101.json": {
@@ -62,8 +62,8 @@
             "scale": 1.082109375,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 319.7458667244243,
-                "y": 320.20792722547117
+                "x": 319.28380622337744,
+                "y": 316.0493827160494
             }
         },
         "maps/201.json": {
@@ -73,8 +73,8 @@
             "scale": 1.082109375,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 319.7458667244243,
-                "y": 320.20792722547117
+                "x": 319.28380622337744,
+                "y": 318.82174572233055
             }
         },
         "maps/301.json": {
@@ -174,10 +174,10 @@
     "project": "mugen.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "maps/001_prologue.json",
         "maps/101.json",
         "maps/301.json",
         "maps/201.json",
-        "maps/001_prologue.json",
         "maps/map.json",
         "tilesets/tileset.tsx",
         "tilesets/101.json",

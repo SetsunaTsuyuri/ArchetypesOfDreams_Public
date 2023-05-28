@@ -75,9 +75,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EnemySprite.OnConditionSet(Combatant);
         }
 
-        public override void OnAction(ActionInfo model)
+        public override void OnAction(ActionInfo action)
         {
-            base.OnAction(model);
+            base.OnAction(action);
 
             EnemySprite.Blink();
         }
@@ -86,7 +86,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             base.OnDamage();
 
+            AudioManager.PlaySE(SEId.EnemyDamage);
             EnemySprite.Shake();
+        }
+
+        public override void Escape()
+        {
+            base.Escape();
+
+            Release();
         }
 
         /// <summary>

@@ -111,7 +111,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool CanAct()
         {
-            return Condition == GameAttribute.Condition.Normal
+            return !StatusEffects.Any(x => x.Data.Action == EffectOnAction.InabiltyToAct)
                 && !HasActed;
         }
 
@@ -119,10 +119,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 戦闘不能である
         /// </summary>
         /// <returns></returns>
-        public bool IsKnockedOut => StatusEffects.Any(x => x.Data.IsTreatedAsKnockedOut) || Condition == GameAttribute.Condition.KnockedOut;
+        public bool IsKnockedOut => IsAffected(StatusEffectId.KnockedOut);
 
         /// <summary>
-        /// 崩壊している
+        /// クラッシュしている
         /// </summary>
         /// <returns></returns>
         public bool IsCrushed => IsAffected(StatusEffectId.Crush);
@@ -153,60 +153,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <returns></returns>
         public abstract bool CanBeReleased();
-
-        /// <summary>
-        /// HPの割合を取得する
-        /// </summary>
-        /// <returns></returns>
-        public float GetHPRate()
-        {
-            return (float)CurrentHP / MaxHP;
-        }
-
-        /// <summary>
-        /// HPの減少率を取得する
-        /// </summary>
-        /// <returns></returns>
-        public float GetHPReductionRate()
-        {
-            return 1.0f - GetHPRate();
-        }
-
-        /// <summary>
-        /// DPの割合を取得する
-        /// </summary>
-        /// <returns></returns>
-        public float GetDPRate()
-        {
-            return (float)CurrentDP / GameSettings.Combatants.MaxDP;
-        }
-
-        /// <summary>
-        /// DPの減少率を取得する
-        /// </summary>
-        /// <returns></returns>
-        public float GetDPReductionRate()
-        {
-            return 1.0f - GetDPRate();
-        }
-
-        /// <summary>
-        /// SPの割合を取得する
-        /// </summary>
-        /// <returns></returns>
-        public float GetSPRate()
-        {
-            return (float)CurrentGP / MaxGP;
-        }
-
-        /// <summary>
-        /// SPの減少率を取得する
-        /// </summary>
-        /// <returns></returns>
-        public float GetSPReductionRate()
-        {
-            return 1.0f - GetSPRate();
-        }
 
         /// <summary>
         /// 歩いたときの処理

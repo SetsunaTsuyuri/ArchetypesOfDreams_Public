@@ -48,6 +48,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public SkillButton Change { get; private set; } = null;
 
         /// <summary>
+        /// 逃走ボタン
+        /// </summary>
+        [field: SerializeField]
+        public SkillButton Escape { get; private set; } = null;
+
+        /// <summary>
         /// 使用者
         /// </summary>
         public CombatantContainer User { get; set; } = null;
@@ -82,6 +88,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // 交代
             SetUpBasicSkillButton(Change, BasicSkillId.Change, battle);
+
+            // 逃走
+            SetUpBasicSkillButton(Escape, BasicSkillId.Escape, battle);
 
             // スキル
             Skills.AddPressedListener(() =>
@@ -132,10 +141,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 各ボタンを更新する
         /// </summary>
-        /// <param name="activeContainer">行動者コンテナ</param>
-        public void UpdateButtons(CombatantContainer activeContainer)
+        /// <param name="battle"></param>
+        public void UpdateButtons(Battle battle)
         {
-            // 通常攻撃ボタン
+            CombatantContainer activeContainer = battle.ActiveContainer;
+
+            // 通常攻撃
             {
                 int id = (int)BasicSkillId.Attack;
                 bool canBeUsed = activeContainer.CanUseSkill(id);
@@ -143,9 +154,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // スキルボタン
-            Skills.SetInteractable(activeContainer.CanUseAnySkill());
+            Skills.gameObject.SetActive(activeContainer.CanUseAnySkill());
+            Skills.SetInteractable(Skills.isActiveAndEnabled);
 
-            // 浄化ボタン
+            // 浄化
             Purification.gameObject.SetActive(activeContainer.Combatant is DreamWalker);
             if (Purification.isActiveAndEnabled)
             {
@@ -158,7 +170,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Purification.SetInteractable(false);
             }
 
-            // 交代ボタン
+            // 交代
             Change.gameObject.SetActive(activeContainer.Combatant is Nightmare);
             if (Change.isActiveAndEnabled)
             {
@@ -180,6 +192,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // アイテムボタン
             Items.SetInteractable(activeContainer.CanUseAnyItem());
+
+            // 逃走ボタン
+            {
+                int id = (int)BasicSkillId.Escape;
+                bool canBeUsed = activeContainer.CanUseSkill(id) && battle.AlliesCanEscape;
+                Escape.UpdateButton(id, canBeUsed);
+            }
 
             // ナビゲーション更新
             UpdateButtonNavigations();

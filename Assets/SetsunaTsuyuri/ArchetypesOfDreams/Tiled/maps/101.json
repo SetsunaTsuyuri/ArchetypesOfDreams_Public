@@ -40,7 +40,6 @@
          "name":"objects",
          "objects":[
                 {
-                 "class":"Event",
                  "height":32,
                  "id":1,
                  "name":"Start",
@@ -74,13 +73,13 @@
                          "value":"Start"
                         }],
                  "rotation":0,
+                 "type":"Event",
                  "visible":true,
                  "width":32,
                  "x":288,
                  "y":512
                 }, 
                 {
-                 "class":"Event",
                  "height":32,
                  "id":2,
                  "name":"Goal",
@@ -109,13 +108,13 @@
                          "value":"Goal"
                         }],
                  "rotation":0,
+                 "type":"Event",
                  "visible":true,
                  "width":32,
                  "x":288,
                  "y":32
                 }, 
                 {
-                 "class":"Event",
                  "height":32,
                  "id":6,
                  "name":"",
@@ -123,12 +122,12 @@
                         {
                          "name":"appearance_conditions",
                          "type":"string",
-                         "value":"Story 0 Equal 0"
+                         "value":"Variable 1 Equal 30"
                         }, 
                         {
-                         "name":"events",
+                         "name":"event_id",
                          "type":"string",
-                         "value":"Scenario 0\nStory 0 Equal 10"
+                         "value":"story_40"
                         }, 
                         {
                          "name":"trigger",
@@ -137,10 +136,11 @@
                          "value":"Touch"
                         }],
                  "rotation":0,
+                 "type":"Event",
                  "visible":true,
                  "width":32,
-                 "x":224,
-                 "y":512
+                 "x":288,
+                 "y":96
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -173,7 +173,7 @@
          "value":"\u6751\u96e8\u3042\u308a\u3042"
         }],
  "renderorder":"right-down",
- "tiledversion":"1.9.1",
+ "tiledversion":"1.10.0",
  "tileheight":32,
  "tilesets":[
         {
@@ -182,6 +182,6 @@
         }],
  "tilewidth":32,
  "type":"map",
- "version":"1.9",
+ "version":"1.10",
  "width":20
 }

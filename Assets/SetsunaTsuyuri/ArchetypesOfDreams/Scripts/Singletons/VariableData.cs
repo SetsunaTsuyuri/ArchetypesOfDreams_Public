@@ -58,16 +58,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         readonly ItemsController _items = new();
 
         /// <summary>
-        /// イベント進行度
+        /// イベント変数
         /// </summary>
-        public static ProgressesController Progresses => Instance._progresses;
-        readonly ProgressesController _progresses = new();
+        public static VariablesController Variables => Instance._variables;
+        readonly VariablesController _variables = new();
 
         /// <summary>
         /// イベントフラグ
         /// </summary>
-        public static FlagsController Flags => Instance.flagsManager;
-        readonly FlagsController flagsManager = new();
+        public static FlagsController Flags => Instance.flags;
+        readonly FlagsController flags = new();
         
         /// <summary>
         /// 選択可能なダンジョンフラグ
@@ -154,7 +154,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Items.Initialize();
 
             // 進行度
-            Progresses.Initialize();
+            Variables.Initialize();
 
             // フラグ
             Flags.Initialize();

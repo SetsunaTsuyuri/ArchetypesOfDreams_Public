@@ -38,29 +38,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         public override int CaluclatePurificationSuccessRate(Combatant purifier)
         {
-            int result = 0;
-
-            if (purifier is DreamWalker dreamWalker && !HasBossResistance)
+            // ボス耐性がある場合は常に0%
+            if (HasBossResistance)
             {
-                // 成功率
-                result = NightmareData.PurificationSuccessRate;
-
-                // レベル差補正
-                if (dreamWalker.Level > Level)
-                {
-                    result += (dreamWalker.Level - Level) * GameSettings.Purification.LevelDifferenceCorrection;
-                }
-
-                float rate = result;
-
-                // HP減少による補正
-                rate *= 1.0f + (GetHPReductionRate() * GameSettings.Purification.LifeReductionCorrection);
-
-                // 設定された範囲内に収める
-                int min = GameSettings.Purification.MinSuccessRate;
-                int max = GameSettings.Purification.MaxSuccsessRate;
-                result = Mathf.Clamp(Mathf.FloorToInt(rate), min, max);
+                return 0;
             }
+
+            // 基本成功率
+            int result = NightmareData.PurificationSuccessRate;
+
+            // レベル差補正
+            result += (purifier.Level - Level) * GameSettings.Purification.LevelDifferenceCorrection;
+
+            // HP減少補正
+            result += Mathf.FloorToInt(HPDecreaseRate * GameSettings.Purification.HPDecreaseCorrection);
+
+            // 最低値と最大値の範囲内に収める
+            int min = GameSettings.Purification.MinSuccessRate;
+            int max = GameSettings.Purification.MaxSuccsessRate;
+            result = Mathf.Clamp(result, min, max);
 
             return result;
         }

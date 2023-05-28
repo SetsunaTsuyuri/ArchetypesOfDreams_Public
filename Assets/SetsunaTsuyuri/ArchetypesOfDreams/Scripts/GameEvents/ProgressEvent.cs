@@ -55,15 +55,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             switch (Formula)
             {
                 case FormulaType.Assign:
-                    VariableData.Progresses.Set(Id, Parameter);
+                    VariableData.Variables.Set(Id, Parameter);
                     break;
 
                 case FormulaType.Add:
-                    VariableData.Progresses.Add(Id, Parameter);
+                    VariableData.Variables.Add(Id, Parameter);
                     break;
 
                 case FormulaType.Subtruct:
-                    VariableData.Progresses.Subtarct(Id, Parameter);
+                    VariableData.Variables.Subtarct(Id, Parameter);
                     break;
 
                 default:

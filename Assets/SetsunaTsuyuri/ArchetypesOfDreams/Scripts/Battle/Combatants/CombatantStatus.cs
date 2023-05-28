@@ -211,19 +211,55 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int BasicWaitTime => GameSettings.Combatants.MaxWaitTime / Speed;
 
         /// <summary>
+        /// HPの割合
+        /// </summary>
+        /// <returns></returns>
+        public float HPRate => (float)CurrentHP / MaxHP;
+
+        /// <summary>
+        /// HPの減少率
+        /// </summary>
+        /// <returns></returns>
+        public float HPDecreaseRate => 1.0f - HPRate;
+
+        /// <summary>
+        /// DPの割合
+        /// </summary>
+        /// <returns></returns>
+        public float DPRate => (float)CurrentDP / MaxDP;
+
+        /// <summary>
+        /// DPの減少率
+        /// </summary>
+        /// <returns></returns>
+        public float DPDecreaseRate => 1.0f - DPRate;
+
+        /// <summary>
+        /// GPの割合
+        /// </summary>
+        /// <returns></returns>
+        public float GPRate => (float)CurrentGP / MaxGP;
+
+        /// <summary>
+        /// GPの減少率
+        /// </summary>
+        /// <returns></returns>
+        public float GPDecreaseRate => 1.0f - GPRate;
+
+        /// <summary>
         /// HPが設定されたときの処理 
         /// </summary>
         public void OnCurrentHPSet()
         {
             EffectData.StatusEffect effect = GameSettings.Combatants.EffectHP0;
-            
+
             if (CurrentHP == 0)
             {
                 AddStatusEffect(effect);
             }
             else if (CurrentHP > 0)
             {
-                RemoveStatusEffect(effect.StatusEffectId);
+                RemoveStatusEffects(effect.StatusEffectId);
             }
         }
 
@@ -240,7 +276,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
             else if (CurrentGP > 0)
             {
-                RemoveStatusEffect(effect.StatusEffectId);
+                RemoveStatusEffects(effect.StatusEffectId);
             }
         }
 

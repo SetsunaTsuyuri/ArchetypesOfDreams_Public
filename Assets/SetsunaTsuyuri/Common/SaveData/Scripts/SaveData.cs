@@ -54,10 +54,10 @@ namespace SetsunaTsuyuri
         public SerializableKeyValuePair<int, int>[] Items { get; set; } = { };
 
         /// <summary>
-        /// イベント進行度
+        /// イベント変数
         /// </summary>
         [field: SerializeField]
-        public SerializableKeyValuePair<int, int>[] Progresses { get; set; } = { };
+        public SerializableKeyValuePair<int, int>[] Variables { get; set; } = { };
 
         /// <summary>
         /// イベントフラグ
@@ -101,7 +101,7 @@ namespace SetsunaTsuyuri
             Steps = VariableData.Steps;
 
             Items = VariableData.Items.ToSerializableKeyValuePair();
-            Progresses = VariableData.Progresses.ToSerializableKeyValuePair();
+            Variables = VariableData.Variables.ToSerializableKeyValuePair();
             Flags = VariableData.Flags.ToSerializableKeyValuePair();
 
             SelectableDungeons = Copy(VariableData.SelectableDungeons);
@@ -121,7 +121,7 @@ namespace SetsunaTsuyuri
             VariableData.Steps = Steps;
 
             VariableData.Items.FromSerializableKeyValuePair(Items);
-            VariableData.Progresses.FromSerializableKeyValuePair(Progresses);
+            VariableData.Variables.FromSerializableKeyValuePair(Variables);
             VariableData.Flags.FromSerializableKeyValuePair(Flags);
 
             Overwrite(SelectableDungeons, VariableData.SelectableDungeons);

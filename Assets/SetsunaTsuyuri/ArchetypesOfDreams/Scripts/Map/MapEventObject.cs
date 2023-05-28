@@ -259,7 +259,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             IAppearanceCondition appearanceTrigger = columns[0] switch
             {
-                "Progress" => new ProgressCondition(columns),
+                "Variable" => new VariableCondition(columns),
                 _ => null
             };
 
@@ -278,7 +278,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             IGameEvent gameEvent = columns[0] switch
             {
                 "Battle" => new BattleEvent(columns),
-                "Scenario" => new IdScenarioEvent(columns),
+                "Scenario" => new ScenarioEvent(columns),
                 "Travel" => new TravelEvent(columns),
                 _ => null
             };

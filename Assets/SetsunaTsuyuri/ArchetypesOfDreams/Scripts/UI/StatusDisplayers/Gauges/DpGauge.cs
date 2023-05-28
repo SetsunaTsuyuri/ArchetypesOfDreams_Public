@@ -12,5 +12,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             return (combatant.CurrentDP, combatant.MaxDP);
         }
+
+        protected override bool CanStartDamageTween(DamageResult damage)
+        {
+            return damage.DP > 0;
+        }
     }
 }

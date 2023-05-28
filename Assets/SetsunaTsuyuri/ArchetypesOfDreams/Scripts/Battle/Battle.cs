@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -60,6 +61,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         bool _isRunning = false;
 
         /// <summary>
+        /// 味方が逃走する
+        /// </summary>
+        bool _alliesEscape = false;
+
+        /// <summary>
         /// 戦闘UI
         /// </summary>
         [field: SerializeField]
@@ -114,9 +120,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int RewardExperience { get; private set; } = 0;
 
         /// <summary>
-        /// 逃走を禁じる
+        /// 得られる精気
         /// </summary>
-        public bool ForbidEscaping { get; private set; } = false;
+        public int RewardSpirit { get; private set; } = 0;
+
+        /// <summary>
+        /// 味方が逃走可能である
+        /// </summary>
+        public bool AlliesCanEscape { get; private set; } = false;
 
         /// <summary>
         /// 戦闘が終わった
@@ -127,7 +138,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 戦闘続行可能である
         /// </summary>
         /// <returns></returns>
-        private bool CanContinue => Allies.CanFight() && Enemies.CanFight();
+        private bool CanContinue
+        {
+            get
+            {
+                return !_alliesEscape
+                    && Allies.CanFight()
+                    && Enemies.CanFight();
+            }
+        }
+
+        /// <summary>
+        /// 行動者が行動できる
+        /// </summary>
+        private bool ActiveContainerCanAct
+        {
+            get
+            {
+                return !_alliesEscape
+                    && ActiveContainer
+                    && ActiveContainer.ContainsActionable;
+            }
+        }
 
         /// <summary>
         /// 戦闘結果
@@ -144,21 +176,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             // 各UIをセットアップする
             BattleUI.SetUp(this);
-        }
 
-        public void Initialize()
-        {
-            // 戦闘中フラグ
-            _isRunning = true;
-
-            // 戦闘終了フラグ
-            IsOver = false;
-
-            // 経験値
-            RewardExperience = 0;
-
-            // カメラの視点
-            _cameraController.Target = _cameraTransform;
+            // 味方逃走
+            MessageBrokersManager.AlliesEscape.Receive<Empty>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => _alliesEscape = true);
         }
 
         /// <summary>
@@ -172,6 +194,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             AudioManager.PlaySE(SEId.BattleStart);
 
             await FadeManager.FadeOut(token);
+
+            AlliesCanEscape = true;
 
             Enemies.Initialize();
             Enemies.CreateEnemies(map, Allies);
@@ -190,14 +214,52 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public async UniTask<BattleResultType> ExecuteEventBattle(BattleEvent battleEvent, CancellationToken token)
         {
+            if (battleEvent.BgmId > 0)
+            {
+                AudioManager.SaveBgm();
+                AudioManager.StopBgm(1.0f);
+            }
+
             AudioManager.PlaySE(SEId.BattleStart);
 
             await FadeManager.FadeOut(token);
 
+            AlliesCanEscape = battleEvent.AlliesCanEscape;
+
             Enemies.Initialize();
             Enemies.CreateEnemies(battleEvent);
 
-            return await ExecuteBattle(token);
+            if (battleEvent.BgmId > 0)
+            {
+                AudioManager.PlayBgm(battleEvent.BgmId);
+            }
+
+            BattleResultType battleResult = await ExecuteBattle(token);
+
+            if (battleEvent.BgmId > 0)
+            {
+                AudioManager.LoadBgm(1.0f);
+            }
+
+            return battleResult;
+        }
+
+        public void Initialize()
+        {
+            // 戦闘中フラグ
+            _isRunning = true;
+
+            // 味方逃走フラグ
+            _alliesEscape = false;
+
+            // 戦闘終了フラグ
+            IsOver = false;
+
+            // 経験値
+            RewardExperience = 0;
+
+            // カメラの視点
+            _cameraController.Target = _cameraTransform;
         }
 
         /// <summary>
@@ -212,10 +274,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 戦闘開始
             await StartBattle(token);
 
+            // 戦闘ループ
             while (CanContinue)
             {
                 // 時間経過
                 AdvanceTime();
+
+                // 行動者がいなければ戦闘終了
                 if (!ActiveContainer)
                 {
                     break;
@@ -224,7 +289,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // ターン開始
                 await StartTurn(token);
 
-                while (ActiveContainer.ContainsActionable)
+                // 行動ループ
+                while (ActiveContainerCanAct)
                 {
                     // 行動決定
                     await DecideActorAction(token);
@@ -233,6 +299,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                         // 行動実行
                         await ExecuteActorAction(token);
                     }
+                }
+
+                // 味方が逃走するなら終了
+                if (_alliesEscape)
+                {
+                    break;
                 }
 
                 // ターン終了
@@ -344,7 +416,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             // コマンド更新
-            BattleUI.UpdateUI(ActiveContainer);
+            BattleUI.UpdateUI(this);
 
             // コマンド選択
             BattleUI.BattleCommands.BeSelected();
@@ -403,27 +475,38 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         private async UniTask EndBattle(CancellationToken token)
         {
-            // 戦闘終了時の処理
-            Allies.OnBattleEnd();
-
-            if (Allies.CanFight())
+            // 戦闘結果決定
+            if (!_alliesEscape)
             {
-                Allies.OnWin(RewardExperience);
+                if (Allies.CanFight())
+                {
+                    _result = BattleResultType.Win;
+                }
+                else
+                {
+                    _result = BattleResultType.Lose;
+                }
 
-                _result = BattleResultType.Win;
-                Debug.Log("味方の勝ち");
+                // 待機
+                await TimeUtility.Wait(GameSettings.WaitTime.BattleEnd, token);
             }
             else
             {
-                _result = BattleResultType.Lose;
-                Debug.Log("敵の勝ち");
+                _result = BattleResultType.Canceled;
             }
-
-            // ★ 待機
-            await UniTask.Delay(300);
 
             // フェードアウト
             await FadeManager.FadeOut(token);
+
+            // 戦闘終了時の処理
+            Allies.OnBattleEnd();
+
+            if (_result == BattleResultType.Win)
+            {
+                VariableData.Spirit += RewardSpirit;
+                Allies.OnWin(RewardExperience);
+                Debug.Log("勝利");
+            }
 
             // 戦闘終了通知
             MessageBrokersManager.BattleEnd.Publish(this);

@@ -10,6 +10,71 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public partial class Combatant
     {
         /// <summary>
+        /// 力依存の攻撃倍率
+        /// </summary>
+        public float PowerAttackScale
+        {
+            get
+            {
+                float scale = StatusEffects
+                    .Select(x => x.Data.PowerAttackRate)
+                    .Sum();
+
+                float result = Mathf.Max(0.0f, 1.0f + scale);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 技依存の攻撃倍率
+        /// </summary>
+        public float TechniqueAttackScale
+        {
+            get
+            {
+                float scale = StatusEffects
+                    .Select(x => x.Data.TechniqueAttackRate)
+                    .Sum();
+
+                float result = Mathf.Max(0.0f, 1.0f + scale);
+                return result;
+
+            }
+        }
+
+        /// <summary>
+        /// 力依存の被ダメージ倍率
+        /// </summary>
+        public float PowerDamageScale
+        {
+            get
+            {
+                float scale = StatusEffects
+                    .Select(x => x.Data.PowerDefenseRate)
+                    .Sum();
+
+                float result = Mathf.Max(0.0f, 1.0f - scale);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 技依存の被ダメージ倍率
+        /// </summary>
+        public float TechniqueDamageScale
+        {
+            get
+            {
+                float scale = StatusEffects
+                    .Select(x => x.Data.TechniqueDefenseRate)
+                    .Sum();
+
+                float result = Mathf.Max(0.0f, 1.0f - scale);
+                return result;
+            }
+        }
+
+        /// <summary>
         /// 能力リストを作る
         /// </summary>
         /// <param name="abilityType"></param>

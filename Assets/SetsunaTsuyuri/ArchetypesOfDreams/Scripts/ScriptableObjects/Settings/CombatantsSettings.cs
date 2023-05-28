@@ -105,5 +105,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public float HPHealingRateOnWin { get; private set; } = 0.25f;
+
+        /// <summary>
+        /// ダメージゲージ表示待機時間
+        /// </summary>
+        [field: SerializeField]
+        public float DamageGaugeWaitDuration { get; private set; } = 0.25f;
+
+        /// <summary>
+        /// ダメージゲージ表示時間
+        /// </summary>
+        [field: SerializeField]
+        public float DamageGaugeDuration { get; private set; } = 0.5f;
     }
 }

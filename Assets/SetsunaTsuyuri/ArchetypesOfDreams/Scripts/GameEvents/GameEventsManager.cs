@@ -51,7 +51,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// イベント進行度
         /// </summary>
-        Progression = 1001,
+        Variable = 1001,
 
         /// <summary>
         /// イベントフラグ
@@ -78,6 +78,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ゲームイベントディクショナリー
         /// </summary>
         Dictionary<string, string> _gameEventDictionary = new();
+
+        ///// <summary>
+        ///// Ifイベントを解決中である
+        ///// </summary>
+        //bool _isResolvingIfEvents = false;
+
+        ///// <summary>
+        ///// Ifイベントの条件を満たした
+        ///// </summary>
+        //bool _conditionsIfEvent = false;
+
+        ///// <summary>
+        ///// Ifイベントをスキップする
+        ///// </summary>
+        //bool _skipsIfEvents = false;
 
         public override void Initialize()
         {
@@ -130,7 +145,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                         GameEventType.Bgm => new BgmEvent(columns.ToArray()),
                         GameEventType.SE => new SEEvent(columns.ToArray()),
                         GameEventType.CameraShake => new CameraShakeEvent(columns.ToArray()),
-                        GameEventType.Progression => new ProgressEvent(columns.ToArray()),
+                        GameEventType.Variable => new ProgressEvent(columns.ToArray()),
                         GameEventType.Flag => new FlagEvent(columns.ToArray()),
                         GameEventType.AllyAdding => new AllyAddingEvent(columns.ToArray()),
                         GameEventType.StatusEffect => new StatusEffectEvent(columns.ToArray()),
@@ -169,31 +184,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 勝利後のフェードイン
             if (result == BattleResultType.Win)
             {
-                await FadeManager.FadeIn(token);
-            }
-        }
-
-        /// <summary>
-        /// ID指定シナリオイベントを解決する
-        /// </summary>
-        /// <param name="scenarioEvent"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public static async UniTask ResolveScenarioEvent(IdScenarioEvent scenarioEvent, CancellationToken token)
-        {
-            ScenarioManager scenario = ScenarioManager.InstanceInActiveScene;
-            if (!scenario)
-            {
-                return;
+                // TODO: 戦闘結果による処理
             }
 
-            int id = scenarioEvent.Id;
-
-            // csvテキストアセットを取得する
-            TextAsset csv = MasterData.GetScenarioData(id).CSVText;
-
-            // シナリオ再生
-            await scenario.PlayCsv(csv, token);
+            await FadeManager.FadeIn(token);
         }
 
         /// <summary>
@@ -220,5 +214,34 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 SceneChangeManager.StartChange(SceneId.Dungeon);
             }
         }
+
+        //private void ResolveIf()
+        //{
+        //    _isResolvingIfEvents = true;
+
+        //    // TODO: 条件を満たして居ない場合はtrue
+        //    _skipsIfEvents = false;
+        //}
+
+        //private void ResolveElseIf()
+        //{
+        //    if (true)
+        //    {
+        //        _hasResolvedIfEvents = true;
+        //    }
+
+        //    // 条件を満たした場合にスキップフラグ反転
+
+        //}
+
+        //private void ResolveElse()
+        //{
+        //    _skipsIfEvents = _hasResolvedIfEvents;
+        //}
+
+        //private void ResolveIfEnd()
+        //{
+        //    _isResolvingIfEvents = false;
+        //}
     }
 }

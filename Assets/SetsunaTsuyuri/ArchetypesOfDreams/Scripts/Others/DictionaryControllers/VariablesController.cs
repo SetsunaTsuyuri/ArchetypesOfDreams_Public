@@ -6,32 +6,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// 進行度ID
     /// </summary>
-    public enum ProgressId
+    public enum VariableId
     {
         None = 0,
 
         /// <summary>
-        /// 本編
+        /// 本編1
         /// </summary>
-        Story = 1,
+        Story1 = 1,
 
         /// <summary>
         /// 自室イベント
         /// </summary>
-        MyRoom = 2,
+        MyRoom = 101,
     }
 
     /// <summary>
-    /// 進行度の管理クラス
+    /// イベント変数の管理クラス
     /// </summary>
-    public class ProgressesController : DicionaryController<int, int>, IInitializable
+    public class VariablesController : DicionaryController<int, int>, IInitializable
     {
         public override void Initialize()
         {
             base.Initialize();
 
-            Dictionary.Add((int)ProgressId.Story, 0);
-            Dictionary.Add((int)ProgressId.MyRoom, 0);
+            Dictionary.Add((int)VariableId.Story1, 0);
+            Dictionary.Add((int)VariableId.MyRoom, 0);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="progressId"></param>
         /// <returns></returns>
-        public int Get(ProgressId progressId)
+        public int Get(VariableId progressId)
         {
             return Get((int)progressId);
         }
@@ -49,7 +49,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="progressId"></param>
         /// <param name="value"></param>
-        public void Set(ProgressId progressId, int value)
+        public void Set(VariableId progressId, int value)
         {
             Set((int)progressId, value);
         }

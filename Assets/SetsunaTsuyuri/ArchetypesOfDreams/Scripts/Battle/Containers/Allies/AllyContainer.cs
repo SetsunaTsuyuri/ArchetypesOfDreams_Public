@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -9,6 +8,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public class AllyContainer : CombatantContainer
     {
+        public override void Escape()
+        {
+            base.Escape();
+
+            MessageBrokersManager.AlliesEscape.Publish(Empty.Instance);
+        }
+
+        public override void OnDamage()
+        {
+            base.OnDamage();
+
+            AudioManager.PlaySE(SEId.Damage);
+        }
+
         public override bool ContainsPlayerControlled()
         {
             return ContainsActionable;

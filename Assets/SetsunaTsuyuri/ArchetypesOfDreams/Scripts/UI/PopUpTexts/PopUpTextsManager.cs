@@ -241,8 +241,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Color color = result.Effect.Category switch
             {
                 StatusEffectCategory.Abnormality => GameSettings.PopUpTexts.AbnormalityColor,
-                StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
                 StatusEffectCategory.Debuff => GameSettings.PopUpTexts.DebuffColor,
+                StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
                 StatusEffectCategory.Stance => GameSettings.PopUpTexts.StanceColor,
                 _ => Color.white
             };
@@ -276,8 +276,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Color color = effect.Category switch
                 {
                     StatusEffectCategory.Abnormality => GameSettings.PopUpTexts.AbnormalityColor,
-                    StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
                     StatusEffectCategory.Debuff => GameSettings.PopUpTexts.DebuffColor,
+                    StatusEffectCategory.Buff => GameSettings.PopUpTexts.BuffColor,
                     StatusEffectCategory.Stance => GameSettings.PopUpTexts.StanceColor,
                     _ => Color.white
                 };

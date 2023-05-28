@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -13,6 +11,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         protected override (int, int) GetValues(Combatant combatant)
         {
             return (combatant.CurrentHP, combatant.MaxHP);
+        }
+
+        protected override bool CanStartDamageTween(DamageResult damage)
+        {
+            return damage.HP > 0;
         }
     }
 }

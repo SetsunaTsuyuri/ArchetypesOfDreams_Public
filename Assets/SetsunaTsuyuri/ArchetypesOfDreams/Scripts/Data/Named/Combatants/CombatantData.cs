@@ -60,6 +60,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public SkillAcquisitionData[] Skills = { };
 
         /// <summary>
+        /// AI
+        /// </summary>
+        public CombatantAIElementData[] AIElements = { };
+
+        /// <summary>
         /// スプライト名
         /// </summary>
         public string SpriteName = string.Empty;
@@ -94,5 +99,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 敵として倒したときに得られる経験値
         /// </summary>
         public int RewardExperience = 100;
+
+        /// <summary>
+        /// 敵として倒したときに得られる精気
+        /// </summary>
+        public int RewardSpirit = 10;
     }
 }

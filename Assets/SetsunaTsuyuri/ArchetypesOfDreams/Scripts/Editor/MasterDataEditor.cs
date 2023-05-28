@@ -141,7 +141,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // ナイトメア
             JToken nightmares = masterData["Nightmares"];
             JToken nightmareSkills = masterData["NightmareSkills"];
+            JToken nightmareAIs = masterData["NightmareAIs"];
             AddArray(nightmares, nightmareSkills, "NightmareId", s_skills);
+            AddArray(nightmares, nightmareAIs, "NightmareId", "AIElements");
 
             // スキル
             JToken skills = masterData["Skills"];

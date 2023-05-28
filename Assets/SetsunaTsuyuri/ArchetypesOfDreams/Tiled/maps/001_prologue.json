@@ -81,7 +81,7 @@
                         {
                          "name":"appearance_conditions",
                          "type":"string",
-                         "value":"Progress 1 Equal 20"
+                         "value":"Variable 1 Equal 20"
                         }, 
                         {
                          "name":"events",
@@ -121,7 +121,7 @@
                         {
                          "name":"appearance_conditions",
                          "type":"string",
-                         "value":"Progress 1 Equal 0"
+                         "value":"Variable 1 Equal 0"
                         }, 
                         {
                          "name":"can_collide",
@@ -154,7 +154,7 @@
                         {
                          "name":"appearance_conditions",
                          "type":"string",
-                         "value":"Progress 1 Equal 10"
+                         "value":"Variable 1 Equal 10"
                         }, 
                         {
                          "name":"can_collide",

@@ -22,6 +22,12 @@ namespace SetsunaTsuyuri
         readonly IMessageBroker _battleEnd = new MessageBroker();
 
         /// <summary>
+        /// 味方逃走
+        /// </summary>
+        public static IMessageBroker AlliesEscape => Instance._allyEscape;
+        readonly IMessageBroker _allyEscape = new MessageBroker();
+
+        /// <summary>
         /// ダメージ
         /// </summary>
         public static IMessageBroker Damage => Instance._damage;

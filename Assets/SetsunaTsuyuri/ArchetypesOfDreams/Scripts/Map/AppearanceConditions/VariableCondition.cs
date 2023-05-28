@@ -5,9 +5,9 @@ using UnityEngine;
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
-    /// 進行度によるマップイベント出現条件
+    /// ゲーム変数によるマップイベント出現条件
     /// </summary>
-    public class ProgressCondition : IAppearanceCondition
+    public class VariableCondition : IAppearanceCondition
     {
         /// <summary>
         /// 式の種類
@@ -38,7 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public int Parameter { get; private set; } = 0;
 
-        public ProgressCondition(string[] columns)
+        public VariableCondition(string[] columns)
         {
             if (int.TryParse(columns[1], out int id))
             {
@@ -62,7 +62,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool Evaluate()
         {
-            int value = VariableData.Progresses.Get(Id);
+            int value = VariableData.Variables.Get(Id);
             bool result = Formula switch
             {
                 FormulaType.Equal => value == Parameter,

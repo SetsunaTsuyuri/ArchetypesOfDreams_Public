@@ -71,9 +71,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="data">データ</param>
         /// <param name="getNumberFunc">数を取得する関数</param>
-        protected void UpdateTexts(NameDescriptionData data, System.Func<string> getNumberFunc)
+        protected void UpdateTexts(EffectData data, System.Func<string> getNumberFunc)
         {
-            Description = data.Description;
+            Description = data.GetReplacedDescription();
 
             // 名前
             if (Name)

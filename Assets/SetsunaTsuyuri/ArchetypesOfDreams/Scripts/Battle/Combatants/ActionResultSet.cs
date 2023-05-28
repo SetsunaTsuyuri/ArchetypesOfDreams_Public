@@ -54,12 +54,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 浄化された
         /// </summary>
-        public bool? Purified { get; set; } = false;
+        public bool? Purified { get; set; } = null;
 
         /// <summary>
         /// 交代の対象にされた
         /// </summary>
         public bool IsChangeTarget { get; set; } = false;
+
+        /// <summary>
+        /// 逃走
+        /// </summary>
+        public bool Escape { get; set; } = false;
 
         public void Initialize()
         {
@@ -72,6 +77,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             Purified = null;
             IsChangeTarget = false;
+            Escape= false;
 
             Damage.Initialize();
             Healing.Initialize();

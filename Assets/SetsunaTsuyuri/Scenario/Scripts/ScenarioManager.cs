@@ -113,9 +113,13 @@ namespace SetsunaTsuyuri.Scenario
         /// </summary>
         readonly List<UniTask> _tasks = new();
 
+        /// <summary>
+        /// 再生中なら終了する
+        /// </summary>
         public static void EndIfPlaying()
         {
-            if (!InstanceInActiveScene)
+            if (!InstanceInActiveScene
+                || !InstanceInActiveScene.IsPlaying)
             {
                 return;
             }

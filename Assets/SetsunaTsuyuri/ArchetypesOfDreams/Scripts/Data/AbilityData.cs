@@ -19,6 +19,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// スキル封印
         /// </summary>
         SkillSealing = 2,
+
+        /// <summary>
+        /// 力依存の被ダメージ倍率
+        /// </summary>
+        PowerDamageScale = 11,
+
+        /// <summary>
+        /// 技依存の被ダメージ倍率
+        /// </summary>
+        TechniqueDamageScale = 12,
     }
 
     /// <summary>

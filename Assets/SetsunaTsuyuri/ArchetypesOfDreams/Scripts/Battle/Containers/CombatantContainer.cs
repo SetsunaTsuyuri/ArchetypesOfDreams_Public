@@ -302,13 +302,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 逃げる
+        /// </summary>
+        public virtual void Escape()
+        {
+            AudioManager.PlaySE(SEId.Escape);
+        }
+
+        /// <summary>
         /// 浄化された戦闘者を別のコンテナに入れる
         /// </summary>
         /// <param name="target"></param>
         public void InjectPurified(CombatantContainer target)
         {
             target.Combatant = Combatant;
+            target.Combatant.HasActed = false;
             target.Combatant.InitializeStatus();
+
             Release();
         }
 

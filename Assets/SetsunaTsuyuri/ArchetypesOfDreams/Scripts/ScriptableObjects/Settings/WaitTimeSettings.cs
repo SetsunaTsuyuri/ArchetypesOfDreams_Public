@@ -10,6 +10,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class WaitTimeSettings : ScriptableObject
     {
         /// <summary>
+        /// ミス
+        /// </summary>
+        [field: SerializeField]
+        public float Miss { get; set; } = 0.3f;
+
+        /// <summary>
         /// ダメージ
         /// </summary>
         [field: SerializeField]
@@ -32,5 +38,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public float ActionExecuted { get; private set; } = 0.1f;
+
+        /// <summary>
+        /// 戦闘終了
+        /// </summary>
+        [field: SerializeField]
+        public float BattleEnd { get; private set; } = 0.3f;
     }
 }

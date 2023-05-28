@@ -29,9 +29,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int LevelDifferenceCorrection { get; private set; } = 10;
 
         /// <summary>
-        /// 生命力減少による成功率補正
+        /// HP減少による成功率補正
         /// </summary>
         [field: SerializeField]
-        public float LifeReductionCorrection { get; private set; } = 1.0f;
+        public int HPDecreaseCorrection { get; private set; } = 100;
     }
 }

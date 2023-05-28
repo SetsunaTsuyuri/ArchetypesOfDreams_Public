@@ -26,7 +26,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 交代
         /// </summary>
-        Change = 4
+        Change = 4,
+
+        /// <summary>
+        /// 逃走
+        /// </summary>
+        Escape = 5,
+
+        /// <summary>
+        /// 何もしない
+        /// </summary>
+        NoAction = 6,
     }
 
     /// <summary>

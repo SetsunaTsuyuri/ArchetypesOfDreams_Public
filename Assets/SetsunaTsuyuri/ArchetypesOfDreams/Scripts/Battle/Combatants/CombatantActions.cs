@@ -22,7 +22,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 行動済みフラグ
         /// </summary>
-        public bool HasActed { get; private set; } = false;
+        public bool HasActed { get; set; } = false;
 
         /// <summary>
         /// 戦闘開始時の処理
@@ -31,6 +31,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             WaitTime = BasicWaitTime;
             DPRegainingTimer = 0;
+            InitializeAI();
         }
 
         /// <summary>
@@ -55,6 +56,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // ステータス更新
             RefreshStatus();
+
+            // HP回復
+            if (CurrentHP == 0)
+            {
+                CurrentHP++;
+            }
 
             // GP回復
             RecoverGP();
@@ -121,6 +128,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             _lastAction = null;
             HasActed = false;
+
+            TurnCounter++;
         }
 
         /// <summary>
@@ -424,6 +433,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (Results.Miss)
             {
                 Container.OnMiss();
+                await TimeUtility.Wait(GameSettings.WaitTime.Damage, token);
             }
 
             // ダメージ
@@ -474,7 +484,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 await BePurified(token);
             }
             // 戦闘不能
-            else if (!IsKnockedOut && CurrentHP == 0)
+            else if (IsKnockedOut)
             {
                 BeKnockedOut();
             }
@@ -488,6 +498,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (Results.IsChangeTarget)
             {
                 Swap(Results.Affecter.Container);
+            }
+
+            // 逃走
+            if (Results.Escape)
+            {
+                Escape();
             }
 
             // 行動結果を初期化する
@@ -522,11 +538,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (!crush)
             {
                 damage.IsCrush = IsAffected(StatusEffectId.Crush);
-            }
-
-            if (damage.IsOneOrOver)
-            {
-                AudioManager.PlaySE(SEId.Damage);
             }
 
             Container.OnDamage();
@@ -586,6 +597,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 入れ替わる
+        /// </summary>
+        /// <param name="target">対象のコンテナ</param>
+        public void Swap(CombatantContainer target)
+        {
+            Container.Swap(target);
+        }
+
+        /// <summary>
+        /// 逃げる
+        /// </summary>
+        private void Escape()
+        {
+            Container.Escape();
+        }
+
+        /// <summary>
         /// 戦闘不能になる
         /// </summary>
         private void BeKnockedOut()
@@ -606,15 +634,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Condition = GameAttribute.Condition.Normal;
             WaitTime = BasicWaitTime;
             RecoverGP();
-        }
-
-        /// <summary>
-        /// 入れ替わる
-        /// </summary>
-        /// <param name="target">対象のコンテナ</param>
-        public void Swap(CombatantContainer target)
-        {
-            Container.Swap(target);
         }
 
         /// <summary>
@@ -705,8 +724,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // ステータス効果
             foreach (var data in effect.StatusEffects)
             {
-                if (CanBeAffected(data.StatusEffectId)
-                    && !data.IsRemoval
+                if (!data.IsRemoval
+                    && CanBeAffected(data.StatusEffectId)
                     && RandomUtility.Percent(data.Probability))
                 {
                     // ステータス効果を追加する
@@ -720,7 +739,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
                     // カテゴリ指定
                     var removalEffectsByCategory = target.StatusEffects
-                        .Where(x => x.Data.Category == data.RemovalCategory);
+                        .Where(x => x.Data.Category == data.StatusEffectCategory);
 
                     // ステータス効果を解除する
                     var removalEffects = removalEffectsById.Concat(removalEffectsByCategory);
@@ -746,11 +765,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     target.Results.Purified = false;
                 }
             }
-
             // 交代
-            if (effect.IsChange)
+            else if (effect.IsChange)
             {
                 target.Results.IsChangeTarget = true;
+            }
+            // 逃走
+            else if (effect.IsEscape)
+            {
+                target.Results.Escape = true;
             }
         }
 
@@ -808,8 +831,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="damageEffect">ダメージ効果</param>
         private void CreateDamageOrHealingResult(ActionInfo action, Combatant target, EffectData.DamageEffect damageEffect)
         {
+            // 力
+            float power = Power
+                * damageEffect.Power
+                * PowerAttackScale;
+
+            // 技
+            float technique = Technique
+                * damageEffect.Technique
+                * TechniqueAttackScale;
+
+            // 対象の被ダメージ倍率
+            if (damageEffect.DamageType == DamageType.Damage)
+            {
+                power *= target.PowerDamageScale;
+                technique *= target.TechniqueDamageScale;
+            }
+
             // 基本値
-            float value = CalculateBasicValue(damageEffect, target);
+            float value = power + technique;
 
             // 攻撃的な効果の場合
             if (action.Effect.IsOffensive)
@@ -822,21 +862,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 {
                     value *= GameSettings.Combatants.CriticalDamageScale;
                 }
-
-                // 攻撃倍率
-                foreach (var statusEffect in StatusEffects)
-                {
-                    value *= 1.0f + statusEffect.Data.PowerAttackRate * damageEffect.Power;
-                    value *= 1.0f + statusEffect.Data.TechniqueAttackRate * damageEffect.Technique;
-                }
-
-                // 防御倍率
-                foreach (var statusEffect in target.StatusEffects)
-                {
-                    value *= 1.0f - statusEffect.Data.PowerDefenseRate * damageEffect.Power;
-                    value *= 1.0f - statusEffect.Data.TechniqueDefenseRate * damageEffect.Technique;
-                }
             }
+
+            // 現在値
+            value += target.GetCurrentStatus(damageEffect.AffectedStatusType) * damageEffect.Current;
+
+            // 最大値
+            value += target.GetMaxStatus(damageEffect.AffectedStatusType) * damageEffect.Max;
 
             // 固定値
             value += damageEffect.Fixed;
@@ -922,24 +954,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 default:
                     break;
             }
-        }
-
-        /// <summary>
-        /// ダメージor回復量の基本値を決定する
-        /// </summary>
-        /// <param name="damage">ダメージ効果</param>
-        /// <param name="target">対象</param>
-        /// <returns></returns>
-        private float CalculateBasicValue(EffectData.DamageEffect damage, Combatant target)
-        {
-            float result = 0.0f;
-
-            result += Power * damage.Power;
-            result += Technique * damage.Technique;
-            result += target.GetCurrentStatus(damage.AffectedStatusType) * damage.Current;
-            result += target.GetMaxStatus(damage.AffectedStatusType) * damage.Max;
-
-            return result;
         }
 
         /// <summary>

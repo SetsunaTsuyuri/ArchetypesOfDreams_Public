@@ -79,13 +79,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 更新する
         /// </summary>
         /// <param name="battle">戦闘</param>
-        public void UpdateUI(CombatantContainer activeContainer)
+        public void UpdateUI(Battle battle)
         {
-            BattleCommands.User = activeContainer;
-            SkillMenu.User = activeContainer;
-            ItemMenu.User = activeContainer;
+            BattleCommands.User = battle.ActiveContainer;
+            SkillMenu.User = battle.ActiveContainer;
+            ItemMenu.User = battle.ActiveContainer;
 
-            BattleCommands.UpdateButtons(activeContainer);
+            BattleCommands.UpdateButtons(battle);
         }
     }
 }

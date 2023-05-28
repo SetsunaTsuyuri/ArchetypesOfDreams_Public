@@ -108,7 +108,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             string result = null;
 
-            int progress = VariableData.Progresses.Get(ProgressId.Story);
+            int progress = VariableData.Variables.Get(VariableId.Story1);
             SerializableKeyValuePair<int, string> storyEvent = _storyEvents.FirstOrDefault(x => x.Key == progress);
             if (storyEvent is not null)
             {

@@ -18,6 +18,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int EnemyGroupId { get; set; } = 1;
 
         /// <summary>
+        /// BGMID
+        /// </summary>
+        [field: SerializeField]
+        public int BgmId { get; set; } = 0;
+
+        /// <summary>
+        /// 味方が逃走可能である
+        /// </summary>
+        [field: SerializeField]
+        public bool AlliesCanEscape { get; set; } = false;
+
+        /// <summary>
         /// ボスとの戦闘である
         /// </summary>
         [field: SerializeField]
@@ -26,7 +38,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public BattleEvent(string[] columns)
         {
             EnemyGroupId = ToInt(columns, 1);
-            IsBossBattle = ToBool(columns, 2);
+            BgmId = ToInt(columns, 2);
+            AlliesCanEscape= ToBool(columns, 3);
+            IsBossBattle = ToBool(columns, 4);
         }
 
         public override UniTask Resolve(CancellationToken token)

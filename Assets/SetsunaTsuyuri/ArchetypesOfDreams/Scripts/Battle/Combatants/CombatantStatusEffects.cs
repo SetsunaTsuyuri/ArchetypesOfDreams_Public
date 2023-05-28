@@ -81,16 +81,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ステータス効果を解除する
         /// </summary>
         /// <param name="id"></param>
-        public void RemoveStatusEffect(StatusEffectId id)
+        public void RemoveStatusEffects(StatusEffectId id)
         {
-            RemoveStatusEffect((int)id);
+            RemoveStatusEffects((int)id);
         }
 
         /// <summary>
         /// ステータス効果を解除する
         /// </summary>
         /// <param name="id"></param>
-        public void RemoveStatusEffect(int id)
+        public void RemoveStatusEffects(int id)
         {
             StatusEffects.RemoveAll(x => x.Data.Id == id);
         }

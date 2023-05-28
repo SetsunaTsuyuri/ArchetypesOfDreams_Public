@@ -1,51 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
-namespace SetsunaTsuyuri.ArchetypesOfDreams
-{
-    /// <summary>
-    /// 行動への影響
-    /// </summary>
-    public enum EffectOnAction
-    {
-        None = 0,
-
-        /// <summary>
-        /// 行動不能
-        /// </summary>
-        InabiltyToAct = 1
-    }
-
-    /// <summary>
-    /// 見た目への影響
-    /// </summary>
-    public enum EffectOnAppearance
-    {
-        /// <summary>
-        /// 影響なし
-        /// </summary>
-        None = 0
-    }
-
-    /// <summary>
-    /// 解除タイミング
-    /// </summary>
-    public enum RemovalTiming
-    {
-        None = 0,
-
-        /// <summary>
-        /// ターン開始時
-        /// </summary>
-        TurnStart = 1,
-
-        /// <summary>
-        /// ターン終了時
-        /// </summary>
-        TurnEnd = 2
-    }
-}
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -62,14 +16,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Abnormality = 1,
 
         /// <summary>
-        /// 強化
-        /// </summary>
-        Buff = 2,
-
-        /// <summary>
         /// 弱体
         /// </summary>
-        Debuff = 3,
+        Debuff = 2,
+
+        /// <summary>
+        /// 強化
+        /// </summary>
+        Buff = 3,
 
         /// <summary>
         /// 構え
@@ -111,6 +65,48 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     }
 
     /// <summary>
+    /// 行動への影響
+    /// </summary>
+    public enum EffectOnAction
+    {
+        None = 0,
+
+        /// <summary>
+        /// 行動不能
+        /// </summary>
+        InabiltyToAct = 1
+    }
+
+    /// <summary>
+    /// 見た目への影響
+    /// </summary>
+    public enum EffectOnAppearance
+    {
+        /// <summary>
+        /// 影響なし
+        /// </summary>
+        None = 0
+    }
+
+    /// <summary>
+    /// 解除タイミング
+    /// </summary>
+    public enum RemovalTiming
+    {
+        None = 0,
+
+        /// <summary>
+        /// ターン開始時
+        /// </summary>
+        TurnStart = 1,
+
+        /// <summary>
+        /// ターン終了時
+        /// </summary>
+        TurnEnd = 2
+    }
+
+    /// <summary>
     /// ステータス効果のデータ
     /// </summary>
     [System.Serializable]
@@ -140,11 +136,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 解除タイミング
         /// </summary>
         public RemovalTiming RemovalTiming = RemovalTiming.None;
-
-        /// <summary>
-        /// 戦闘不能として扱われる
-        /// </summary>
-        public bool IsTreatedAsKnockedOut = false;
 
         /// <summary>
         /// 重ね掛けされたときの挙動
