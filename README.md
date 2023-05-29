@@ -1,8 +1,5 @@
 # 夢幻のアルカイク
 
-## 紹介動画
-https://www.youtube.com/watch?v=TBNxfm1hqPU
-
 ## アピールポイント
 
 ### エディタ拡張
