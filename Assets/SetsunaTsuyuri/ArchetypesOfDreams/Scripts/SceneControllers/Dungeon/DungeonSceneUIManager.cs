@@ -36,27 +36,36 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// セットアップする
         /// </summary>
         /// <param name="player">プレイヤー</param>
-        /// <param name="allies">味方</param>
+        /// <param name="alliesPary">味方</param>
         /// <param name="battle">戦闘</param>
-        public void SetUp(Player player, AlliesParty allies, Battle battle)
+        public void SetUp(Player player, AlliesParty alliesPary, Battle battle)
         {
+            // 味方UI
+            AlliesUI allies = GetComponentInChildren<AlliesUI>();
+            allies.SetUp();
+
+            // 敵UI
+            EnemiesUI enemies = GetComponentInChildren<EnemiesUI>();
+            enemies.SetUp();
+
             // 対象選択UI
             TargetSelectionUI targetSelection = GetComponentInChildren<TargetSelectionUI>();
-            targetSelection.SetUp(Description, allies, battle);
+            targetSelection.SetUp(Description, alliesPary, battle);
 
+            // ポップアップテキスト
             PopUpTextsManager popUpTexts = GetComponentInChildren<PopUpTextsManager>();
             popUpTexts.SetUp(targetSelection);
 
             // スキルメニュー
             SkillMenu skillMenu = GetComponentInChildren<SkillMenu>();
-            skillMenu.SetUp(Description, targetSelection, allies.AlliesUI);
+            skillMenu.SetUp(Description, targetSelection, alliesPary.AlliesUI);
 
             // アイテムメニュー
             ItemMenu itemMenu = GetComponentInChildren<ItemMenu>();
             itemMenu.SetUp(Description, targetSelection);
 
             // プレイヤーメニュー
-            PlayerMenu.SetUp(Description, skillMenu, itemMenu, targetSelection, allies);
+            PlayerMenu.SetUp(Description, skillMenu, itemMenu, targetSelection, alliesPary);
             PlayerMenu.Canceled += () =>
             {
                 Main.FadeIn();

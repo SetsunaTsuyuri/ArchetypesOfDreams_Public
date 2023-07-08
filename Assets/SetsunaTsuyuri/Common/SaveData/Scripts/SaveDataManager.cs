@@ -38,14 +38,14 @@ namespace SetsunaTsuyuri
         /// <summary>
         /// セーブデータディクショナリー
         /// </summary>
-        readonly Dictionary<int, SaveData> _saveDataArray = new();
+        readonly Dictionary<int, SaveData> _saveDataDictionary = new();
 
         /// <summary>
         /// セーブデータディクショナリー
         /// </summary>
-        public static Dictionary<int, SaveData> SaveDataDic
+        public static Dictionary<int, SaveData> SaveDataDictionary
         {
-            get => Instance._saveDataArray;
+            get => Instance._saveDataDictionary;
         }
 
         /// <summary>
@@ -108,10 +108,10 @@ namespace SetsunaTsuyuri
             }
 
             // セーブデータ
-            SaveDataDic.Clear();
+            SaveDataDictionary.Clear();
             for (int i = 1; i <= s_maxSaves; i++)
             {
-                SaveDataDic.Add(i, null);
+                SaveDataDictionary.Add(i, null);
             }
 
             foreach (var path in SaveDataPathes)
@@ -119,7 +119,7 @@ namespace SetsunaTsuyuri
                 if (TryImport(path, out byte[] save))
                 {
                     SaveData saveData = Decrypt<SaveData>(save);
-                    SaveDataDic[saveData.Id] = saveData;
+                    SaveDataDictionary[saveData.Id] = saveData;
                 }
             }
 
@@ -142,9 +142,9 @@ namespace SetsunaTsuyuri
         /// <param name="id"></param>
         public static void Save(int id)
         {
-            SaveDataDic[id] ??= new();
+            SaveDataDictionary[id] ??= new();
 
-            SaveData saveData = SaveDataDic[id];
+            SaveData saveData = SaveDataDictionary[id];
             saveData.Save(id);
 
             byte[] bytes = Encrypt(saveData);
@@ -182,7 +182,7 @@ namespace SetsunaTsuyuri
         /// <param name="id"></param>
         public static void Load(int id)
         {
-            SaveDataDic[id].Load();
+            SaveDataDictionary[id].Load();
         }
 
         /// <summary>

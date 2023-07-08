@@ -59,11 +59,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public EnemyGroupData[] EnemyGroups= { };
 
         /// <summary>
-        /// シナリオ
-        /// </summary>
-        public ScenarioData[] Scenarios= { };
-
-        /// <summary>
         /// 夢渡りデータを取得する
         /// </summary>
         /// <param name="id"></param>
@@ -170,16 +165,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static EnemyGroupData GetEnemyGroupData(int id)
         {
             return Instance.EnemyGroups.FirstOrDefault(x => x.Id == id);
-        }
-
-        /// <summary>
-        /// シナリオデータを取得する
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static ScenarioData GetScenarioData(int id)
-        {
-            return Instance.Scenarios.FirstOrDefault(x => x.Id == id);
         }
 
         /// <summary>

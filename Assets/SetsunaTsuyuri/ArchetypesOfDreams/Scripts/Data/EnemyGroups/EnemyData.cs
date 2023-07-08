@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -13,25 +12,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ID
         /// </summary>
-        [field: SerializeField]
-        public int Id { get; private set; }
+        public int EnemyId = 0;
 
         /// <summary>
         /// レベル
         /// </summary>
-        [field: SerializeField]
-        public int Level { get; private set; }
-
-        /// <summary>
-        /// リーダーである
-        /// </summary>
-        [field: SerializeField]
-        public bool IsLeader { get; private set; }
+        public int Level = 0;
 
         /// <summary>
         /// ボス耐性を持っている
         /// </summary>
-        [field: SerializeField]
-        public bool HasBossResistance { get; private set; }
+        public bool HasBossResistance = false;
+
+        /// <summary>
+        /// リーダーである
+        /// </summary>
+        public bool IsLeader = false;
     }
 }

@@ -18,6 +18,7 @@ namespace SetsunaTsuyuri
         BattleStart = 8,
         Escape = 9,
         EnemyDamage = 10,
+        EnemyAction = 11,
         Slash1 = 101,
     }
 

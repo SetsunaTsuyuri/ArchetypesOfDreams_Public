@@ -286,8 +286,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void InitializeStatus()
         {
             RefreshStatus();
-
-            Condition = GameAttribute.Condition.Normal;
             RecoverHP();
             RecoverDP();
             RecoverGP();

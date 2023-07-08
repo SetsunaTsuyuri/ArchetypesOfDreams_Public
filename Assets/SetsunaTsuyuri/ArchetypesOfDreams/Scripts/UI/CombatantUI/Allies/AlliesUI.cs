@@ -60,9 +60,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             ReleaseButtons = GetComponentInChildren<ReleaseButtonsManager>(true);
         }
 
-        protected override void Start()
+        public override void SetUp()
         {
-            base.Start();
+            base.SetUp();
 
             _activeCombatantInitialAnchoredPosition = _activeCombatantImage.rectTransform.anchoredPosition;
 
@@ -120,8 +120,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 戦闘中の対象選択
             MessageBrokersManager.TargetSelectionStart
                 .Receive<CombatantContainer>()
-                .TakeUntilDestroy(gameObject)
                 .Where(_ => Battle.IsRunning)
+                .TakeUntilDestroy(gameObject)
                 .Subscribe(_ => HideActiveCombatantSprite());
         }
 
@@ -195,16 +195,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             _activeCombatantSpriteSequence.Kill();
-        }
-
-        /// <summary>
-        /// 対象フラグが設定されたときの処理
-        /// </summary>
-        /// <param name="container">戦闘者コンテナ</param>
-        public void OnTargetFlagSet(CombatantContainer container)
-        {
-            AllyUI ui = _uiArray[container.Id];
-            ui.ColorChanger.OnTargetFlagSet(container.IsTargeted);
         }
     }
 }

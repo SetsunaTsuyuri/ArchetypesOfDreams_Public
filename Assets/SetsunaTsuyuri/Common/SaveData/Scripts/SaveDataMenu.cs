@@ -36,7 +36,7 @@ namespace SetsunaTsuyuri
         public override void SetUp()
         {
             // オートセーブ+セーブの数だけボタンを作る
-            int numerOfButtons = SaveDataManager.SaveDataDic.Count + 1;
+            int numerOfButtons = SaveDataManager.SaveDataDictionary.Count + 1;
             _buttons = new SaveDataButton[numerOfButtons];
 
             for (int i = 0; i < numerOfButtons; i++)
@@ -73,7 +73,7 @@ namespace SetsunaTsuyuri
             _buttons[0].UpdateButton(_commandType, 0, true);
 
             // セーブデータボタンのセットアップ
-            int saves = SaveDataManager.SaveDataDic.Count + 1;
+            int saves = SaveDataManager.SaveDataDictionary.Count + 1;
             for (int i = 1; i < saves; i++)
             {
                 _buttons[i].UpdateButton(_commandType, i, false);

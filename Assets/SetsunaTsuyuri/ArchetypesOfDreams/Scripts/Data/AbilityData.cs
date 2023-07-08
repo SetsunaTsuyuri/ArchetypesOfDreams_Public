@@ -29,6 +29,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 技依存の被ダメージ倍率
         /// </summary>
         TechniqueDamageScale = 12,
+
+        /// <summary>
+        /// ステータス効果耐性
+        /// </summary>
+        StatusEffectResistance = 21,
     }
 
     /// <summary>
@@ -45,16 +50,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// パラメータA
         /// </summary>
-        public float ParameterA = 0.0f;
+        public int ParameterA = 0;
 
         /// <summary>
         /// パラメータB
         /// </summary>
-        public float ParameterB = 0.0f;
+        public int ParameterB = 0;
 
         /// <summary>
         /// パラメータC
         /// </summary>
-        public float ParameterC = 0.0f;
+        public int ParameterC = 0;
     }
 }

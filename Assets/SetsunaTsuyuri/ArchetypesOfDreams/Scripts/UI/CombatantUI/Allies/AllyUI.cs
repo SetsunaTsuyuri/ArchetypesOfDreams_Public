@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -20,6 +21,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.Awake();
 
             ColorChanger = GetComponentInChildren<ImageColorChanger>(true);
+
+            // 対象フラグ設定
+            MessageBrokersManager.TargetFlagSet
+                .Receive<CombatantContainer>()
+                .Where(x => x == Target)
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(OnTargetFlagSet);
         }
 
         /// <summary>
@@ -32,6 +40,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             float duration = GameSettings.Allies.DamagePunchDuration;
             int vibrato = GameSettings.Allies.DamagePunchVibrato;
             Punch(punch, duration, vibrato);
+        }
+
+        /// <summary>
+        /// 対象フラグが設定されたときの処理
+        /// </summary>
+        /// <param name="target"></param>
+        public void OnTargetFlagSet(CombatantContainer target)
+        {
+            ColorChanger.OnTargetFlagSet(target.IsTargeted);
         }
     }
 }

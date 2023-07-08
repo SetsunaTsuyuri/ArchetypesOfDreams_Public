@@ -32,22 +32,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             AlliesParty allies = GetComponentInChildren<AlliesParty>();
             allies.SetUp(null);
 
-            // 戦闘者配列を味方コンテナへ移す
-            allies.TransferCombatantsViriableDataToContainers();
-
-            // 味方全員を全回復する
-            allies.InitializeCombatantsStatus();
-
             // UIをセットアップする
             _ui.SetUp(allies);
 
             // UIを非表示にする
             _ui.SetUIsEnabled(false);
 
+            // 戦闘者配列を味方コンテナへ移す
+            allies.TransferCombatantsViriableDataToContainers();
+
+            // 味方全員を全回復する
+            allies.InitializeCombatantsStatus();
+
             // オートセーブを行う
             SaveDataManager.AutoSave();
 
-            // 実行すべき本編イベントがなければこの時点でUIを表示して
+            // 実行すべき本編イベントがなければこの時点でUIを表示
             if (string.IsNullOrEmpty(GetStoryEventName()))
             {
                 // UI表示

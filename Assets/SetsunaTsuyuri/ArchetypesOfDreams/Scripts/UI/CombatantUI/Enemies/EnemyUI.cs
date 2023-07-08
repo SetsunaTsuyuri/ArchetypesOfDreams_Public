@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -9,14 +9,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public class EnemyUI : CombatantUI
     {
-        public override void OnConditionSet(GameAttribute.Condition condition)
+        protected override void Awake()
         {
-            switch (condition)
-            {
-                case GameAttribute.Condition.KnockedOut:
-                    DeactivateAndHide();
-                    break;
-            }
+            base.Awake();
+
+            // 戦闘不能
+            MessageBrokersManager.KnockedOut
+                .Receive<CombatantContainer>()
+                .Where(x => x == Target)
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(_ => DeactivateAndHide());
         }
     }
 }

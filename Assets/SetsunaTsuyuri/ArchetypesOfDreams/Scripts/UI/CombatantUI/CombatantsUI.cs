@@ -34,7 +34,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _uiArray = GetComponentsInChildren<TUI>(true);
         }
 
-        protected virtual void Start()
+        /// <summary>
+        /// セットアップする
+        /// </summary>
+        public virtual void SetUp()
         {
             SetTargets();
         }
@@ -52,35 +55,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 _uiArray[i].SetTargets(targets[i]);
             }
-        }
-
-        /// <summary>
-        /// 戦闘者が設定されたときの処理
-        /// </summary>
-        /// <param name="container">戦闘者コンテナ</param>
-        public void OnCombatantSet(CombatantContainer container)
-        {
-            if (_uiArray == null)
-            {
-                return;
-            }
-            TUI ui = _uiArray[container.Id];
-            ui.OnCombatantSet(container.ContainsCombatant);
-        }
-
-        /// <summary>
-        /// 健康状態が設定されたときの処理
-        /// </summary>
-        /// <param name="container">戦闘者コンテナ</param>
-        public void OnConditionSet(CombatantContainer container)
-        {
-            if (_uiArray == null)
-            {
-                return;
-            }
-
-            TUI ui = _uiArray[container.Id];
-            ui.OnConditionSet(container.Combatant.Condition);
         }
     }
 }

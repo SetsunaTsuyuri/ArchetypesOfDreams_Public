@@ -46,6 +46,12 @@ namespace SetsunaTsuyuri
         readonly IMessageBroker _miss = new MessageBroker();
 
         /// <summary>
+        /// 戦闘不能
+        /// </summary>
+        public static IMessageBroker KnockedOut => Instance._knockedOut;
+        readonly IMessageBroker _knockedOut = new MessageBroker();
+
+        /// <summary>
         /// ステータス効果付与
         /// </summary>
         public static IMessageBroker StatusEffectAdded => Instance._statusEffectAdded;
@@ -56,6 +62,12 @@ namespace SetsunaTsuyuri
         /// </summary>
         public static IMessageBroker StatusEffectsRemoved => Instance._statusEffectsRemoved;
         readonly IMessageBroker _statusEffectsRemoved = new MessageBroker();
+
+        /// <summary>
+        /// 対象フラグセット
+        /// </summary>
+        public static IMessageBroker TargetFlagSet => Instance._targetFlagSet;
+        readonly IMessageBroker _targetFlagSet = new MessageBroker();
 
         /// <summary>
         /// シナリオ開始
@@ -104,5 +116,23 @@ namespace SetsunaTsuyuri
         /// </summary>
         public static IMessageBroker TargetSelectionStart => Instance._targetSelectionStart;
         readonly IMessageBroker _targetSelectionStart = new MessageBroker();
+
+        /// <summary>
+        /// 行動実行
+        /// </summary>
+        public static IMessageBroker ActionExecution => Instance._actionExecution;
+        readonly IMessageBroker _actionExecution = new MessageBroker();
+
+        /// <summary>
+        /// 戦闘者がコンテナに設定された
+        /// </summary>
+        public static IMessageBroker CombatantSet => Instance._combatantSet;
+        readonly IMessageBroker _combatantSet = new MessageBroker();
+
+        /// <summary>
+        /// 敵の位置が設定された
+        /// </summary>
+        public static IMessageBroker EnemyPositionSet => Instance._enemyPositionSet;
+        readonly IMessageBroker _enemyPositionSet = new MessageBroker();
     }
 }

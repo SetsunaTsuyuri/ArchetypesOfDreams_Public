@@ -169,12 +169,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             JToken statusEffectAbilities = masterData["StatusEffectAbilities"];
             AddArray(statusEffects, statusEffectAbilities, "StatusEffectId", s_abilities);
 
+            // 敵グループ
+            JToken enemyGroups = masterData["EnemyGroups"];
+            JToken enemyGroupEnemies = masterData["EnemyGroupEnemies"];
+            AddArray(enemyGroups, enemyGroupEnemies, "EnemyGroupId", "Enemies");
+
             string result = masterData.ToString();
             return result;
         }
 
         /// <summary>
-        /// 整形する
+        /// 配列を追加する
         /// </summary>
         /// <param name="mainTokens"></param>
         /// <param name="arrayTokens"></param>

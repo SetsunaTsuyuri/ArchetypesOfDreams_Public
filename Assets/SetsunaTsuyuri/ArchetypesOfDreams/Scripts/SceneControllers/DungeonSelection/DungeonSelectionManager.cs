@@ -34,11 +34,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private async UniTask StartAsync(CancellationToken token)
         {
+            // UIセットアップ
+            ui.SetUp();
+
             // 戦闘者を移す
             allies.TransferCombatantsViriableDataToContainers();
-
-            // UI初期化
-            ui.Initialize();
 
             await FadeManager.FadeIn(token);
 

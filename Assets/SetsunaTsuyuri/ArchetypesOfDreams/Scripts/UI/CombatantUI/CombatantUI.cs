@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -8,10 +9,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public abstract class CombatantUI : GameUI
     {
+        /// <summary>
+        /// 対象コンテナ
+        /// </summary>
+        protected CombatantContainer Target = null;
+
         protected override void Awake()
         {
             base.Awake();
             DeactivateAndHide();
+
+            // コンテナ設定
+            MessageBrokersManager.CombatantSet
+                .Receive<CombatantContainer>()
+                .Where(x => x == Target)
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(OnCombatantSet);
         }
 
         /// <summary>
@@ -20,6 +33,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="target">表示対象</param>
         public virtual void SetTargets(CombatantContainer target)
         {
+            Target = target;
+
             IStatusDisplayer[] displayers = GetComponentsInChildren<IStatusDisplayer>(true);
             foreach (var displayer in displayers)
             {
@@ -30,10 +45,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 戦闘者が設定されたときの処理
         /// </summary>
-        /// <param name="combatantIsNotNull">戦闘者がnullではない</param>
-        public void OnCombatantSet(bool combatantIsNotNull)
+        /// <param name="target">戦闘者がnullではない</param>
+        public void OnCombatantSet(CombatantContainer target)
         {
-            if (combatantIsNotNull)
+            if (target.Combatant is not null)
             {
                 ActivateAndShow();
             }
@@ -42,11 +57,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 DeactivateAndHide();
             }
         }
-
-        /// <summary>
-        /// 戦闘者の健康状態が設定されたときの処理
-        /// </summary>
-        /// <param name="condition">健康状態</param>
-        public virtual void OnConditionSet(GameAttribute.Condition condition) { }
     }
 }

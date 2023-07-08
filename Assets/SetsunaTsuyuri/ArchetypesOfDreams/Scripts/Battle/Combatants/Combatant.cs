@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
     /// <summary>
     /// 戦闘者
     /// </summary>
-    [Serializable]
+    [System.Serializable]
     public abstract partial class Combatant : IInitializable
     {
         /// <summary>
@@ -39,27 +39,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool HasBossResistance { get; set; } = false;
 
         /// <summary>
-        /// 健康状態
-        /// </summary>
-        GameAttribute.Condition condition = GameAttribute.Condition.Normal;
-
-        /// <summary>
-        /// 健康状態
-        /// </summary>
-        public GameAttribute.Condition Condition
-        {
-            get => condition;
-            set
-            {
-                condition = value;
-                if (Container)
-                {
-                    Container.OnConditionSet();
-                }
-            }
-        }
-
-        /// <summary>
         /// 行動の結果
         /// </summary>
         public ActionResultSet Results { get; set; } = new ActionResultSet();
@@ -73,6 +52,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 顔スプライト
         /// </summary>
         public Sprite FaceSprite { get; private set; } = null;
+
+        AsyncOperationHandle<Sprite[]> _spriteLoadHandle = new AsyncOperationHandle<Sprite[]>();
 
         public void Initialize()
         {
@@ -90,9 +71,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void LoadSprites()
         {
-            Sprite[] sprites = ResourcesUtility.LoadSprites(Data.SpriteName);
-            Sprite = sprites.Length >= 1 ? sprites[0] : null;
-            FaceSprite = sprites.Length >= 2 ? sprites[1] : Sprite;
+            _spriteLoadHandle = ResourcesUtility.LoadCombatantSprites(Data.SpriteName);
+            
+            Sprite[] sprites = _spriteLoadHandle.WaitForCompletion();
+            if (sprites is not null)
+            {
+                // 名前順でソートする
+                var sortedSprites = sprites
+                    .OrderBy(x => x.name)
+                    .ToArray();
+
+                Sprite = sortedSprites.Length >= 1 ? sortedSprites[0] : null;
+                FaceSprite = sortedSprites.Length >= 2 ? sortedSprites[1] : Sprite;
+            }
+        }
+
+        /// <summary>
+        /// スプライトを解放する
+        /// </summary>
+        public void ReleaseSprites()
+        {
+            if (!_spriteLoadHandle.IsValid())
+            {
+                return;
+            }
+
+            ResourcesUtility.ReleaseCombatantSprites(_spriteLoadHandle);
         }
 
         /// <summary>
@@ -122,10 +126,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool IsKnockedOut => IsAffected(StatusEffectId.KnockedOut);
 
         /// <summary>
-        /// クラッシュしている
+        /// ブレイクしている
         /// </summary>
         /// <returns></returns>
-        public bool IsCrushed => IsAffected(StatusEffectId.Crush);
+        public bool IsBroken => IsAffected(StatusEffectId.Break);
 
         /// <summary>
         /// スキルを有している

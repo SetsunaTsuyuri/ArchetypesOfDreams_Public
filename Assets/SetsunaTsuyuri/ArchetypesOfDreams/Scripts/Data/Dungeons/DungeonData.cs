@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -14,6 +13,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// マップJson
         /// </summary>
         public TextAsset MapJson = null;
+
+        /// <summary>
+        /// マップ
+        /// </summary>
+        public string Map = string.Empty;
 
         /// <summary>
         /// ダンジョン選択画面で選べない

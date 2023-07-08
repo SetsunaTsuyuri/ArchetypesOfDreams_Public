@@ -22,12 +22,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Color _defaultColor = Color.white;
 
         /// <summary>
-        /// 初期の拡大倍率X
+        /// 初期拡大倍率X
         /// </summary>
         float _defaultLocalScaleX = 0.0f;
 
         /// <summary>
-        /// 初期の拡大倍率Y
+        /// 初期拡大倍率Y
         /// </summary>
         float _defaultLocalScaleY = 0.0f;
 
@@ -37,14 +37,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         Tween targetedTween = null;
 
         /// <summary>
-        /// 撃破Tween
+        /// 点滅Tween
         /// </summary>
-        Tween _knockedOutTween = null;
+        Tween _blinkingTween = null;
 
         /// <summary>
-        /// 点滅シーケンス
+        /// 崩壊Tween
         /// </summary>
-        Sequence _blinkingSequence = null;
+        Tween _collapseTween = null;
 
         private void Awake()
         {
@@ -52,7 +52,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _defaultColor = _spriteRenderer.color;
             _defaultLocalScaleX = transform.localScale.x;
             _defaultLocalScaleY = transform.localScale.y;
-            _blinkingSequence = CreateBlinkingSequence();
+            _blinkingTween = CreateBlinking();
+            _collapseTween = CreateCollapse();
         }
 
         public void Initialize()
@@ -97,35 +98,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 戦闘者の健康状態が変化したときの処理
+        /// 崩壊Tweenを作る
         /// </summary>
-        /// <param name="combatant">戦闘者</param>
-        public void OnConditionSet(Combatant combatant)
+        /// <returns></returns>
+        private Tween CreateCollapse()
         {
-            switch (combatant.Condition)
-            {
-                case GameAttribute.Condition.Normal:
-                    // スプライト表示
-                    _knockedOutTween.Kill();
-                    _spriteRenderer.enabled = true;
-                    _spriteRenderer.color = _defaultColor;
-                    break;
+            Color color = GameSettings.VisualEffects.DefeatedEnemyColor;
+            float duration = GameSettings.VisualEffects.EnemyFadeDuration;
 
-                case GameAttribute.Condition.KnockedOut:
-                    // スプライト非表示
-                    _knockedOutTween = ChangeColor(
-                        GameSettings.VisualEffects.DefeatedEnemyColor,
-                        GameSettings.VisualEffects.EnemyFadeDuration);
-                    break;
-            }
+            Tween tween = ChangeColor(color, duration)
+                .SetLink(gameObject)
+                .SetAutoKill(false)
+                .Pause();
+
+            return tween;
         }
 
         /// <summary>
-        /// 点滅シーケンスを作る
+        /// 点滅Tweenを作る
         /// </summary>
-        private Sequence CreateBlinkingSequence()
+        private Tween CreateBlinking()
         {
-            return DOTween.Sequence()
+            Tween tween = DOTween.Sequence()
                 .AppendCallback(() => _spriteRenderer.material.SetFloat("_Blinking", 1.0f))
                 .AppendInterval(0.075f)
                 .AppendCallback(() => _spriteRenderer.material.SetFloat("_Blinking", 0.0f))
@@ -134,6 +128,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .SetLink(gameObject)
                 .SetAutoKill(false)
                 .Pause();
+
+            return tween;
         }
 
         /// <summary>
@@ -141,7 +137,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void Blink()
         {
-            _blinkingSequence.Restart();
+            _blinkingTween.Restart();
+        }
+
+        /// <summary>
+        /// 崩壊する
+        /// </summary>
+        public void Collapse()
+        {
+            _collapseTween.Restart();
         }
 
         /// <summary>

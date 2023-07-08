@@ -293,8 +293,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 VariableData.Items.Decrease(action.ConsumptionItemdId.Value);
             }
 
-            // 行動時イベント
-            Container.OnAction(action);
+            // 行動時イベント通知
+            Container.OnActionExecution(action);
 
             // ★暫定処理
             await UniTask.Delay(200, cancellationToken: token);
@@ -516,7 +516,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="token"></param>
         private async UniTask ApplyDamage(CancellationToken token)
         {
-            bool crush = IsAffected(StatusEffectId.Crush);
+            bool isBroken = IsAffected(StatusEffectId.Break);
 
             DamageResult damage = Results.Damage;
 
@@ -535,9 +535,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             CurrentDP -= damageDP;
             CurrentGP -= damageGP;
 
-            if (!crush)
+            if (!isBroken)
             {
-                damage.IsCrush = IsAffected(StatusEffectId.Crush);
+                damage.IsBreak = IsAffected(StatusEffectId.Break);
             }
 
             Container.OnDamage();
@@ -618,12 +618,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void BeKnockedOut()
         {
-            Condition = GameAttribute.Condition.KnockedOut;
-
-            if (Container && Container is EnemyContainer enemyContainer)
-            {
-                enemyContainer.OnKnockedOut();
-            }
+            Container.OnKnockedOut();
         }
 
         /// <summary>
@@ -631,7 +626,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void BeRevived()
         {
-            Condition = GameAttribute.Condition.Normal;
             WaitTime = BasicWaitTime;
             RecoverGP();
         }
@@ -711,7 +705,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 }
 
                 // 追加GPダメージを決定する
-                if (!target.IsCrushed && target.Results.Damage.HP > 0)
+                if (!target.IsBroken && target.Results.Damage.HP > 0)
                 {
                     int damage = CalculateExtraGPDamage(target, effect);
                     if (damage > 0)
@@ -725,11 +719,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             foreach (var data in effect.StatusEffects)
             {
                 if (!data.IsRemoval
-                    && CanBeAffected(data.StatusEffectId)
-                    && RandomUtility.Percent(data.Probability))
+                    && CanBeAffected(data.StatusEffectId))
                 {
-                    // ステータス効果を追加する
-                    target.Results.AddedStatusEffects.Add(data);
+                    // 付与確率
+                    float probability = data.Probability - GetStatusEffectResistance(data.StatusEffectId);
+                    if (RandomUtility.Percent(probability))
+                    {
+                        // ステータス効果を追加する
+                        target.Results.AddedStatusEffects.Add(data);
+                    }
                 }
                 else if (data.IsRemoval)
                 {

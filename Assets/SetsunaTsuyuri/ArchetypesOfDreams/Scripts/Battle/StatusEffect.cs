@@ -15,9 +15,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         KnockedOut = 1,
 
         /// <summary>
-        /// 崩壊
+        /// ブレイク
         /// </summary>
-        Crush = 2
+        Break = 2
     }
 
     /// <summary>

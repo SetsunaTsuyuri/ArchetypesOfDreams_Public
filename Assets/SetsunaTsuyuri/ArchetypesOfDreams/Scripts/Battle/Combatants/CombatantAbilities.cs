@@ -75,6 +75,22 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// ステータス効果に対する耐性を取得する
+        /// </summary>
+        /// <param name="statusEffectId"></param>
+        /// <returns></returns>
+        public int GetStatusEffectResistance(int statusEffectId)
+        {
+            int registance = CreateAbilityList(AbilityType.StatusEffectResistance)
+                .Where(x => x.ParameterA == statusEffectId)
+                .Select(x => x.ParameterB)
+                .Sum();
+
+            int result = Mathf.Clamp(registance, -1000, 1000);
+            return result;
+        }
+
+        /// <summary>
         /// 能力リストを作る
         /// </summary>
         /// <param name="abilityType"></param>
@@ -83,6 +99,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             List<AbilityData> abilityList = new();
 
+            // TODO: 戦闘者本体
+
             // ステータス効果
             var statusEffectAbilitiesCollection = StatusEffects
                 .Where(x => x.Data.Abilities.Any(x => x.Type == abilityType))
@@ -90,8 +108,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             foreach (var statusEffectAbilities in statusEffectAbilitiesCollection)
             {
-                var surviveAbilities = statusEffectAbilities.Where(x => x.Type == abilityType);
-                abilityList.AddRange(surviveAbilities);
+                abilityList.AddRange(statusEffectAbilities);
             }
 
             return abilityList;

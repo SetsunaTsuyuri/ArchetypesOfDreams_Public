@@ -14,16 +14,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool IsCritical { get; set; } = false;
 
         /// <summary>
-        /// クラッシュ発生
+        /// ブレイク発生
         /// </summary>
-        public bool IsCrush { get; set; } = false;
+        public bool IsBreak { get; set; } = false;
 
         public override void Initialize()
         {
             base.Initialize();
 
             IsCritical = false;
-            IsCrush = false;
+            IsBreak = false;
         }
     }
 }

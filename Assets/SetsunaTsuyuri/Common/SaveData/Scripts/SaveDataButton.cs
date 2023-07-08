@@ -67,8 +67,8 @@ namespace SetsunaTsuyuri
                     // セーブ
                     case SaveDataCommandType.Save:
                         SaveDataManager.Save(_id);
-                        UpdateTexts(SaveDataManager.SaveDataDic[_id]);
-                        UpdateImages(SaveDataManager.SaveDataDic[_id]);
+                        UpdateTexts(SaveDataManager.SaveDataDictionary[_id]);
+                        UpdateImages(SaveDataManager.SaveDataDictionary[_id]);
                         break;
 
                     // ロード
@@ -120,7 +120,7 @@ namespace SetsunaTsuyuri
             {
                 saveData = SaveDataManager.AutoSaveData;
             }
-            else if (SaveDataManager.SaveDataDic.TryGetValue(id, out SaveData value))
+            else if (SaveDataManager.SaveDataDictionary.TryGetValue(id, out SaveData value))
             {
                 saveData = value;
             }

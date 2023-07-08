@@ -514,10 +514,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 敵初期化
             Enemies.Initialize();
 
-            // アセット解放
-            await Resources.UnloadUnusedAssets();
-            token.ThrowIfCancellationRequested();
-
             // UIを隠す
             BattleUI.SetEnabled(false);
 

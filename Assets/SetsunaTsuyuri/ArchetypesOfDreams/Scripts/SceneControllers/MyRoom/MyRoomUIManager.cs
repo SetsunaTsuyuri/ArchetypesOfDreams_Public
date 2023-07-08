@@ -42,20 +42,23 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// セットアップする
         /// </summary>
-        /// <param name="allies">味方</param>
-        public void SetUp(AlliesParty allies)
+        /// <param name="alliesParty">味方</param>
+        public void SetUp(AlliesParty alliesParty)
         {
+            // 味方UI
+            _allies.SetUp();
+
             // セーブデータメニュー
             SaveDataMenu saveDataMenu = GetComponentInChildren<SaveDataMenu>();
             saveDataMenu.SetUp();
 
             // 対象選択UI
             TargetSelectionUI targetSelection = GetComponentInChildren<TargetSelectionUI>();
-            targetSelection.SetUp(_description, allies, null);
+            targetSelection.SetUp(_description, alliesParty, null);
 
             // スキルメニュー
             SkillMenu skillMenu = GetComponentInChildren<SkillMenu>();
-            skillMenu.SetUp(_description, targetSelection, allies.AlliesUI);
+            skillMenu.SetUp(_description, targetSelection, alliesParty.AlliesUI);
 
             // アイテムメニュー
             ItemMenu itemMenu = GetComponentInChildren<ItemMenu>();
@@ -63,7 +66,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             // プレイヤーメニュー
             PlayerMenu playerMenu = GetComponentInChildren<PlayerMenu>();
-            playerMenu.SetUp(_description, skillMenu, itemMenu, targetSelection, allies);
+            playerMenu.SetUp(_description, skillMenu, itemMenu, targetSelection, alliesParty);
 
             // オプションメニュー
             OptionsMenu optionsMenu= GetComponentInChildren<OptionsMenu>();

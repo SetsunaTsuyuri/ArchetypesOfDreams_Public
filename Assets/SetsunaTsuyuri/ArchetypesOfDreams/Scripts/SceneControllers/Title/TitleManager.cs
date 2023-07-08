@@ -27,6 +27,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             await FadeManager.FadeOut(0.0f, token);
 
             _ui.SetUp();
+
             AudioManager.PlayBgm(BgmId.Title);
 
             await FadeManager.FadeIn(token);

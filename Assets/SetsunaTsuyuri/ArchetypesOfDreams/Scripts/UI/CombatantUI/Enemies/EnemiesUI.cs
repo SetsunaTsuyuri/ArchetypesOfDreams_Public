@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -24,6 +25,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             base.Awake();
             _mainCamera = Camera.main;
             _canvasRect = _canvas.GetComponent<RectTransform>();
+
+            MessageBrokersManager.EnemyPositionSet
+                .Receive<EnemyContainer>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(OnEnemyPositionSet);
         }
 
         /// <summary>
@@ -40,7 +46,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 座標が設定されたときの処理
         /// </summary>
         /// <param name="container">戦闘者コンテナ</param>
-        public void OnPositionSet(CombatantContainer container)
+        public void OnEnemyPositionSet(CombatantContainer container)
         {
             EnemyUI ui = _uiArray[container.Id];
 

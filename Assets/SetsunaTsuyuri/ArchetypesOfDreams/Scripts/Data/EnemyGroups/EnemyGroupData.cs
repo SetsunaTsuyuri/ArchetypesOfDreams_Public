@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
@@ -11,9 +10,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class EnemyGroupData : IdData
     {
         /// <summary>
-        /// 敵の構成
+        /// 敵データ配列
         /// </summary>
-        [field: SerializeField]
-        public EnemyData[] Enemies { get; private set; }
+        public EnemyData[] Enemies = { };
     }
 }

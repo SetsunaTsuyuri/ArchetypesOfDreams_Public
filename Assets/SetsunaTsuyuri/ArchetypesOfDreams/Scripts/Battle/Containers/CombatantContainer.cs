@@ -59,15 +59,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             get => _combatant;
             set
             {
+                if (_combatant is not null)
+                {
+                    _combatant.ReleaseSprites();
+                }
+
                 _combatant = value;
 
-                if (_combatant != null)
+                if (_combatant is not null)
                 {
                     _combatant.Container = this;
                     _combatant.RefreshStatus();
                 }
 
-                onCombatantSet.Invoke(this);
+                MessageBrokersManager.CombatantSet.Publish(this);
             }
         }
 
@@ -85,7 +90,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             set
             {
                 _isTargeted = value;
-                onTargetFlagSet.Invoke(this);
+                MessageBrokersManager.TargetFlagSet.Publish(this);
             }
         }
 
@@ -94,29 +99,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public event UnityAction<CombatantContainer> Damaged = null;
 
-        /// <summary>
-        /// 戦闘者が設定されたときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onCombatantSet = null;
-
-        /// <summary>
-        /// 戦闘者の健康状態が設定されたときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onConditionSet = null;
-
-        /// <summary>
-        /// 対象フラグが設定されたときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onTargetFlagSet = null;
-
-        /// <summary>
-        /// 行動したときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithSkill onAction = null;
+        private void OnDestroy()
+        {
+            Combatant?.ReleaseSprites();
+        }
 
         /// <summary>
         /// セットアップする
@@ -133,33 +119,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             if (Combatant is not null)
             {
+                Combatant.ReleaseSprites();
                 Combatant.Container = null;
             }
 
             Combatant = null;
-        }
-
-        /// <summary>
-        /// 健康状態が設定された
-        /// </summary>
-        public virtual void OnConditionSet()
-        {
-            if (onConditionSet)
-            {
-                onConditionSet.Invoke(this);
-            }
-        }
-
-        /// <summary>
-        /// 行動した
-        /// </summary>
-        /// <param name="action">行動内容</param>
-        public virtual void OnAction(ActionInfo action)
-        {
-            if (onAction)
-            {
-                onAction.Invoke(action);
-            }
         }
 
         /// <summary>
@@ -188,6 +152,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 戦闘不能
+        /// </summary>
+        public virtual void OnKnockedOut()
+        {
+            MessageBrokersManager.KnockedOut.Publish(this);
+        }
+
+        /// <summary>
         /// ステータス効果付与
         /// </summary>
         /// <param name="effect"></param>
@@ -206,6 +178,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             StatusEffectsResult result = new(this, effects);
             MessageBrokersManager.StatusEffectsRemoved.Publish(result);
+        }
+
+        /// <summary>
+        /// 行動実行
+        /// </summary>
+        /// <param name="action"></param>
+        public virtual void OnActionExecution(ActionInfo action)
+        {
+            MessageBrokersManager.ActionExecution.Publish(action);
         }
 
         /// <summary>
@@ -411,12 +392,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// クラッシュ状態の戦闘者を格納している
+        /// ブレイク状態の戦闘者を格納している
         /// </summary>
         /// <returns></returns>
-        public bool ContainsCrush()
+        public bool ContainsBroken()
         {
-            return ContainsCombatant && Combatant.IsCrushed;
+            return ContainsCombatant && Combatant.IsBroken;
         }
 
         /// <summary>

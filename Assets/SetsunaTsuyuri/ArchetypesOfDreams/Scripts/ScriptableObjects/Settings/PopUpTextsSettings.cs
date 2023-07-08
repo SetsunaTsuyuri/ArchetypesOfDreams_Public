@@ -76,10 +76,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public string CriticalText { get; private set; } = "Critical!";
 
         /// <summary>
-        /// クラッシュの文字列
+        /// ブレイクの文字列
         /// </summary>
         [field: SerializeField]
-        public string CrushText { get; private set; } = "Crsuh!";
+        public string BreakText { get; private set; } = "Break!";
 
         /// <summary>
         /// 異常ステータス効果の色

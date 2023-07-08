@@ -210,9 +210,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 AddNewLineText(ref text, GameSettings.PopUpTexts.CriticalText);
             }
 
-            if (damage.IsCrush)
+            if (damage.IsBreak)
             {
-                AddNewLineText(ref text, GameSettings.PopUpTexts.CrushText);
+                AddNewLineText(ref text, GameSettings.PopUpTexts.BreakText);
             }
 
             AddDamageOrHealingText(ref text, damage.HP, damage.DP, damage.GP);

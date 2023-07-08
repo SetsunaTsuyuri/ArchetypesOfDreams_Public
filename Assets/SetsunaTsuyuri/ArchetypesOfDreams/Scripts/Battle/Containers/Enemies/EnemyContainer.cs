@@ -33,24 +33,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 浄化されたときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onPurified = null;
-
-        /// <summary>
-        /// 倒されたときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onKnockedOut = null;
-
-        /// <summary>
-        /// 座標が設定されたときのゲームイベント
-        /// </summary>
-        [SerializeField]
-        GameEventWithCombatantContainer onPositionSet = null;
-
-        /// <summary>
         /// 敵スプライト
         /// </summary>
         public EnemySprite EnemySprite { get; private set; } = null;
@@ -67,27 +49,28 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             EnemySprite.Initialize();
         }
 
-        public override void OnConditionSet()
-        {
-            base.OnConditionSet();
-
-            // 敵スプライトの健康状態設定時の処理
-            EnemySprite.OnConditionSet(Combatant);
-        }
-
-        public override void OnAction(ActionInfo action)
-        {
-            base.OnAction(action);
-
-            EnemySprite.Blink();
-        }
-
         public override void OnDamage()
         {
             base.OnDamage();
 
             AudioManager.PlaySE(SEId.EnemyDamage);
             EnemySprite.Shake();
+        }
+
+        public override void OnKnockedOut()
+        {
+            base.OnKnockedOut();
+
+            AudioManager.PlaySE(SEId.Collapse);
+            EnemySprite.Collapse();
+        }
+
+        public override void OnActionExecution(ActionInfo action)
+        {
+            base.OnActionExecution(action);
+
+            AudioManager.PlaySE(SEId.EnemyAction);
+            EnemySprite.Blink();
         }
 
         public override void Escape()
@@ -107,31 +90,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 敵スプライトの浄化時の処理
             EnemySprite.OnPurified();
 
-            // 浄化されたときのゲームイベント
-            if (onPurified)
-            {
-                onPurified.Invoke(this);
-            }
-
             if (Battle.InstanceInActiveScene)
             {
                 Battle battle = Battle.InstanceInActiveScene;
                 battle.OnEnemyKnockedOutOrPurified(this);
                 await battle.Allies.AddPurifiedEnemy(this, battle.BattleUI.AlliesUI.ReleaseButtons, token);
             }
-        }
-
-        /// <summary>
-        /// 倒されたときの処理
-        /// </summary>
-        /// <returns></returns>
-        public void OnKnockedOut()
-        {
-            // 倒されたときのゲームイベント
-            onKnockedOut.Invoke(this);
-
-            // 効果音
-            AudioManager.PlaySE(SEId.Collapse);
         }
 
         /// <summary>
@@ -166,7 +130,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="level">レベル</param>
         public void CreateEnemyNightmare(EnemyData enemyData, int level)
         {
-            NightmareData nightmareData = MasterData.GetNightmareData(enemyData.Id);
+            NightmareData nightmareData = MasterData.GetNightmareData(enemyData.EnemyId);
             if (nightmareData is null)
             {
                 return;
@@ -195,11 +159,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 座標設定
             transform.ChangeLocalPositionX(x);
 
-            // イベント呼び出し
-            if (onPositionSet)
-            {
-                onPositionSet.Invoke(this);
-            }
+            // 通知
+            MessageBrokersManager.EnemyPositionSet.Publish(this);
         }
     }
 }

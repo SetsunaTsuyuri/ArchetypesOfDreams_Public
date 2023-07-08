@@ -60,7 +60,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             _loadGameButton.AddPressedListener(() => Stack(typeof(SaveDataMenu)));
 
             // ロードできるデータがない場合はロードゲームボタンを封印する
-            if (SaveDataManager.SaveDataDic.Values.All(x => x is null)
+            if (SaveDataManager.SaveDataDictionary.Values.All(x => x is null)
                 && SaveDataManager.AutoSaveData is null)
             {
                 _loadGameButton.IsSeald = true;

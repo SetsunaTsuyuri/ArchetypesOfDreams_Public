@@ -7,13 +7,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// ダンジョン選択UIの管理者
     /// </summary>
-    public class DungeonSelectionUIManager : MonoBehaviour, IInitializable
+    public class DungeonSelectionUIManager : MonoBehaviour
     {
-        /// <summary>
-        /// 説明文UIの管理者
-        /// </summary>
-        DescriptionUI description = null;
-
         /// <summary>
         /// ダンジョン選択ボタンの管理者
         /// </summary>
@@ -21,13 +16,18 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Awake()
         {
-            description = GetComponentInChildren<DescriptionUI>(true);
-            DungeonButtons = GetComponentInChildren<DungeonButtonsManager>(true);
+            DungeonButtons = GetComponentInChildren<DungeonButtonsManager>();
         }
 
-        public void Initialize()
+        public void SetUp()
         {
+            // ダンジョン選択ボタン
+            DescriptionUI description = GetComponentInChildren<DescriptionUI>();
             DungeonButtons.SetUp(description);
+
+            // 味方UI
+            AlliesUI allies = GetComponentInChildren<AlliesUI>();
+            allies.SetUp();
         }
     }
 }

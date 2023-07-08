@@ -36,6 +36,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 .Receive<Battle>()
                 .TakeUntilDestroy(gameObject)
                 .Subscribe(_ => SetEnabled(false));
+
+            // 行動実行
+            MessageBrokersManager.ActionExecution
+                .Receive<ActionInfo>()
+                .TakeUntilDestroy(gameObject)
+                .Subscribe(DisplayActionName);
         }
 
         /// <summary>
