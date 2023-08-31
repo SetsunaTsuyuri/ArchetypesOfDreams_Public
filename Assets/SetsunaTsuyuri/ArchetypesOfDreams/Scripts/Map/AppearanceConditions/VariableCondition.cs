@@ -62,7 +62,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool Evaluate()
         {
-            int value = VariableData.Variables.Get(Id);
+            int value = VariableData.Variables.GetValueOrDefault(Id);
             bool result = Formula switch
             {
                 FormulaType.Equal => value == Parameter,

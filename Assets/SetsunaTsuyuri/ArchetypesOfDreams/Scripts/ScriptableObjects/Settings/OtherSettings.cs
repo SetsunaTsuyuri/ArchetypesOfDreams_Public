@@ -13,7 +13,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 精気の最大値
         /// </summary>
         [field: SerializeField]
-        public int MaxSpirit { get; private set; } = 999999999;
+        public int MaxEnergy { get; private set; } = 100;
 
         /// <summary>
         /// 歩数の最大値

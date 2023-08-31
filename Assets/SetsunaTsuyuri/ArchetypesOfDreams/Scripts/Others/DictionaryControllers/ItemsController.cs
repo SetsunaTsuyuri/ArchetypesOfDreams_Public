@@ -7,7 +7,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// アイテムの管理クラス
     /// </summary>
-    public class ItemsController : DicionaryController<int, int>, IInitializable
+    public class ItemsController : DictionaryController<int, int>, IInitializable
     {
         public override void Initialize()
         {

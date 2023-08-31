@@ -44,6 +44,21 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public ActionResultSet Results { get; set; } = new ActionResultSet();
 
         /// <summary>
+        /// 最後に選択した戦闘コマンドタイプ
+        /// </summary>
+        public int LastBattleCommandTypeSelected { get; set; } = 0;
+
+        /// <summary>
+        /// 最後に選択したスキルID
+        /// </summary>
+        public int LastSkillIdSelected { get; set; } = 0;
+
+        /// <summary>
+        /// 最後に選択したアイテムID
+        /// </summary>
+        public int LastItemIdSelected { get; set; } = 0;
+
+        /// <summary>
         /// スプライト
         /// </summary>
         public Sprite Sprite { get; private set; } = null;
@@ -53,7 +68,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public Sprite FaceSprite { get; private set; } = null;
 
-        AsyncOperationHandle<Sprite[]> _spriteLoadHandle = new AsyncOperationHandle<Sprite[]>();
+        AddressableLoader<Sprite[]> _loader = new();
 
         public void Initialize()
         {
@@ -71,9 +86,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void LoadSprites()
         {
-            _spriteLoadHandle = ResourcesUtility.LoadCombatantSprites(Data.SpriteName);
-            
-            Sprite[] sprites = _spriteLoadHandle.WaitForCompletion();
+            Sprite[] sprites = _loader.Load(Data.SpriteName);
             if (sprites is not null)
             {
                 // 名前順でソートする
@@ -91,12 +104,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void ReleaseSprites()
         {
-            if (!_spriteLoadHandle.IsValid())
-            {
-                return;
-            }
-
-            ResourcesUtility.ReleaseCombatantSprites(_spriteLoadHandle);
+            _loader.Release();
         }
 
         /// <summary>

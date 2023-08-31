@@ -145,9 +145,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int AnimationId = 0;
 
         /// <summary>
-        /// 追加実行回数
+        /// 実行回数
         /// </summary>
-        public int ExtraExecutions = 1;
+        public int Executions = 1;
 
         /// <summary>
         /// 動作時間

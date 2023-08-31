@@ -55,7 +55,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             switch (Formula)
             {
                 case FormulaType.Assign:
-                    VariableData.Variables.Set(Id, Parameter);
+                    VariableData.Variables.TrySetValue(Id, Parameter);
                     break;
 
                 case FormulaType.Add:

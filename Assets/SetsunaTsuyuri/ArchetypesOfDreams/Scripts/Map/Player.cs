@@ -39,9 +39,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public bool WantsToOpenMenu { get; private set; } = false;
 
         /// <summary>
-        /// プレイヤーインプット
+        /// 移動を求めている
         /// </summary>
-        PlayerInput _playerInput = null;
+        /// <returns></returns>
+        public bool WantsToMove => _moveDirection != Vector2Int.zero;
+
+        /// <summary>
+        /// 回転を求めている
+        /// </summary>
+        /// <returns></returns>
+        public bool WantsToRotate => _rotationDirection != Vector2Int.zero;
 
         /// <summary>
         /// 何かしらの動作を求めている
@@ -50,12 +57,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             get
             {
-                return WantsToMove()
-                    || WantsToRotate()
-                    || WantsToCheck
-                    || WantsToOpenMenu;
+                return WantsToCheck
+                    || WantsToOpenMenu
+                    || WantsToMove
+                    || WantsToRotate;
             }
         }
+
+        /// <summary>
+        /// プレイヤーインプット
+        /// </summary>
+        PlayerInput _playerInput = null;
 
         private void Awake()
         {
@@ -63,7 +75,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// マップイベントを取得する
+        /// マップイベントの取得を試みる
         /// </summary>
         /// <param name="map">マップ</param>
         /// <param name="trigger">マップイベントの起動条件</param>
@@ -83,12 +95,16 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// 移動を求めている
+        /// 移動先に存在するマップオブジェクトの取得を試みる
         /// </summary>
+        /// <param name="map"></param>
+        /// <param name="mapObject"></param>
         /// <returns></returns>
-        public bool WantsToMove()
+        public bool TryGetMapObjectAtDestination(Map map, out MapObject mapObject)
         {
-            return _moveDirection != Vector2Int.zero;
+            Vector2Int position = Position + GetDirection(_moveDirection);
+            mapObject = map.GetMapObject(position);
+            return mapObject;
         }
 
         /// <summary>
@@ -96,9 +112,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="map">マップ</param>
         /// <returns></returns>
-        public bool CanMove(Map map)
+        public bool CanMoveRelative(Map map)
         {
-            return CanMove(_moveDirection, map);
+            return CanMoveRelative(_moveDirection, map);
         }
 
         /// <summary>
@@ -106,16 +122,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public void Move()
         {
-            Move(_moveDirection);
-        }
-
-        /// <summary>
-        /// 回転を求めている
-        /// </summary>
-        /// <returns></returns>
-        public bool WantsToRotate()
-        {
-            return _rotationDirection != Vector2Int.zero;
+            MoveRelative(_moveDirection);
         }
 
         /// <summary>

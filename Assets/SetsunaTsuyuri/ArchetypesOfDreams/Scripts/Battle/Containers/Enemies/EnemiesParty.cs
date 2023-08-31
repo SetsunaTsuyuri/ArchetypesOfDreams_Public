@@ -34,46 +34,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// ランダムエンカウントで出現する敵を作る
+        /// 初期化し敵を作る
         /// </summary>
-        /// <param name="map">マップ</param>
-        /// <param name="allies">味方</param>
-        public void CreateEnemies(Map map, AlliesParty allies)
+        /// <param name="enemyGroupId"></param>
+        public void InitializeAndCreateEnemies(int enemyGroupId)
         {
-            // 敵の数
-            int random = Random.Range(-_randomBattleEnemies, _randomBattleEnemies + 1);
-            int numberOfEnemies = Mathf.Clamp(allies.CountCombatants() + random, 1, Members.Length);
+            Initialize();
 
-            // レベル
-            int level = map.BasicEnemyLevel;
+            EnemyGroupData enemyGroupData = MasterData.GetEnemyGroupData(enemyGroupId);
 
-            for (int i = 0; i < numberOfEnemies; i++)
-            {
-                // ID
-                int id = Random.Range(map.MinEnemyId, map.MaxEnemyId + 1);
-                Members[i].CreateNightmare(id, level);
-            }
-        }
-
-        /// <summary>
-        /// イベントで出現する敵を作る
-        /// </summary>
-        /// <param name="battleEvent">バトルイベント</param>
-        public void CreateEnemies(BattleEvent battleEvent)
-        {
-            int id = battleEvent.EnemyGroupId;
-            EnemyGroupData enemyGroupData = MasterData.GetEnemyGroupData(id);
-
-            // 敵を作る
-            CreateEnemies(enemyGroupData);
-        }
-
-        /// <summary>
-        /// 敵を作る
-        /// </summary>
-        /// <param name="enemyGroupData">敵グループデータ</param>
-        private void CreateEnemies(EnemyGroupData enemyGroupData)
-        {
             if (enemyGroupData.Enemies.Length > Members.Length)
             {
                 Debug.LogError("敵グループデータの敵の数がコンテナの数よりも大きいです");
@@ -85,15 +54,50 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 // 敵データを取得する
                 EnemyData enemyData = enemyGroupData.Enemies[i];
 
-                // レベル
-                int level = enemyData.Level;
-                int min = GameSettings.Combatants.MinLevel;
-                int max = GameSettings.Combatants.MaxLevel;
-                level = Mathf.Clamp(level, min, max);
-
                 // 敵ナイトメアを生成する
-                Members[i].CreateEnemyNightmare(enemyData, level);
+                Members[i].CreateNightmare(enemyData);
             }
+        }
+
+        /// <summary>
+        /// 初期化し敵を作る
+        /// </summary>
+        /// <param name="dungeon"></param>
+        /// <param name="allies"></param>
+        public void InitializeAndCreateEnemies(Dungeon dungeon, AlliesParty allies)
+        {
+            Initialize();
+
+            // 敵データ配列
+            RandomEncounterEnemyData[] enemies = dungeon.GetRandomEncounterEnemies();
+
+            // 敵の出現数
+            int allyNumber = allies.CountCombatants();
+            int enemyNumber = DecideEnemyNumber(allyNumber);
+
+            float[] enemyWeigths = enemies
+                .Select(x => x.Ratio)
+                .ToArray();
+
+            int[] enemyIndexes = RandomUtility.Weighted(enemyWeigths, enemyNumber);
+            for (int i = 0; i < enemyNumber; i++)
+            {
+                int index = enemyIndexes[i];
+                RandomEncounterEnemyData enemy = enemies[index];
+                Members[i].CreateNightmare(enemy.EnemyId, enemy.Level);
+            }
+        }
+
+        /// <summary>
+        /// 敵の出現数を決定する
+        /// </summary>
+        /// <param name="allyNumber"></param>
+        /// <returns></returns>
+        private int DecideEnemyNumber(int allyNumber)
+        {
+            int random = Random.Range(-_randomBattleEnemies, _randomBattleEnemies + 1);
+            int result = Mathf.Clamp(allyNumber + random, 1, Members.Length);
+            return result;
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using System.Runtime.Serialization;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -52,7 +53,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 下り階段
         /// </summary>
-        StairsDown = 2
+        StairsDown = 2,
+
+        /// <summary>
+        /// ナイトメア
+        /// </summary>
+        Nightmare = 3,
     }
 
     /// <summary>
@@ -117,10 +123,60 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public string EventId { get; private set; } = string.Empty;
 
         /// <summary>
-        /// イベントリスト
+        /// イベント
         /// </summary>
         [field: SerializeReference]
         public List<IGameEvent> Events { get; private set; } = new();
+
+        /// <summary>
+        /// 移動経路
+        /// </summary>
+        [field: SerializeField]
+        public string Moves { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// 目的地配列
+        /// </summary>
+        [field: SerializeField]
+        public Vector2Int[] Destinations { get; private set; } = { };
+
+        /// <summary>
+        /// 現在の目的地
+        /// </summary>
+        [field: SerializeField]
+        public int CurrentDestinationIndex { get; private set; } = 0;
+
+        /// <summary>
+        /// 現在の目的地
+        /// </summary>
+        public Vector2Int CurrentDestination
+        {
+            get
+            {
+                if (Destinations.Length == 0)
+                {
+                    return Vector2Int.zero;
+                }
+
+                return Destinations[CurrentDestinationIndex];
+            }
+        }
+
+        public class MapObjectMove
+        {
+            public enum MapObjectMoveType
+            {
+                None = 0,
+
+                Approach = 1,
+
+                Leave = 2
+            }
+
+            public int ParamterA = 0;
+
+            public int ParameterB = 0;
+        }
 
         /// <summary>
         /// イベントを解決する
@@ -203,12 +259,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // 他のオブジェクトと衝突するか
             CanCollide = TiledMapUtility.GetPropertyValue(jToken, "can_collide", true);
 
-            // 進入可能なセルの種類
-            //AccessibleCells = 
-
-            // 移動パターン
-            // 不動、プレイヤー追跡等
-
             // イベントID
             EventId = TiledMapUtility.GetPropertyValue(jToken, "event_id", string.Empty);
 
@@ -216,6 +266,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             string events = TiledMapUtility.GetPropertyValue(jToken, "events", string.Empty);
             AddConditionsOrEvents(events, AddEvent);
 
+            // 移動
+            string moves = TiledMapUtility.GetPropertyValue(jToken, "moves", string.Empty);
+            Moves = moves;
+
+            // 目的地
+            string destinations = TiledMapUtility.GetPropertyValue(jToken, "destinations", string.Empty);
+            SetDestinations(destinations);
+            
             // トランスフォーム
             UpdateTransform();
 
@@ -290,6 +348,32 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// 目的地を設定する
+        /// </summary>
+        /// <param name="destinations"></param>
+        private void SetDestinations(string destinations)
+        {
+            if (string.IsNullOrEmpty(destinations))
+            {
+                return;
+            }
+
+            string[] rows = destinations.Split("\n");
+            int length = rows.Length;
+
+            Destinations = new Vector2Int[length];
+            for (int i = 0; i < length; i++)
+            {
+                string row = rows[i];
+                string[] columns = row.Split(" ");
+                int.TryParse(columns[0], out int x);
+                int.TryParse(columns[1], out int y);
+                Vector2Int destination = new Vector2Int(x, y);
+                Destinations[i] = destination;
+            }
+        }
+
+        /// <summary>
         /// オブジェクトを作る
         /// </summary>
         /// <param name="map">マップ</param>
@@ -299,6 +383,52 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             if (prefab != null)
             {
                 Instantiate(prefab, transform);
+            }
+        }
+
+        /// <summary>
+        /// 次の移動先を決める
+        /// </summary>
+        /// <returns></returns>
+        public Vector2Int DecideNextMoveDirection()
+        {
+            Vector2Int destination = CurrentDestination;
+            if (destination == Vector2Int.zero)
+            {
+                return destination;
+            }
+
+            // TODO: A*で実装する
+            Vector2Int distance = destination - Position;
+            Vector2Int direction = distance switch
+            {
+                Vector2Int d when d.x > 0 => Vector2Int.right,
+                Vector2Int d when d.x < 0 => Vector2Int.left,
+                Vector2Int d when d.y > 0 => Vector2Int.up,
+                Vector2Int d when d.y < 0 => Vector2Int.down,
+                _ => Vector2Int.zero
+            };
+
+            return direction;
+        }
+
+        /// <summary>
+        /// 目的地を更新する
+        /// </summary>
+        public void UpdateDestination()
+        {
+            // 更新が不要なら中止する
+            if (Destinations.Length <= 1
+                || Position != CurrentDestination)
+            {
+                return;
+            }
+
+            // 次のインデックスへ進む
+            CurrentDestinationIndex++;
+            if (CurrentDestinationIndex >= Destinations.Length)
+            {
+                CurrentDestinationIndex = 0;
             }
         }
     }

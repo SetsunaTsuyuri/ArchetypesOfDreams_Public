@@ -19,7 +19,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// フラグの管理クラス
     /// </summary>
-    public class FlagsController : DicionaryController<int, bool>, IInitializable
+    public class FlagsController : DictionaryController<int, bool>, IInitializable
     {
         public override void Initialize()
         {
@@ -36,7 +36,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public bool Get(FlagId flagId)
         {
-            return Get((int)flagId);
+            return GetValueOrDefault((int)flagId);
         }
         /// <summary>
         /// 設定する
@@ -45,7 +45,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="value"></param>
         public void Set(FlagId flagId, bool value)
         {
-            Set((int)flagId, value);
+            TrySetValue((int)flagId, value);
         }
     }
 }

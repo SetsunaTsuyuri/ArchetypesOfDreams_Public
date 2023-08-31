@@ -34,12 +34,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 精気
         /// </summary>
-        public static int Spirit
+        public static int Energy
         {
-            get => Instance._spirit;
-            set => Instance._spirit = Math.Clamp(value, 0, GameSettings.Other.MaxSpirit);
+            get => Instance._energy;
+            set => Instance._energy = Math.Clamp(value, 0, GameSettings.Other.MaxEnergy);
         }
-        int _spirit = 0;
+        int _energy = 0;
 
         /// <summary>
         /// 歩数
@@ -47,7 +47,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static int Steps
         {
             get => Instance._steps;
-            set => Instance._steps = value;
+            set => Instance._steps = Mathf.Clamp(value, 0, GameSettings.Other.MaxSteps);
         }
         int _steps = 0;
 
@@ -56,6 +56,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public static ItemsController Items => Instance._items;
         readonly ItemsController _items = new();
+
+        /// <summary>
+        /// ダンジョン
+        /// </summary>
+        public static DungeonStatusesController Dungeons => Instance._dungeons;
+        readonly DungeonStatusesController _dungeons = new();
 
         /// <summary>
         /// イベント変数
@@ -68,53 +74,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         public static FlagsController Flags => Instance.flags;
         readonly FlagsController flags = new();
-        
-        /// <summary>
-        /// 選択可能なダンジョンフラグ
-        /// </summary>
-        bool[] _selectableDungeons = null;
-
-        /// <summary>
-        /// 選択可能なダンジョンフラグ
-        /// </summary>
-        public static bool[] SelectableDungeons
-        {
-            get => Instance._selectableDungeons;
-            set => Instance._selectableDungeons = value;
-        }
-
-        /// <summary>
-        /// ダンジョンクリアフラグ
-        /// </summary>
-        bool[] _clearedDungeons = null;
-
-        /// <summary>
-        /// ダンジョンクリアフラグ
-        /// </summary>
-        public static bool[] ClearedDungeons
-        {
-            get => Instance._clearedDungeons;
-            set => Instance._clearedDungeons = value;
-        }
-
-        /// <summary>
-        /// トレジャー獲得フラグ
-        /// </summary>
-        bool[] _obtainedTreasures = null;
-
-        /// <summary>
-        /// トレジャー獲得フラグ
-        /// </summary>
-        public static bool[] ObtainedTreasures
-        {
-            get => Instance._obtainedTreasures;
-            set => Instance._obtainedTreasures = value;
-        }
 
         /// <summary>
         /// プレイするダンジョンID
         /// </summary>
-        int _dungeonId = 0;
+        int _dungeonId = 1;
 
         /// <summary>
         /// プレイするダンジョンID
@@ -142,10 +106,13 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public override void Initialize()
         {
             // プレイするダンジョンID
-            DungeonId = 0;
+            DungeonId = 1;
 
-            // 精貨
-            _spirit = 0;
+            // プレイヤー初期位置
+            PlayerInitialPosition = PlayerInitialPositionType.Start;
+
+            // 精気
+            _energy = 0;
 
             // 歩数
             _steps = 0;
@@ -153,17 +120,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // アイテム
             Items.Initialize();
 
+            // ダンジョン
+            Dungeons.Initialize();
+
             // 進行度
             Variables.Initialize();
 
             // フラグ
             Flags.Initialize();
-
-            // ダンジョン
-            int dungeonNumber = MasterData.CountDungeons();
-            _selectableDungeons = new bool[dungeonNumber];
-            _clearedDungeons = new bool[dungeonNumber];
-            _obtainedTreasures = new bool[30];
 
             // 味方パーティ
             _allies.Clear();
@@ -175,9 +139,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             };
             player.Initialize();
             Allies.Add(player);
-
-            // 選択可能なダンジョン
-            _selectableDungeons[1] = true;
         }
 
         /// <summary>

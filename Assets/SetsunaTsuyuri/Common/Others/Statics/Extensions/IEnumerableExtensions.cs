@@ -32,30 +32,6 @@ namespace SetsunaTsuyuri
         }
 
         /// <summary>
-        /// 指定した型と同じ要素を取得する
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static T GetSameType<T>(this IEnumerable<T> source, Type type)
-        {
-            return source.FirstOrDefault(x => x.GetType() == type);
-        }
-
-        /// <summary>
-        /// 指定した型と同じ要素が存在する
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool ExistsSameType<T>(this IEnumerable<T> source, Type type)
-        {
-            return source.Any(x => x.GetType() == type);
-        }
-
-        /// <summary>
         /// 範囲外を指定している
         /// </summary>
         /// <typeparam name="T"></typeparam>

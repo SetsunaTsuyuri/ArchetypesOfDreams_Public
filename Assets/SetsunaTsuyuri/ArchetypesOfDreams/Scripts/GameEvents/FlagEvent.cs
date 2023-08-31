@@ -34,7 +34,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             await UniTask.CompletedTask;
             token.ThrowIfCancellationRequested();
 
-            VariableData.Flags.Set(Id, Value);
+            VariableData.Flags.TrySetValue(Id, Value);
         }
     }
 }

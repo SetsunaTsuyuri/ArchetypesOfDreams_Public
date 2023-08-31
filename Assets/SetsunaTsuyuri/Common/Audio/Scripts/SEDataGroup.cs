@@ -19,6 +19,7 @@ namespace SetsunaTsuyuri
         Escape = 9,
         EnemyDamage = 10,
         EnemyAction = 11,
+        Miss = 12,
         Slash1 = 101,
     }
 

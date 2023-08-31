@@ -10,11 +10,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     public class DungeonData : NameDescriptionData
     {
         /// <summary>
-        /// マップJson
-        /// </summary>
-        public TextAsset MapJson = null;
-
-        /// <summary>
         /// マップ
         /// </summary>
         public string Map = string.Empty;
@@ -23,5 +18,20 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ダンジョン選択画面で選べない
         /// </summary>
         public bool CannotBeSelected = false;
+
+        /// <summary>
+        /// BGMID
+        /// </summary>
+        public int BgmId = 0;
+
+        /// <summary>
+        /// 戦闘BGMID
+        /// </summary>
+        public int BattleBgmId = 0;
+
+        /// <summary>
+        /// ランダムエンカウントで出現する敵
+        /// </summary>
+        public RandomEncounterEnemyData[] Enemies = {};
     }
 }

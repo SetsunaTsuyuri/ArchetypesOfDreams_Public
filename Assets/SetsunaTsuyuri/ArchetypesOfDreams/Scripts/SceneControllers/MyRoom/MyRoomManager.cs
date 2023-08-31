@@ -22,6 +22,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
         private void Start()
         {
+            // プレイヤー初期位置リセット
+            VariableData.PlayerInitialPosition = PlayerInitialPositionType.Start;
+
             CancellationToken token = this.GetCancellationTokenOnDestroy();
             StartAsync(token).Forget();
         }

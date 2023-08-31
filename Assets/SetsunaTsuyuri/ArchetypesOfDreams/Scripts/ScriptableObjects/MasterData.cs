@@ -17,16 +17,34 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         [field: SerializeField]
         public string GasUrl { get; set; } = string.Empty;
 
+        /// <summary>
+        /// データを更新する
+        /// </summary>
+        /// <param name="json"></param>
+        public void UpdateData(string json)
+        {
+            DreamWalkers = null;
+            Nightmares = null;
+            Skills = null;
+            Items = null;
+            StatusEffects = null;
+            EffectAnimations = null;
+            Dungeons = null;
+            EnemyGroups = null;
+
+            JsonUtility.FromJsonOverwrite(json, this);
+        }
+
 #endif
         /// <summary>
         /// 夢渡り
         /// </summary>
-        public DreamWalkerData[]  DreamWalkers = { };
+        public DreamWalkerData[] DreamWalkers = { };
 
         /// <summary>
         /// ナイトメア
         /// </summary>
-        public NightmareData[] Nightmares  = { };
+        public NightmareData[] Nightmares = { };
 
         /// <summary>
         /// スキル
@@ -56,7 +74,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// 敵グループ
         /// </summary>
-        public EnemyGroupData[] EnemyGroups= { };
+        public EnemyGroupData[] EnemyGroups = { };
 
         /// <summary>
         /// 夢渡りデータを取得する
@@ -155,6 +173,15 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public static DungeonData GetDungeonData(int id)
         {
             return Instance.Dungeons.FirstOrDefault(x => x.Id == id);
+        }
+
+        /// <summary>
+        /// ダンジョンデータ配列を取得する
+        /// </summary>
+        /// <returns></returns>
+        public static DungeonData[] GetDungeons()
+        {
+            return Instance.Dungeons;
         }
 
         /// <summary>

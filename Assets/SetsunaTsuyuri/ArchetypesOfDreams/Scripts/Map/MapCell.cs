@@ -12,12 +12,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     {
         None = 0,
         Floor = 1,
-        Hole = 2,
-        Water = 3,
+        Water = 2,
 
         Bridge = 11,
 
-        Damage = 21
+        Wall = 21
     }
 
     /// <summary>
@@ -39,10 +38,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 空のセルである
         /// </summary>
         /// <returns></returns>
-        public bool IsNone()
-        {
-            return Types.All(x => x == MapCellType.None);
-        }
+        public bool IsNone => Types.All(x => x == MapCellType.None);
 
         /// <summary>
         /// 進入可能である

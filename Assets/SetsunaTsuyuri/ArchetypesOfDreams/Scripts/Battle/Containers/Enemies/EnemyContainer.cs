@@ -63,6 +63,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             AudioManager.PlaySE(SEId.Collapse);
             EnemySprite.Collapse();
+
+            if (Battle.IsRunning && Battle.InstanceInActiveScene)
+            {
+                Battle.InstanceInActiveScene.OnEnemyKnockedOutOrPurified(this);
+            }
         }
 
         public override void OnActionExecution(ActionInfo action)
@@ -101,52 +106,35 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <summary>
         /// ナイトメアを作る
         /// </summary>
-        /// <param name="id">ID</param>
+        /// <param name="enemyData">敵データ</param>
         /// <param name="level">レベル</param>
-        public void CreateNightmare(int id, int level)
+        public void CreateNightmare(EnemyData enemyData)
         {
-            NightmareData nightmareData = MasterData.GetNightmareData(id);
-            if (nightmareData is null)
-            {
-                return;
-            }
-
-            Nightmare nightmare = new()
-            {
-                DataId = id,
-                Level = level
-            };
-
-            Combatant = nightmare;
-
-            nightmare.Initialize();
-            EnemySprite.UpdateSprite(Combatant);
+            CreateNightmare(
+                enemyData.EnemyId,
+                enemyData.Level,
+                enemyData.IsLeader,
+                enemyData.HasBossResistance);
         }
 
         /// <summary>
-        /// 敵のナイトメアを作る
+        /// ナイトメアを作る
         /// </summary>
-        /// <param name="enemyData">敵データ</param>
-        /// <param name="level">レベル</param>
-        public void CreateEnemyNightmare(EnemyData enemyData, int level)
+        /// <param name="dataId"></param>
+        /// <param name="level"></param>
+        /// <param name="isLeader"></param>
+        /// <param name="hasBossResistance"></param>
+        public void CreateNightmare(int dataId, int level, bool isLeader = false, bool hasBossResistance = false)
         {
-            NightmareData nightmareData = MasterData.GetNightmareData(enemyData.EnemyId);
-            if (nightmareData is null)
+            Combatant = new Nightmare()
             {
-                return;
-            }
-
-            Nightmare nightmare = new()
-            {
-                DataId = nightmareData.Id,
+                DataId = dataId,
                 Level = level,
-                IsLeader = enemyData.IsLeader,
-                HasBossResistance = enemyData.HasBossResistance
+                IsLeader = isLeader,
+                HasBossResistance = hasBossResistance
             };
 
-            Combatant = nightmare;
-
-            nightmare.Initialize();
+            Combatant.Initialize();
             EnemySprite.UpdateSprite(Combatant);
         }
 

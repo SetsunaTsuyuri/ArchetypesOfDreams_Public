@@ -24,7 +24,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// <summary>
     /// イベント変数の管理クラス
     /// </summary>
-    public class VariablesController : DicionaryController<int, int>, IInitializable
+    public class VariablesController : DictionaryController<int, int>, IInitializable
     {
         public override void Initialize()
         {
@@ -41,7 +41,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <returns></returns>
         public int Get(VariableId progressId)
         {
-            return Get((int)progressId);
+            return GetValueOrDefault((int)progressId);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="value"></param>
         public void Set(VariableId progressId, int value)
         {
-            Set((int)progressId, value);
+            TrySetValue((int)progressId, value);
         }
 
         /// <summary>

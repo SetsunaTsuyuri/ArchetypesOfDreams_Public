@@ -9,7 +9,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public abstract class DicionaryController<TKey, TValue> : IInitializable
+    public abstract class DictionaryController<TKey, TValue> : IInitializable
     {
         protected Dictionary<TKey, TValue> Dictionary = new();
 
@@ -23,38 +23,46 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public TValue Get(TKey id)
+        public TValue GetValueOrDefault(TKey id)
         {
             TValue result = Dictionary.GetValueOrDefault(id, default);
+            return result;
+        }
 
-            if (Dictionary.TryGetValue(id, out TValue value))
+        /// <summary>
+        /// 取得を試みる
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryGetValue(TKey id, out TValue value)
+        {
+            return Dictionary.TryGetValue(id, out value);
+        }
+
+        /// <summary>
+        /// 設定を試みる
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="value"></param>
+        public bool TrySetValue(TKey id, TValue value)
+        {
+            bool result = false;
+
+            if (Dictionary.ContainsKey(id))
             {
-                result = value;
+                Dictionary[id] = value;
+                result = true;
             }
 
             return result;
         }
 
         /// <summary>
-        /// 設定する
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="value"></param>
-        public void Set(TKey id, TValue value)
-        {
-            if (!Dictionary.ContainsKey(id))
-            {
-                return;
-            }
-
-            Dictionary[id] = value;
-        }
-
-        /// <summary>
         /// SerializableKeyValuePair配列にセーブする
         /// </summary>
         /// <returns></returns>
-        public SerializableKeyValuePair<TKey, TValue>[] ToSerializableKeyValuePair()
+        public SerializableKeyValuePair<TKey, TValue>[] ToSerializableKeyValuePairs()
         {
             KeyValuePair<TKey, TValue>[] pairs = Dictionary.ToArray();
             SerializableKeyValuePair<TKey, TValue>[] serializablePairs = new SerializableKeyValuePair<TKey, TValue>[pairs.Length];

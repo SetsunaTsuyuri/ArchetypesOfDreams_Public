@@ -116,7 +116,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             Debug.Log(masterData);
 
             EditorUtility.SetDirty(_masterData);
-            JsonUtility.FromJsonOverwrite(masterData, _masterData);
+
+            _masterData.UpdateData(masterData);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -133,7 +134,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         {
             JToken masterData = JToken.Parse(json);
 
-            // 夢渡り
+            // 夢魔
             JToken dreamWalkers = masterData["DreamWalkers"];
             JToken dreamWalkerSkills = masterData["DreamWalkerSkills"];
             AddArray(dreamWalkers, dreamWalkerSkills, "DreamWalkerId", s_skills);
@@ -173,6 +174,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             JToken enemyGroups = masterData["EnemyGroups"];
             JToken enemyGroupEnemies = masterData["EnemyGroupEnemies"];
             AddArray(enemyGroups, enemyGroupEnemies, "EnemyGroupId", "Enemies");
+
+            // ダンジョン
+            JToken dungeons = masterData["Dungeons"];
+            JToken randomEncounterEnemies = masterData["RandomEncounterEnemies"];
+            AddArray(dungeons, randomEncounterEnemies, "DungeonId", "Enemies");
 
             string result = masterData.ToString();
             return result;

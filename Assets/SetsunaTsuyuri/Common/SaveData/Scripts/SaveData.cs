@@ -54,6 +54,12 @@ namespace SetsunaTsuyuri
         public SerializableKeyValuePair<int, int>[] Items { get; set; } = { };
 
         /// <summary>
+        /// ダンジョンステータス
+        /// </summary>
+        [field: SerializeField]
+        public SerializableKeyValuePair<int, bool>[] DungeonStatuses { get; set; } = { };
+
+        /// <summary>
         /// イベント変数
         /// </summary>
         [field: SerializeField]
@@ -97,16 +103,13 @@ namespace SetsunaTsuyuri
             Copy(VariableData.Allies, Allies);
             Copy(VariableData.ReserveAllies, ReserveAllies);
 
-            Spirit = VariableData.Spirit;
+            Spirit = VariableData.Energy;
             Steps = VariableData.Steps;
 
-            Items = VariableData.Items.ToSerializableKeyValuePair();
-            Variables = VariableData.Variables.ToSerializableKeyValuePair();
-            Flags = VariableData.Flags.ToSerializableKeyValuePair();
-
-            SelectableDungeons = Copy(VariableData.SelectableDungeons);
-            ClearedDungeons = Copy(VariableData.ClearedDungeons);
-            ObtainedTreasures = Copy(VariableData.ObtainedTreasures);
+            Items = VariableData.Items.ToSerializableKeyValuePairs();
+            DungeonStatuses = VariableData.Dungeons.ToSerializableKeyValuePairs();
+            Variables = VariableData.Variables.ToSerializableKeyValuePairs();
+            Flags = VariableData.Flags.ToSerializableKeyValuePairs();
         }
 
         /// <summary>
@@ -117,16 +120,13 @@ namespace SetsunaTsuyuri
             Copy(Allies, VariableData.Allies);
             Copy(ReserveAllies, VariableData.ReserveAllies);
 
-            VariableData.Spirit = Spirit;
+            VariableData.Energy = Spirit;
             VariableData.Steps = Steps;
 
             VariableData.Items.FromSerializableKeyValuePair(Items);
+            VariableData.Dungeons.FromSerializableKeyValuePair(DungeonStatuses);
             VariableData.Variables.FromSerializableKeyValuePair(Variables);
             VariableData.Flags.FromSerializableKeyValuePair(Flags);
-
-            Overwrite(SelectableDungeons, VariableData.SelectableDungeons);
-            Overwrite(ClearedDungeons, VariableData.ClearedDungeons);
-            Overwrite(ObtainedTreasures, VariableData.ObtainedTreasures);
         }
 
         /// <summary>

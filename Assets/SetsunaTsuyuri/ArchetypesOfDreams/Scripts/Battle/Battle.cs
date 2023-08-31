@@ -189,7 +189,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// <param name="map"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask<BattleResultType> ExecuteRandomBattle(Map map, CancellationToken token)
+        public async UniTask<BattleResultType> ExecuteRandomEncounterBattle(Dungeon dungeon, CancellationToken token)
         {
             AudioManager.PlaySE(SEId.BattleStart);
 
@@ -197,11 +197,9 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             AlliesCanEscape = true;
 
-            Enemies.Initialize();
-            Enemies.CreateEnemies(map, Allies);
+            Enemies.InitializeAndCreateEnemies(dungeon, Allies);
 
-            // 通常戦闘BGMを再生する
-            AudioManager.PlayBgm(BgmId.NormalBattle);
+            AudioManager.PlayBgm(dungeon.Data.BattleBgmId);
 
             return await ExecuteBattle(token);
         }
@@ -226,8 +224,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             AlliesCanEscape = battleEvent.AlliesCanEscape;
 
-            Enemies.Initialize();
-            Enemies.CreateEnemies(battleEvent);
+            Enemies.InitializeAndCreateEnemies(battleEvent.EnemyGroupId);
 
             if (battleEvent.BgmId > 0)
             {
@@ -294,9 +291,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 {
                     // 行動決定
                     await DecideActorAction(token);
+
+                    // 行動実行
                     if (ActiveContainerAction is not null)
                     {
-                        // 行動実行
                         await ExecuteActorAction(token);
                     }
                 }
@@ -503,7 +501,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             if (_result == BattleResultType.Win)
             {
-                VariableData.Spirit += RewardSpirit;
+                VariableData.Energy += RewardSpirit;
                 Allies.OnWin(RewardExperience);
                 Debug.Log("勝利");
             }

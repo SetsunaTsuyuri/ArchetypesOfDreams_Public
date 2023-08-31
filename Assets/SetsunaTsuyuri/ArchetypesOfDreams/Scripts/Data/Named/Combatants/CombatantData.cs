@@ -55,6 +55,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int Evasion = 0;
 
         /// <summary>
+        /// 敵として倒した際に得られる経験値
+        /// </summary>
+        public int RewardExperience = 20;
+
+        /// <summary>
         /// 習得スキル
         /// </summary>
         public SkillAcquisitionData[] Skills = { };
@@ -94,15 +99,5 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         [field: SerializeField]
         public Vector2 EnemyUIPositionOffset { get; private set; } = Vector2.zero;
-
-        /// <summary>
-        /// 敵として倒したときに得られる経験値
-        /// </summary>
-        public int RewardExperience = 100;
-
-        /// <summary>
-        /// 敵として倒したときに得られる精気
-        /// </summary>
-        public int RewardSpirit = 10;
     }
 }

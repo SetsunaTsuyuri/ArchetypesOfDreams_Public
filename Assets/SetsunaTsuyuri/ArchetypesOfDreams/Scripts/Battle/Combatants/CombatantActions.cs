@@ -300,7 +300,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             await UniTask.Delay(200, cancellationToken: token);
 
             // 実行回数分繰り返す
-            for (int i = 0; i < action.Effect.ExtraExecutions; i++)
+            for (int i = 0; i < action.Effect.Executions; i++)
             {
                 // 対象の戦闘者を取り出す
                 Combatant[] targetCombatants = GetTargetCombatants(
@@ -317,6 +317,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                     // 結果を反映させる
                     foreach (var targetCombatant in targetCombatants)
                     {
+                        // アニメーション再生
                         if (action.Effect.AnimationId != 0)
                         {
                             await PlayEffectAnimation(action, targetCombatant, token);
@@ -432,6 +433,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // ミス
             if (Results.Miss)
             {
+                AudioManager.PlaySE(SEId.Miss);
                 Container.OnMiss();
                 await TimeUtility.Wait(GameSettings.WaitTime.Damage, token);
             }

@@ -153,8 +153,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 NormalAttack.UpdateButton(id, canBeUsed);
             }
 
-            // スキルボタン
-            Skills.gameObject.SetActive(activeContainer.CanUseAnySkill());
+            // スキル
+            Skills.gameObject.SetActive(activeContainer.HasAnySkill);
             Skills.SetInteractable(Skills.isActiveAndEnabled);
 
             // 浄化
@@ -183,17 +183,17 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
                 Change.SetInteractable(false);
             }
 
-            // 防御ボタン
+            // 防御
             {
                 int id = (int)BasicSkillId.Defense;
                 bool canBeUsed = activeContainer.CanUseSkill(id);
                 Defense.UpdateButton(id, canBeUsed);
             }
 
-            // アイテムボタン
+            // アイテム
             Items.SetInteractable(activeContainer.CanUseAnyItem());
 
-            // 逃走ボタン
+            // 逃走
             {
                 int id = (int)BasicSkillId.Escape;
                 bool canBeUsed = activeContainer.CanUseSkill(id) && battle.AlliesCanEscape;

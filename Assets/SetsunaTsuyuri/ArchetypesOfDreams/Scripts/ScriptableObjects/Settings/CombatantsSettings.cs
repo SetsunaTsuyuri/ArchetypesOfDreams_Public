@@ -26,7 +26,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// レベルアップに必要な経験値
         /// </summary>
         [field: SerializeField]
-        public int ExperienceRequiredToLevelUp { get; private set; } = 1000;
+        public int ExperienceRequiredToLevelUp { get; private set; } = 120;
 
         /// <summary>
         /// 1レベル毎のレベルアップに必要な経験値の増加率

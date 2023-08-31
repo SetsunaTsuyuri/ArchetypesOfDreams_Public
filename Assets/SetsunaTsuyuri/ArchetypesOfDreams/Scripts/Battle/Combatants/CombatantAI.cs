@@ -78,17 +78,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             var elements = Data.AIElements.Where(x => MatchCondition(x));
             foreach (var element in elements)
             {
-                ActionInfo action = element.Action switch
-                {
-                    AIActionType.Skill => new(MasterData.GetSkillData(element.ActionId)),
-                    AIActionType.Item => new(MasterData.GetItemData(element.ActionId)),
-                    _ => null
-                };
-
-                if (action is not null)
-                {
-                    actions.Add((element.Priority, action));
-                }
+                ActionInfo action = new(MasterData.GetSkillData(element.SkillId));
+                actions.Add((element.Priority, action));
             }
 
             // 行動内容を1つ選ぶ

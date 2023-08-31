@@ -35,24 +35,6 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     }
 
     /// <summary>
-    /// AI行動タイプ
-    /// </summary>
-    public enum AIActionType
-    {
-        None = 0,
-
-        /// <summary>
-        /// スキル
-        /// </summary>
-        Skill = 1,
-
-        /// <summary>
-        /// アイテム
-        /// </summary>
-        Item = 2,
-    }
-
-    /// <summary>
     /// 戦闘者AI要素データ
     /// </summary>
     [System.Serializable]
@@ -84,13 +66,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public AITargetType Target = AITargetType.None;
 
         /// <summary>
-        /// 行動タイプ
+        /// スキルID
         /// </summary>
-        public AIActionType Action = AIActionType.None;
-
-        /// <summary>
-        /// 行動ID
-        /// </summary>
-        public int ActionId = 0;
+        public int SkillId = 0;
     }
 }

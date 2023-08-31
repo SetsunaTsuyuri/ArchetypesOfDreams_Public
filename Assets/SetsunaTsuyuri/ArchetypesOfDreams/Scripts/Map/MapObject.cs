@@ -33,26 +33,39 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// 進入可能なセルの種類配列
         /// </summary>
         [field: SerializeField]
-        public MapCellType[] AccessibleCells { get; set; } = { };
+        public MapCellType[] AccessibleCells { get; set; } = { MapCellType.Floor };
 
         /// <summary>
-        /// 指定した位置に移動できる
+        /// 移動できる
         /// </summary>
-        /// <param name="direction">移動方向</param>
-        /// <param name="map">マップ</param>
+        /// <param name="move"></param>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        public bool CanMoveRelative(Vector2Int move, Map map)
+        {
+            Vector2Int direction = GetDirection(move);
+
+            return CanMove(direction, map);
+        }
+
+        /// <summary>
+        /// 移動できる
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="map"></param>
         /// <returns></returns>
         public bool CanMove(Vector2Int direction, Map map)
         {
             bool result = false;
 
             // 移動先の位置
-            Vector2Int position = Position + GetDirection(direction);
-            
+            Vector2Int position = Position + direction;
+
             // 移動先のセル
             MapCell cell = map.GetCell(position);
-            
+
             // 移動先のオブジェクト
-            MapObject other = map.GetMapEventObject(position);
+            MapObject other = map.GetMapObject(position);
 
             // 移動先に進入可能なセルがあり、
             // オブジェクトが存在しないか衝突しない場合に移動できる
@@ -64,15 +77,25 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             }
 
             return result;
+
         }
 
         /// <summary>
         /// 移動する
         /// </summary>
-        /// <param name="move">移動方向</param>
-        public void Move(Vector2Int move)
+        /// <param name="move"></param>
+        public void MoveRelative(Vector2Int move)
         {
             Vector2Int direction = GetDirection(move);
+            Move(direction);
+        }
+
+        /// <summary>
+        /// 移動する
+        /// </summary>
+        /// <param name="direction"></param>
+        public void Move(Vector2Int direction)
+        {
             Position += direction;
         }
 
@@ -129,6 +152,14 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public void UpdateTransform()
         {
             transform.localPosition = PositionToTransformPosition();
+            UpdateTransformRotation();
+        }
+
+        /// <summary>
+        /// トランスフォーム回転を更新する
+        /// </summary>
+        public void UpdateTransformRotation()
+        {
             transform.localRotation = DirectionToTransformRotation();
         }
 

@@ -67,6 +67,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// ステータス効果
         /// </summary>
         StatusEffect = 1201,
+
+        /// <summary>
+        /// アイテム入手
+        /// </summary>
+        ObtainingItems = 1301,
     }
 
     /// <summary>

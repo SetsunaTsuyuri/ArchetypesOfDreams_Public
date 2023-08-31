@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
+using Unity.Mathematics;
 
 namespace SetsunaTsuyuri.ArchetypesOfDreams
 {
@@ -10,6 +11,11 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
     /// </summary>
     public class Map : MonoBehaviour
     {
+        /// <summary>
+        /// エンカウントエリアIDオフセット
+        /// </summary>
+        static readonly int s_encounterAreaIdOffset = -30;
+
         /// <summary>
         /// セルの親トランスフォーム
         /// </summary>
@@ -47,6 +53,12 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         GameObject _StairsDown = null;
 
         /// <summary>
+        /// ナイトメア
+        /// </summary>
+        [SerializeField]
+        GameObject _nightmare = null;
+
+        /// <summary>
         /// 名前
         /// </summary>
         public string Name { get; private set; } = string.Empty;
@@ -62,41 +74,34 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         public int Height { get; private set; } = 0;
 
         /// <summary>
-        /// セル配列
+        /// ランダムエンカウントエリアID配列
         /// </summary>
-        public MapCell[] Cells { get; private set; } = { };
+        public int[,] RandomEncounterAreas { get; private set; } = { };
 
         /// <summary>
-        /// イベントリスト
+        /// セル2次元配列
+        /// </summary>
+        public MapCell[,] Cells { get; private set; } = { };
+
+        /// <summary>
+        /// イベントオブジェクトリスト
         /// </summary>
         public List<MapEventObject> Events { get; private set; } = new();
+
+        /// <summary>
+        /// プレイヤー
+        /// </summary>
+        public Player Player { get; private set; } = null;
 
         /// <summary>
         /// セルの大きさ
         /// </summary>
         public int CellSize { get; private set; } = 0;
 
-        /// <summary>
-        /// 敵の基本レベル
-        /// </summary>
-        public int BasicEnemyLevel { get; private set; } = 0;
-
-        /// <summary>
-        /// 敵の最小ID
-        /// </summary>
-        public int MinEnemyId { get; private set; } = 0;
-
-        /// <summary>
-        /// 敵の最大ID
-        /// </summary>
-        public int MaxEnemyId { get; private set; } = 0;
-
-        /// <summary>
-        /// ランダムエンカウントが有効である
-        /// </summary>
-        public bool EnablesRandomEncounterBattle
+        private void Awake()
         {
-            get => MinEnemyId != 0 && MaxEnemyId != 0;
+            // プレイヤー
+            Player = _objectsParent.GetComponentInChildren<Player>();
         }
 
         /// <summary>
@@ -116,17 +121,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             // セルの大きさ
             CellSize = jObject["tilewidth"].Value<int>();
 
-            // マップ名
-            Name = TiledMapUtility.GetPropertyValue<string>(jObject, "name");
-
-            // 敵の平均レベル
-            BasicEnemyLevel = TiledMapUtility.GetPropertyValue<int>(jObject, "basic_enemy_level");
-
-            // 敵の最小ID
-            MinEnemyId = TiledMapUtility.GetPropertyValue<int>(jObject, "min_enemy_id");
-
-            // 敵の最大ID
-            MaxEnemyId = TiledMapUtility.GetPropertyValue<int>(jObject, "max_enemy_id");
+            // エンカウントエリアを作る
+            CreateEncounterAreas(jObject);
 
             // セルを作る
             CreateCells(jObject);
@@ -137,32 +133,50 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
+        /// エンカウントエリア配列を作る
+        /// </summary>
+        /// <param name="map"></param>
+        private void CreateEncounterAreas(JToken map)
+        {
+            JToken ids = map["layers"].FirstOrDefault(x => x["name"].Value<string>() == "encounter");
+            if (ids is null)
+            {
+                return;
+            }
+
+            RandomEncounterAreas = ids["data"].ToObject<int[]>()
+                .Select(x => Mathf.Max(x + s_encounterAreaIdOffset, 0))
+                .ToArray()
+                .ToArray2D(Height, Width);
+        }
+
+        /// <summary>
         /// セルを作る
         /// </summary>
         /// <param name="jToken"></param>
         /// <returns></returns>
         private void CreateCells(JToken jToken)
         {
-            MapCellType[][] cellTypesArray = CreateCellTypesArray(jToken);
+            MapCellType[][,] cellTypesArray = CreateCellTypes(jToken);
 
-            Cells = new MapCell[Width * Height];
-            for (int i = 0; i < Cells.Length; i++)
+            Cells = new MapCell[Height, Width];
+            for (int i = 0; i < Height; i++)
             {
-                // セルを作る
-                MapCell cell = new()
+                for (int j = 0; j < Width; j++)
                 {
-                    Position = ToPosition(i),
-                    Types = new MapCellType[cellTypesArray.Length]
-                };
+                    MapCell cell = new()
+                    {
+                        Position = new Vector2Int(j, i),
+                        Types = new MapCellType[cellTypesArray.Length]
+                    };
 
-                // セルのタイプを追加する
-                for (int j = 0; j < cellTypesArray.Length; j++)
-                {
-                    cell.Types[j] = cellTypesArray[j][i];
+                    for (int k = 0; k < cellTypesArray.Length; k++)
+                    {
+                        cell.Types[k] = cellTypesArray[k][i, j];
+                    }
+
+                    Cells[i, j] = cell;
                 }
-
-                // セル配列に入れる
-                Cells[i] = cell;
             }
         }
 
@@ -171,46 +185,54 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         /// </summary>
         private void CreateCellGameObjects()
         {
-            foreach (var cell in Cells)
+            for (int i = 0; i < Height; i++)
             {
-                if (cell.Types.Any(x => x == MapCellType.Floor))
+                for (int j = 0; j < Width; j++)
                 {
-                    Vector3Int position = ToWorldPosition(cell);
-                    Instantiate(_floorPrefab, position, Quaternion.identity, _cellsParent);
-                }
-                else if (cell.IsNone())
-                {
-                    MapCell[] surroundingCells = GetSurroundingCells(cell);
-                    if (surroundingCells.Any(x => !x.IsNone()))
+                    MapCell cell = Cells[i, j];
+                    if (cell.IsNone)
+                    {
+                        continue;
+                    }
+
+                    GameObject prefab = cell switch
+                    {
+                        MapCell c when c.Types.Any(x => x == MapCellType.Floor) => _floorPrefab,
+                        MapCell c when c.Types.Any(x => x == MapCellType.Wall) => _wallPrefab,
+                        _ => null
+                    };
+
+                    if (prefab)
                     {
                         Vector3Int position = ToWorldPosition(cell);
-                        Instantiate(_wallPrefab, position, Quaternion.identity, _cellsParent);
+                        Instantiate(prefab, position, Quaternion.identity, _cellsParent);
                     }
                 }
-
             }
         }
 
         /// <summary>
-        /// セルタイプのジャグ配列を作る
+        /// セルタイプ2次元配列の配列を作る
         /// </summary>
         /// <param name="jToken"></param>
         /// <returns></returns>
-        private MapCellType[][] CreateCellTypesArray(JToken jToken)
+        private MapCellType[][,] CreateCellTypes(JToken jToken)
         {
             IEnumerable<JToken> tileLayers = jToken["layers"]
+                .Where(x => x["name"].Value<string>() == "cell")
                 .Where(x => x["type"].Value<string>() == "tilelayer");
 
-            MapCellType[][] tileCellsArray = new MapCellType[tileLayers.Count()][];
+            MapCellType[][,] tileCellsArray = new MapCellType[tileLayers.Count()][,];
             for (int i = 0; i < tileCellsArray.Length; i++)
             {
-                MapCellType[] cells = tileLayers.ElementAt(i)["data"]
-                    .ToObject<MapCellType[]>();
+                MapCellType[,] cells = tileLayers.ElementAt(i)["data"]
+                    .ToObject<MapCellType[]>().ToArray2D(Height, Width);
 
                 tileCellsArray[i] = cells;
             }
 
             return tileCellsArray;
+
         }
 
         /// <summary>
@@ -226,7 +248,8 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             foreach (var obj in objects)
             {
-                MapEventObject mapEvent = new GameObject().AddComponent<MapEventObject>();
+                MapEventObject mapEvent = new GameObject()
+                    .AddComponent<MapEventObject>();
 
                 mapEvent.SetUp(obj, this);
 
@@ -255,12 +278,19 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
         }
 
         /// <summary>
-        /// マップイベントオブジェクトを取得する
+        /// マップオブジェクトを取得する
         /// </summary>
         /// <param name="position">位置</param>
         /// <returns></returns>
-        public MapEventObject GetMapEventObject(Vector2Int position)
+        public MapObject GetMapObject(Vector2Int position)
         {
+            // プレイヤー
+            if (Player.Position == position)
+            {
+                return Player;
+            }
+
+            // イベント
             return Events.FirstOrDefault(x => x.Position == position && x.Exists());
         }
 
@@ -366,78 +396,10 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
 
             if (!IsOutOfRange(x, y))
             {
-                cell = Cells[y * Height + x];
+                cell = Cells[y, x];
             }
 
             return cell;
-        }
-
-        /// <summary>
-        /// 指定したセルの周囲にあるセルを配列にして取得する
-        /// </summary>
-        /// <param name="cell">セル</param>
-        /// <returns></returns>
-        public MapCell[] GetSurroundingCells(MapCell cell)
-        {
-            return GetSurroundingCells(cell.Position.x, cell.Position.y);
-        }
-
-
-        /// <summary>
-        /// 指定した位置の周囲にあるセルを配列にして取得する
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public MapCell[] GetSurroundingCells(int x, int y)
-        {
-            List<MapCell> cellList = new();
-
-            for (int row = y - 1; row <= y + 1; row++)
-            {
-                for (int column = x - 1; column <= x + 1; column++)
-                {
-                    // 自身または配列範囲外は取得しない
-                    if (column == x && row == y || IsOutOfRange(column, row))
-                    {
-                        continue;
-                    }
-
-                    MapCell value = GetCell(column, row);
-                    cellList.Add(value);
-                }
-            }
-
-            MapCell[] cellArray = cellList.ToArray();
-            return cellArray;
-        }
-
-        /// <summary>
-        /// 索引を座標に変える
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Vector2Int ToPosition(int index)
-        {
-            int x = index % Width;
-            int y = index / Width;
-            Vector2Int positon = new(x, y);
-
-            return positon;
-        }
-
-        /// <summary>
-        /// 索引から位置を求める
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Vector3Int ToWorldPosition(int index)
-        {
-            int x = index % Width;
-            int z = -index / Width;
-            Vector3Int positon = new(x, 0, z);
-
-            return positon;
         }
 
         /// <summary>
@@ -465,6 +427,7 @@ namespace SetsunaTsuyuri.ArchetypesOfDreams
             {
                 MapEventObjectType.StairsUp => _stairsUp,
                 MapEventObjectType.StairsDown => _StairsDown,
+                MapEventObjectType.Nightmare => _nightmare,
                 _ => null
             };
         }
